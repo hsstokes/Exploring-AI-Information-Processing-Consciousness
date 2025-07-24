@@ -220,6 +220,7 @@
             max-width: 250px;
             border: 1px solid #20B2AA;
             box-shadow: 3px 3px 0 rgba(255, 182, 193, 0.5);
+            cursor: pointer;
         }
         
         .findings-text {
@@ -244,7 +245,7 @@
             margin-right: 5px;
         }
         
-        .add-image-button {
+        .add-image-button, .save-notes-button {
             display: inline-block;
             padding: 8px 12px;
             background-color: #20B2AA;
@@ -253,14 +254,86 @@
             cursor: pointer;
             margin-top: 10px;
             font-family: 'Orator Std', 'Courier New', monospace;
+            margin-right: 10px;
         }
         
-        .add-image-button:hover {
+        .add-image-button:hover, .save-notes-button:hover {
             background-color: #1a9490;
         }
         
         .image-upload {
             display: none;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            overflow: auto;
+        }
+        
+        .modal-content {
+            margin: 5% auto;
+            display: block;
+            width: 80%;
+            max-width: 700px;
+            max-height: 80vh;
+            object-fit: contain;
+        }
+        
+        .close-modal {
+            position: absolute;
+            top: 15px;
+            right: 35px;
+            color: #f1f1f1;
+            font-size: 40px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        /* Status indicator */
+        .status-indicator {
+            display: none;
+            background-color: rgba(32, 178, 170, 0.9);
+            color: white;
+            text-align: center;
+            padding: 10px;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 5px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* Code display */
+        .code-display {
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+            display: none;
+        }
+        
+        .show-code-button {
+            display: block;
+            margin: 20px auto;
+            padding: 8px 16px;
+            background-color: #FFB6C1;
+            color: #333;
+            border: none;
+            cursor: pointer;
+            font-family: 'Orator Std', 'Courier New', monospace;
         }
         
         @media (max-width: 600px) {
@@ -341,13 +414,14 @@
             </div>
             
             <div class="findings-images" id="rules-images">
-                <img src="images/rules-based/visualization1.jpg" alt="Rules-based AI visualization" class="findings-image">
-                <img src="images/rules-based/visualization2.jpg" alt="Rules-based AI visualization" class="findings-image">
-                <img src="images/rules-based/visualization3.jpg" alt="Rules-based AI visualization" class="findings-image">
+                <img src="images/rules-based/visualization1.jpg" alt="Rules-based AI visualization" class="findings-image" onclick="openImageModal(this.src)">
+                <img src="images/rules-based/visualization2.jpg" alt="Rules-based AI visualization" class="findings-image" onclick="openImageModal(this.src)">
+                <img src="images/rules-based/visualization3.jpg" alt="Rules-based AI visualization" class="findings-image" onclick="openImageModal(this.src)">
             </div>
             
             <input type="file" id="rules-upload" class="image-upload" accept="image/*" multiple>
             <button class="add-image-button" onclick="document.getElementById('rules-upload').click()">Add Visualization</button>
+            <button class="save-notes-button" onclick="saveNotes('rules')">Save Notes</button>
         </div>
     </div>
     
@@ -397,13 +471,14 @@
             </div>
             
             <div class="findings-images" id="self-aware-images">
-                <img src="images/self-aware/visualization1.jpg" alt="Self-aware AI visualization" class="findings-image">
-                <img src="images/self-aware/visualization2.jpg" alt="Self-aware AI visualization" class="findings-image">
-                <img src="images/self-aware/visualization3.jpg" alt="Self-aware AI visualization" class="findings-image">
+                <img src="images/self-aware/visualization1.jpg" alt="Self-aware AI visualization" class="findings-image" onclick="openImageModal(this.src)">
+                <img src="images/self-aware/visualization2.jpg" alt="Self-aware AI visualization" class="findings-image" onclick="openImageModal(this.src)">
+                <img src="images/self-aware/visualization3.jpg" alt="Self-aware AI visualization" class="findings-image" onclick="openImageModal(this.src)">
             </div>
             
             <input type="file" id="self-aware-upload" class="image-upload" accept="image/*" multiple>
             <button class="add-image-button" onclick="document.getElementById('self-aware-upload').click()">Add Visualization</button>
+            <button class="save-notes-button" onclick="saveNotes('self-aware')">Save Notes</button>
         </div>
     </div>
     
@@ -453,13 +528,14 @@
             </div>
             
             <div class="findings-images" id="balanced-images">
-                <img src="images/balanced/visualization1.jpg" alt="Balanced AI visualization" class="findings-image">
-                <img src="images/balanced/visualization2.jpg" alt="Balanced AI visualization" class="findings-image">
-                <img src="images/balanced/visualization3.jpg" alt="Balanced AI visualization" class="findings-image">
+                <img src="images/balanced/visualization1.jpg" alt="Balanced AI visualization" class="findings-image" onclick="openImageModal(this.src)">
+                <img src="images/balanced/visualization2.jpg" alt="Balanced AI visualization" class="findings-image" onclick="openImageModal(this.src)">
+                <img src="images/balanced/visualization3.jpg" alt="Balanced AI visualization" class="findings-image" onclick="openImageModal(this.src)">
             </div>
             
             <input type="file" id="balanced-upload" class="image-upload" accept="image/*" multiple>
             <button class="add-image-button" onclick="document.getElementById('balanced-upload').click()">Add Visualization</button>
+            <button class="save-notes-button" onclick="saveNotes('balanced')">Save Notes</button>
         </div>
     </div>
     
@@ -509,13 +585,14 @@
             </div>
             
             <div class="findings-images" id="pragmatic-images">
-                <img src="images/pragmatic/visualization1.jpg" alt="Pragmatic AI visualization" class="findings-image">
-                <img src="images/pragmatic/visualization2.jpg" alt="Pragmatic AI visualization" class="findings-image">
-                <img src="images/pragmatic/visualization3.jpg" alt="Pragmatic AI visualization" class="findings-image">
+                <img src="images/pragmatic/visualization1.jpg" alt="Pragmatic AI visualization" class="findings-image" onclick="openImageModal(this.src)">
+                <img src="images/pragmatic/visualization2.jpg" alt="Pragmatic AI visualization" class="findings-image" onclick="openImageModal(this.src)">
+                <img src="images/pragmatic/visualization3.jpg" alt="Pragmatic AI visualization" class="findings-image" onclick="openImageModal(this.src)">
             </div>
             
             <input type="file" id="pragmatic-upload" class="image-upload" accept="image/*" multiple>
             <button class="add-image-button" onclick="document.getElementById('pragmatic-upload').click()">Add Visualization</button>
+            <button class="save-notes-button" onclick="saveNotes('pragmatic')">Save Notes</button>
         </div>
     </div>
     
@@ -565,13 +642,14 @@
             </div>
             
             <div class="findings-images" id="over-empathetic-images">
-                <img src="images/over-empathetic/visualization1.jpg" alt="Over-empathetic AI visualization" class="findings-image">
-                <img src="images/over-empathetic/visualization2.jpg" alt="Over-empathetic AI visualization" class="findings-image">
-                <img src="images/over-empathetic/visualization3.jpg" alt="Over-empathetic AI visualization" class="findings-image">
+                <img src="images/over-empathetic/visualization1.jpg" alt="Over-empathetic AI visualization" class="findings-image" onclick="openImageModal(this.src)">
+                <img src="images/over-empathetic/visualization2.jpg" alt="Over-empathetic AI visualization" class="findings-image" onclick="openImageModal(this.src)">
+                <img src="images/over-empathetic/visualization3.jpg" alt="Over-empathetic AI visualization" class="findings-image" onclick="openImageModal(this.src)">
             </div>
             
             <input type="file" id="over-empathetic-upload" class="image-upload" accept="image/*" multiple>
             <button class="add-image-button" onclick="document.getElementById('over-empathetic-upload').click()">Add Visualization</button>
+            <button class="save-notes-button" onclick="saveNotes('over-empathetic')">Save Notes</button>
         </div>
     </div>
     
@@ -589,7 +667,34 @@
         </div>
     </div>
     
+    <!-- Save All Notes button -->
+    <button class="save-notes-button" onclick="saveAllNotes()" style="display: block; margin: 20px auto; padding: 10px 20px; font-size: 16px;">Save All Notes</button>
+    
+    <!-- Show code button -->
+    <button class="show-code-button" onclick="toggleCodeDisplay()">Show/Hide HTML Code for GitHub</button>
+    
+    <!-- Code display for copying -->
+    <div class="code-display" id="code-display"></div>
+    
+    <!-- Status indicator -->
+    <div class="status-indicator" id="status-indicator">Notes saved!</div>
+    
+    <!-- Image modal -->
+    <div id="image-modal" class="modal">
+        <span class="close-modal" onclick="closeImageModal()">&times;</span>
+        <img class="modal-content" id="modal-image">
+    </div>
+    
     <script>
+        // Initialize local storage for notes
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load saved notes if they exist
+            loadAllNotes();
+            
+            // Update code display
+            updateCodeDisplay();
+        });
+        
         // Set up image upload handlers for each AI type
         document.querySelectorAll('.image-upload').forEach(upload => {
             upload.addEventListener('change', function(event) {
@@ -606,7 +711,11 @@
                         img.src = e.target.result;
                         img.alt = `${aiType} visualization`;
                         img.className = 'findings-image';
+                        img.onclick = function() { openImageModal(this.src); };
                         imagesContainer.appendChild(img);
+                        
+                        // Save to local storage
+                        saveTemporaryImage(aiType, e.target.result);
                     };
                     
                     reader.readAsDataURL(file);
@@ -626,7 +735,176 @@
                     this.textContent = '';
                 }
             });
+            
+            // Save on blur
+            element.addEventListener('blur', function() {
+                localStorage.setItem(this.id, this.textContent);
+                updateCodeDisplay();
+            });
         });
+        
+        // Save notes for a specific AI type
+        function saveNotes(aiType) {
+            const attributes = [
+                `${aiType}-processing-text`, 
+                `${aiType}-visual-text`, 
+                `${aiType}-color-text`, 
+                `${aiType}-sound-text`, 
+                `${aiType}-gesture-text`, 
+                `${aiType}-analysis`
+            ];
+            
+            attributes.forEach(id => {
+                const element = document.getElementById(id);
+                localStorage.setItem(id, element.textContent);
+            });
+            
+            showStatusIndicator('Notes saved for ' + aiType + ' AI!');
+            updateCodeDisplay();
+        }
+        
+        // Save all notes
+        function saveAllNotes() {
+            const aiTypes = ['rules', 'self-aware', 'balanced', 'pragmatic', 'over-empathetic'];
+            aiTypes.forEach(aiType => saveNotes(aiType));
+            showStatusIndicator('All notes saved!');
+        }
+        
+        // Load all notes
+        function loadAllNotes() {
+            document.querySelectorAll('[id$="-text"], [id$="-analysis"]').forEach(element => {
+                const savedContent = localStorage.getItem(element.id);
+                if (savedContent) {
+                    element.textContent = savedContent;
+                }
+            });
+            
+            // Load temporary images
+            loadTemporaryImages();
+        }
+        
+        // Save temporary image
+        function saveTemporaryImage(aiType, dataUrl) {
+            const key = `${aiType}-temp-images`;
+            let images = JSON.parse(localStorage.getItem(key) || '[]');
+            images.push(dataUrl);
+            localStorage.setItem(key, JSON.stringify(images));
+            updateCodeDisplay();
+        }
+        
+        // Load temporary images
+        function loadTemporaryImages() {
+            const aiTypes = ['rules', 'self-aware', 'balanced', 'pragmatic', 'over-empathetic'];
+            
+            aiTypes.forEach(aiType => {
+                const key = `${aiType}-temp-images`;
+                const images = JSON.parse(localStorage.getItem(key) || '[]');
+                const container = document.getElementById(`${aiType}-images`);
+                
+                images.forEach(dataUrl => {
+                    const img = document.createElement('img');
+                    img.src = dataUrl;
+                    img.alt = `${aiType} visualization`;
+                    img.className = 'findings-image';
+                    img.onclick = function() { openImageModal(this.src); };
+                    container.appendChild(img);
+                });
+            });
+        }
+        
+        // Show status indicator
+        function showStatusIndicator(message) {
+            const indicator = document.getElementById('status-indicator');
+            indicator.textContent = message;
+            indicator.style.display = 'block';
+            
+            setTimeout(() => {
+                indicator.style.display = 'none';
+            }, 2000);
+        }
+        
+        // Image modal functions
+        function openImageModal(src) {
+            const modal = document.getElementById('image-modal');
+            const modalImg = document.getElementById('modal-image');
+            modal.style.display = 'block';
+            modalImg.src = src;
+        }
+        
+        function closeImageModal() {
+            document.getElementById('image-modal').style.display = 'none';
+        }
+        
+        // Toggle code display
+        function toggleCodeDisplay() {
+            const codeDisplay = document.getElementById('code-display');
+            codeDisplay.style.display = codeDisplay.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        // Update code display with current state
+        function updateCodeDisplay() {
+            const codeDisplay = document.getElementById('code-display');
+            
+            // Get the current HTML document
+            let htmlContent = document.documentElement.outerHTML;
+            
+            // Replace the current script with one that doesn't have temp images
+            htmlContent = htmlContent.replace(/<script>[\s\S]*?<\/script>/, '<script>\n' + 
+                '    // Make text fields editable\n' +
+                '    document.querySelectorAll(\'[id$="-text"], [id$="-analysis"]\').forEach(element => {\n' +
+                '        element.contentEditable = true;\n' +
+                '        element.addEventListener(\'focus\', function() {\n' +
+                '            if (this.textContent.includes(\'Describe how this AI\') || \n' +
+                '                this.textContent.includes(\'Document the AI\') || \n' +
+                '                this.textContent.includes(\'Note the AI\') || \n' +
+                '                this.textContent.includes(\'Record how the AI\') || \n' +
+                '                this.textContent.includes(\'Analyze what these patterns\')) {\n' +
+                '                this.textContent = \'\';\n' +
+                '            }\n' +
+                '        });\n' +
+                '    });\n' +
+                '    \n' +
+                '    // Set up image modal\n' +
+                '    function openImageModal(src) {\n' +
+                '        const modal = document.getElementById(\'image-modal\');\n' +
+                '        const modalImg = document.getElementById(\'modal-image\');\n' +
+                '        modal.style.display = \'block\';\n' +
+                '        modalImg.src = src;\n' +
+                '    }\n' +
+                '    \n' +
+                '    function closeImageModal() {\n' +
+                '        document.getElementById(\'image-modal\').style.display = \'none\';\n' +
+                '    }\n' +
+                '    \n' +
+                '    // Set up image upload handlers for each AI type\n' +
+                '    document.querySelectorAll(\'.image-upload\').forEach(upload => {\n' +
+                '        upload.addEventListener(\'change\', function(event) {\n' +
+                '            const files = event.target.files;\n' +
+                '            const aiType = event.target.id.split(\'-upload\')[0]; // Get the AI type from the upload id\n' +
+                '            const imagesContainer = document.getElementById(`${aiType}-images`);\n' +
+                '            \n' +
+                '            for (let i = 0; i < files.length; i++) {\n' +
+                '                const file = files[i];\n' +
+                '                const reader = new FileReader();\n' +
+                '                \n' +
+                '                reader.onload = function(e) {\n' +
+                '                    const img = document.createElement(\'img\');\n' +
+                '                    img.src = e.target.result;\n' +
+                '                    img.alt = `${aiType} visualization`;\n' +
+                '                    img.className = \'findings-image\';\n' +
+                '                    img.onclick = function() { openImageModal(this.src); };\n' +
+                '                    imagesContainer.appendChild(img);\n' +
+                '                };\n' +
+                '                \n' +
+                '                reader.readAsDataURL(file);\n' +
+                '            }\n' +
+                '        });\n' +
+                '    });\n' +
+                '</script>'
+            );
+            
+            codeDisplay.textContent = htmlContent;
+        }
     </script>
 </body>
 </html>
