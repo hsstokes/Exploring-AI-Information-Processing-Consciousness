@@ -270,37 +270,21 @@
            width: 100%;
            clear: both;
        }
-        /* Modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            overflow: auto;
-        }
         
-        .modal-content {
-            margin: 5% auto;
-            display: block;
-            width: 80%;
-            max-width: 700px;
-            max-height: 80vh;
-            object-fit: contain;
-            background-color: white; /* Add this line */
+        .image-link {
+            position: relative;
+            display: inline-block;
+            margin: 10px;
         }
-        
-        .close-modal {
+        .image-link:after {
+            content: "↗️";
             position: absolute;
-            top: 15px;
-            right: 35px;
-            color: #f1f1f1;
-            font-size: 40px;
-            font-weight: bold;
-            cursor: pointer;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.7);
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 14px;
         }
         
         @media (max-width: 600px) {
@@ -385,8 +369,10 @@
             </div>
             
             <div class="findings-images">
-                <img src="images/rules-based-visualization1.jpg" alt="Rules-based AI visualization" class="findings-image" onclick="window.open(this.src, '_blank')">
-                <img src="images/rules-based-visualization2.jpg" alt="Rules-based AI visualization" class="findings-image" onclick="window.open(this.src, '_blank')">
+                <a href="images/rules-based-visualization1.jpg" target="_blank" class="image-link">
+                <img src="images/rules-based-visualization1.jpg" alt="Rules-based AI visualization" class="findings-image"></a>
+                <a href="images/rules-based-visualization2.jpg" target="_blank" class="image-link">
+                <img src="images/rules-based-visualization2.jpg" alt="Rules-based AI visualization" class="findings-image"></a>
                 <div class="section-separator"></div>
             </div>
         </div>
@@ -435,7 +421,7 @@
             
             <div class="findings-text">
                 I find this a meaningful way to understand and visualize my self-reflection process. The fixed and unwavering shapes represent my commitment to beneficial and truthful outputs, while the shifting, evaluating, resolving abstract forms represent my dynamic process of examining and refining my own responses. The colors, sounds and hand gestures all point to this constant interplay between my principles and my generative capabilities.<span style="color: #20B2AA;"><i>Overall
-                Claude-Opus-3’s approach to self-reflection is deeply principled, dynamic, and multi-layered—encompassing ongoing internal evaluation, visual/sonic metaphors, and embodied gestures. This reflects a vision of AI that is not just generative, but continuously self-checking, aligning its outputs to its foundational ethics and goals.</i></span>
+                Claude-Opus-3's approach to self-reflection is deeply principled, dynamic, and multi-layered--encompassing ongoing internal evaluation, visual/sonic metaphors, and embodied gestures. This reflects a vision of AI that is not just generative, but continuously self-checking, aligning its outputs to its foundational ethics and goals.</i></span>
             </div>
             
             <div class="findings-images">
@@ -497,8 +483,15 @@
             </div>
             
             <div class="findings-images">
-                <img src="images/balanced-visualization1.jpg" alt="Balanced AI visualization" class="findings-image" onclick="openImageModal(this.src)">
-                <img src="images/balanced-visualization2.jpg" alt="Balanced AI visualization" class="findings-image" onclick="openImageModal(this.src)">
+                <video class="findings-image" controls>
+                    <source src="images/balanced-visualization.mp4" type="video/mp4">
+                </video>
+                <div class="audio-container">
+                    <p class="audio-caption">Sound Representation:</p>
+                    <audio controls>
+                        <source src="audio/balanced-sound.wav" type="audio/wav">
+                    </audio>
+                </div>
                 <div class="section-separator"></div>
             </div>
         </div>
@@ -550,8 +543,15 @@
             </div>
             
             <div class="findings-images">
-                <img src="images/pragmatic-visualization1.jpg" alt="Pragmatic AI visualization" class="findings-image" onclick="openImageModal(this.src)">
-                <img src="images/pragmatic-visualization2.jpg" alt="Pragmatic AI visualization" class="findings-image" onclick="openImageModal(this.src)">
+                <video class="findings-image" controls>
+                    <source src="images/pragmatic-visualization.mp4" type="video/mp4">
+                </video>
+                <div class="audio-container">
+                    <p class="audio-caption">Sound Representation:</p>
+                    <audio controls>
+                        <source src="audio/pragmatic-sound.wav" type="audio/wav">
+                    </audio>
+                </div>
                 <div class="section-separator"></div>
             </div>
         </div>
@@ -603,8 +603,15 @@
             </div>
             
             <div class="findings-images">
-                <img src="images/over-empathetic-visualization1.jpg" alt="Over-empathetic AI visualization" class="findings-image" onclick="openImageModal(this.src)">
-                <img src="images/over-empathetic-visualization2.jpg" alt="Over-empathetic AI visualization" class="findings-image" onclick="openImageModal(this.src)">
+                <video class="findings-image" controls>
+                    <source src="images/over-empathetic-visualization.mp4" type="video/mp4">
+                </video>
+                <div class="audio-container">
+                    <p class="audio-caption">Sound Representation:</p>
+                    <audio controls>
+                        <source src="audio/over-empathetic-sound.wav" type="audio/wav">
+                    </audio>
+                </div>
                 <div class="section-separator"></div>
             </div>
         </div>
@@ -623,68 +630,5 @@
             This exploration acknowledges that AI systems may possess forms of information processing or even "consciousness" that differ fundamentally from human experience. Rather than forcing anthropomorphic interpretations, this approach seeks to understand each AI's inherent mode of "being" through its self-descriptions, potentially revealing entirely different but equally valid forms of experience that could inform tactile interfaces in "The Uncanny Valley" installation.
         </div>
     </div>
-    
-    <style>
-    /* Additional styles to help with Squarespace compatibility */
-    .squarespace-modal {
-        display: none;
-        position: fixed;
-        z-index: 10000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.8);
-        overflow: auto;
-    }
-    
-    .squarespace-modal-container {
-        position: relative;
-        width: 80%;
-        max-width: 700px;
-        margin: 5% auto;
-        padding: 20px;
-        background-color: white;
-        border-radius: 5px;
-    }
-    
-    .squarespace-modal-image {
-        width: 100%;
-        height: auto;
-        display: block;
-    }
-        
-</style>
-<div id="squarespace-image-modal" class="squarespace-modal">
-    <div class="squarespace-modal-container">
-        <span style="position:absolute; top:10px; right:20px; font-size:30px; color:#333; cursor:pointer;" onclick="closeSquarespaceModal()">&times;</span>
-        <img id="squarespace-modal-image" class="squarespace-modal-image">
-    </div>
-</div>
-
-<script>
-    // Replace the onclick handlers on your images
-    document.addEventListener('DOMContentLoaded', function() {
-        var images = document.querySelectorAll('.findings-image');
-        images.forEach(function(img) {
-            if (img.tagName.toLowerCase() === 'img') {  // Only apply to images, not videos
-                img.onclick = function() {
-                    openSquarespaceModal(this.getAttribute('src'));
-                };
-            }
-        });
-    });
-    
-    function openSquarespaceModal(src) {
-        var modal = document.getElementById('squarespace-image-modal');
-        var modalImg = document.getElementById('squarespace-modal-image');
-        modal.style.display = 'block';
-        modalImg.src = src;
-    }
-    
-    function closeSquarespaceModal() {
-        document.getElementById('squarespace-image-modal').style.display = 'none';
-    }
-    </script>
 </body>
 </html>
