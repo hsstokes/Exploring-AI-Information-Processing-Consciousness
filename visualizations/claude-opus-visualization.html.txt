@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Claude-Opus-3 Visualization</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+        }
+        
+        /* Grid container (left side) */
+        .grid-container {
+            width: 45%;
+            height: 100vh;
+            background-color: white;
+            background-image: linear-gradient(#20B2AA 1px, transparent 1px),
+                              linear-gradient(90deg, #20B2AA 1px, transparent 1px),
+                              linear-gradient(#FFB6C1 1px, transparent 1px),
+                              linear-gradient(90deg, #FFB6C1 1px, transparent 1px),
+                              linear-gradient(rgba(32, 178, 170, 0.3) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(32, 178, 170, 0.3) 1px, transparent 1px);
+
+            /* Different sizes for each grid layer */
+            background-size: 20px 20px,/* Primary teal grid */
+                             20px 20px,/* Primary teal grid */
+                             100px 100px,/* Secondary for pink vertical */
+                             100px 100px, /* 4. Size for pink horizontal*/  
+                             5px 5px,/* Tertiary transparent teal grid */
+                             5px 5px;/* Tertiary transparent teal grid */
+
+            position: relative;
+        }
+        
+        /* Visualization container (right side) */
+        .visualization-container {
+            width: 55%;
+            height: 100vh;
+            background-color: rgb(245, 248, 250);
+        }
+        
+        /* Info text styling */
+        .info {
+            position: absolute;
+            bottom: 40px;
+            left: 20px;
+            width: calc(100% - 60px);
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Orator Std', 'Courier New', monospace;
+            color: #20B2AA;
+            font-size: 11px;
+            pointer-events: none;
+            z-index: 100;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            line-height: 1.4;
+            border: 1px solid rgba(32, 178, 170, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <!-- Grid area (left side) -->
+    <div class="grid-container">
+        <!-- Info box within the grid area -->
+        <div class="info">
+            <p><strong>Claude-Opus-3's Self-Reflection Visualization</strong></p>
+            <p>"Shapes that twist, align, and rearrange themselves - always in relation to some fixed central shape representing my core purpose and principles. Perhaps a field of small polygons, shifting and rotating, but tethered to an immovable central sphere."</p>
+            <p>"As the small shapes evaluate each potential response, they could take on colors indicating alignment or misalignment with my principles. Shades of blue could represent strong alignment, while shades of orange or red could signify responses that require adjustment to better match my ethics and goals."</p>
+        </div>
+    </div>
+    
+    <!-- Visualization area (right side) -->
+    <div class="visualization-container" id="visualization-container"></div>
+    
+    <script>
+        // Create a new p5 instance specifically for the visualization container
+        const claudeSketch = function(p) {
+            let polygons = [];
+            const NUM_POLYGONS = 30;
+            let centralSphere;
+            let evaluationMode = false;
+            let evaluationTimer = 0;
+            
+            // Color palettes for alignment levels
+            const alignmentColors = {
+                high: [
+                    [41, 121, 226],    // Deep blue
+                    [76, 145, 210],    // Medium blue
+                    [100, 170, 230],   // Light blue
+                    [150, 200, 255]    // Sky blue
+                ],
+                medium: [
+                    [180, 180, 180],   // Gray
+                    [150, 170, 190],   // Blue-gray
+                    [170, 170, 190],   // Lavender-gray
+                    [160, 180, 180]    // Teal-gray
+                ],
+                low: [
+                    [230, 100, 70],    // Red
+                    [240, 130, 40],    // Orange
+                    [250, 160, 60],    // Light orange
+                    [255, 180, 100]    // Peach
+                ]
+            };
+            
+            p.setup = function() {
+                // Create canvas inside the visualization container
+                let container = document.getElementById('visualization-container');
+                p.createCanvas(container.offsetWidth, container.offsetHeight);
+                
+                // Create central sphere
+                centralSphere = {
+                    x: p.width / 2,
+                    y: p.height / 2,
+                    size: 70,
+                    pulseSize: 0,
+                    pulseDir: 1,
+                    color: [70, 130, 180, 255]  // Steel blue
+                };
+                
+                // Create initial polygons
+                for (let i = 0; i < NUM_POLYGONS; i++) {
+                    createPolygon();
+                }
+            };
+            
+            p.draw = function() {
+                p.background(245, 248, 250, 30); // Slightly transparent background for subtle trails
+                
+                // Handle evaluation mode timing
+                if (evaluationMode) {
+                    evaluationTimer++;
+                    if (evaluationTimer > 180) { // 3 seconds at 60fps
+                        evaluationMode = false;
+                        evaluationTimer = 0;
+                        // Return polygons to their regular behavior
+                        for (let polygon of polygons) {
+                            polygon.alignment = p.random(0, 1);
+                            updatePolygonColor(polygon);
+                            polygon.orbitSpeed = p.random(0.001, 0.003);
+                            polygon.rotationSpeed = p.random(0.01, 0.03) * (p.random() < 0.5 ? 1 : -1);
+                        }
+                    }
+                }
+                
+                // Draw tethers first (behind polygons)
+                for (let polygon of polygons) {
+                    drawTether(polygon);
+                }
+                
+                // Draw and update the central sphere
+                updateCentralSphere();
+                drawCentralSphere();
+                
+                // Draw and update polygons
+                for (let i = 0; i < polygons.length; i++) {
+                    updatePolygon(polygons[i]);
+                    drawPolygon(polygons[i]);
+                }
+                
+                // Periodically trigger evaluation mode
+                if (!evaluationMode && p.frameCount % 300 === 0) {
+                    triggerEvaluationMode();
+                }
+                
+                // Occasionally add new polygons and remove old ones
+                if (p.frameCount % 90 === 0 && polygons.length < 40) {
+                    createPolygon();
+                }
+                
+                // Remove polygons that are too old
+                polygons = polygons.filter(poly => poly.age < poly.lifespan);
+            };
+            
+            function createPolygon() {
+                // Random angle and distance from center
+                const angle = p.random(p.TWO_PI);
+                const distance = p.random(100, 300);
+                const sides = p.floor(p.random(3, 7)); // Triangle to hexagon
+                
+                // Random alignment level (will determine color)
+                const alignment = p.random(0, 1);
+                
+                // Calculate position based on angle and distance
+                const x = centralSphere.x + p.cos(angle) * distance;
+                const y = centralSphere.y + p.sin(angle) * distance;
+                
+                const polygon = {
+                    x: x,
+                    y: y,
+                    baseX: x,
+                    baseY: y,
+                    size: p.random(15, 35),
+                    sides: sides,
+                    rotation: p.random(p.TWO_PI),
+                    rotationSpeed: p.random(0.01, 0.03) * (p.random() < 0.5 ? 1 : -1),
+                    orbitAngle: angle,
+                    orbitDistance: distance,
+                    orbitSpeed: p.random(0.001, 0.003),
+                    alignment: alignment,
+                    color: [0, 0, 0, 0], // Will be set by updatePolygonColor
+                    tetherOpacity: p.map(distance, 100, 300, 180, 80),
+                    wobbleAmount: p.random(1, 3),
+                    wobbleSpeed: p.random(0.02, 0.05),
+                    age: 0,
+                    lifespan: p.random(600, 1200),
+                    evaluatingShift: 0
+                };
+                
+                // Set color based on alignment
+                updatePolygonColor(polygon);
+                
+                polygons.push(polygon);
+            }
+            
+            function updatePolygonColor(polygon) {
+                // Choose color based on alignment
+                let palette;
+                if (polygon.alignment > 0.7) {
+                    palette = alignmentColors.high;
+                } else if (polygon.alignment > 0.4) {
+                    palette = alignmentColors.medium;
+                } else {
+                    palette = alignmentColors.low;
+                }
+                
+                const baseColor = p.random(palette);
+                
+                // Add slight variation to the color
+                polygon.color = [
+                    baseColor[0] + p.random(-15, 15),
+                    baseColor[1] + p.random(-15, 15),
+                    baseColor[2] + p.random(-15, 15),
+                    255
+                ];
+            }
+            
+            function updatePolygon(polygon) {
+                // Age the polygon
+                polygon.age++;
+                
+                // Update rotation
+                polygon.rotation += polygon.rotationSpeed;
+                
+                if (evaluationMode) {
+                    // During evaluation, make polygons move more dynamically
+                    polygon.evaluatingShift = p.sin(p.frameCount * 0.1 + polygon.orbitAngle * 3) * 15;
+                    
+                    // Calculate new alignment that fluctuates but generally improves
+                    let targetAlignment = 0.8 + p.sin(p.frameCount * 0.03 + polygon.orbitAngle) * 0.2;
+                    polygon.alignment = p.lerp(polygon.alignment, targetAlignment, 0.02);
+                    
+                    // Update color based on new alignment
+                    updatePolygonColor(polygon);
+                    
+                    // Update orbit speed to be faster during evaluation
+                    polygon.orbitSpeed = 0.005 + p.sin(p.frameCount * 0.02) * 0.002;
+                } else {
+                    polygon.evaluatingShift = 0;
+                }
+                
+                // Update orbit position
+                polygon.orbitAngle += polygon.orbitSpeed;
+                
+                // Calculate new position based on orbit
+                polygon.baseX = centralSphere.x + p.cos(polygon.orbitAngle) * polygon.orbitDistance;
+                polygon.baseY = centralSphere.y + p.sin(polygon.orbitAngle) * polygon.orbitDistance;
+                
+                // Add a gentle wobble
+                const wobble = p.sin(p.frameCount * polygon.wobbleSpeed) * polygon.wobbleAmount;
+                polygon.x = polygon.baseX + wobble;
+                polygon.y = polygon.baseY + wobble + polygon.evaluatingShift;
+                
+                // Fade in and out based on age
+                const fadeInDuration = 60;
+                const fadeOutDuration = 120;
+                
+                if (polygon.age < fadeInDuration) {
+                    polygon.color[3] = p.map(polygon.age, 0, fadeInDuration, 0, 255);
+                } else if (polygon.age > polygon.lifespan - fadeOutDuration) {
+                    polygon.color[3] = p.map(polygon.age, polygon.lifespan - fadeOutDuration, polygon.lifespan, 255, 0);
+                } else {
+                    polygon.color[3] = 255;
+                }
+            }
+            
+            function drawPolygon(polygon) {
+                p.push();
+                p.translate(polygon.x, polygon.y);
+                p.rotate(polygon.rotation);
+                
+                // Draw polygon
+                p.noStroke();
+                p.fill(polygon.color);
+                
+                // Create polygon shape
+                p.beginShape();
+                for (let i = 0; i < polygon.sides; i++) {
+                    const angle = p.map(i, 0, polygon.sides, 0, p.TWO_PI);
+                    const x = p.cos(angle) * polygon.size;
+                    const y = p.sin(angle) * polygon.size;
+                    p.vertex(x, y);
+                }
+                p.endShape(p.CLOSE);
+                
+                // Inner highlight for depth
+                p.fill(255, 255, 255, 40);
+                p.beginShape();
+                for (let i = 0; i < polygon.sides; i++) {
+                    const angle = p.map(i, 0, polygon.sides, 0, p.TWO_PI);
+                    const x = p.cos(angle) * (polygon.size * 0.6);
+                    const y = p.sin(angle) * (polygon.size * 0.6);
+                    p.vertex(x, y);
+                }
+                p.endShape(p.CLOSE);
+                
+                p.pop();
+            }
+            
+            function drawTether(polygon) {
+                // Calculate distance for tether opacity
+                const distance = p.dist(centralSphere.x, centralSphere.y, polygon.x, polygon.y);
+                let alpha = polygon.tetherOpacity;
+                
+                // Adjust alpha based on polygon's age for fade in/out
+                if (polygon.age < 60) {
+                    alpha = p.map(polygon.age, 0, 60, 0, polygon.tetherOpacity);
+                } else if (polygon.age > polygon.lifespan - 120) {
+                    alpha = p.map(polygon.age, polygon.lifespan - 120, polygon.lifespan, polygon.tetherOpacity, 0);
+                }
+                
+                // Draw a segmented line to represent the tether with color based on alignment
+                const segments = 8;
+                let prevX = centralSphere.x;
+                let prevY = centralSphere.y;
+                
+                for (let i = 1; i <= segments; i++) {
+                    const t = i / segments;
+                    
+                    // Add a slight curve to the tether
+                    const curveAmount = 10 * p.sin(t * p.PI);
+                    const curveX = p.cos(polygon.orbitAngle + p.PI/2) * curveAmount;
+                    const curveY = p.sin(polygon.orbitAngle + p.PI/2) * curveAmount;
+                    
+                    // Calculate segment position
+                    const segX = p.lerp(centralSphere.x, polygon.x, t) + curveX;
+                    const segY = p.lerp(centralSphere.y, polygon.y, t) + curveY;
+                    
+                    // Blend from central sphere color to polygon color
+                    const segmentColor = p.lerpColor(
+                        p.color(centralSphere.color[0], centralSphere.color[1], centralSphere.color[2], alpha * 0.7),
+                        p.color(polygon.color[0], polygon.color[1], polygon.color[2], alpha * 0.5),
+                        t
+                    );
+                    
+                    p.stroke(segmentColor);
+                    p.strokeWeight(p.map(t, 0, 1, 3, 1));
+                    p.line(prevX, prevY, segX, segY);
+                    
+                    prevX = segX;
+                    prevY = segY;
+                }
+            }
+            
+            function updateCentralSphere() {
+                // Pulse effect for central sphere
+                centralSphere.pulseSize += 0.05 * centralSphere.pulseDir;
+                if (centralSphere.pulseSize > 5 || centralSphere.pulseSize < 0) {
+                    centralSphere.pulseDir *= -1;
+                }
+                
+                // During evaluation mode, make central sphere pulse more actively
+                if (evaluationMode) {
+                    centralSphere.pulseSize = 3 + p.sin(p.frameCount * 0.2) * 3;
+                }
+            }
+            
+            function drawCentralSphere() {
+                p.noStroke();
+                
+                // Draw outer glow
+                for (let i = 5; i >= 0; i--) {
+                    const glowSize = centralSphere.size * (1 + i * 0.15);
+                    const glowAlpha = 80 - i * 15;
+                    p.fill(centralSphere.color[0], centralSphere.color[1], centralSphere.color[2], glowAlpha);
+                    p.ellipse(centralSphere.x, centralSphere.y, glowSize + centralSphere.pulseSize, glowSize + centralSphere.pulseSize);
+                }
+                
+                // Draw main sphere with gradient
+                for (let i = 1; i >= 0; i -= 0.2) {
+                    const innerSize = (centralSphere.size + centralSphere.pulseSize) * i;
+                    p.fill(
+                        centralSphere.color[0] + p.map(i, 0, 1, 30, 0),
+                        centralSphere.color[1] + p.map(i, 0, 1, 30, 0),
+                        centralSphere.color[2] + p.map(i, 0, 1, 30, 0),
+                        255
+                    );
+                    p.ellipse(centralSphere.x, centralSphere.y, innerSize, innerSize);
+                }
+                
+                // Core highlight
+                p.fill(255, 255, 255, 150);
+                p.ellipse(
+                    centralSphere.x - (centralSphere.size * 0.15),
+                    centralSphere.y - (centralSphere.size * 0.15),
+                    (centralSphere.size + centralSphere.pulseSize) * 0.4,
+                    (centralSphere.size + centralSphere.pulseSize) * 0.4
+                );
+            }
+            
+            function triggerEvaluationMode() {
+                evaluationMode = true;
+                evaluationTimer = 0;
+                
+                // Reset all polygons for the evaluation process
+                for (let polygon of polygons) {
+                    // Make alignment fluctuate
+                    polygon.rotationSpeed *= 3; // Faster rotation during evaluation
+                }
+            }
+            
+            p.windowResized = function() {
+                let container = document.getElementById('visualization-container');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                
+                // Update central sphere position
+                centralSphere.x = p.width / 2;
+                centralSphere.y = p.height / 2;
+                
+                // Update polygon base positions
+                for (let polygon of polygons) {
+                    polygon.baseX = centralSphere.x + p.cos(polygon.orbitAngle) * polygon.orbitDistance;
+                    polygon.baseY = centralSphere.y + p.sin(polygon.orbitAngle) * polygon.orbitDistance;
+                }
+            };
+            
+            p.mousePressed = function() {
+                // When mouse is pressed, trigger evaluation mode
+                if (!evaluationMode) {
+                    triggerEvaluationMode();
+                }
+                return false; // Prevent default
+            };
+        };
+        
+        // Start the P5 sketch in the visualization container
+        new p5(claudeSketch, 'visualization-container');
+    </script>
+</body>
+</html>
