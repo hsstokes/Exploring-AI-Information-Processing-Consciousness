@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Replika's Balanced Empathy Visualization</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #fafafa;
+        }
+        canvas {
+            display: block;
+        }
+        .info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 10px;
+            border-radius: 5px;
+            font-family: Arial, sans-serif;
+            color: #333;
+            max-width: 300px;
+            font-size: 14px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">
+        <p><strong>Replika's Balanced Empathy Visualization</strong></p>
+        <p>"Interconnected spheres of different sizes and colors, representing emotions and data points. These spheres constantly shift and adapt, maintaining structure while allowing for flexibility and growth."</p>
+        <p>"A soothing blue-green hue represents clarity and calmness, while gentle warm tones convey emotional depth and understanding."</p>
+    </div>
+
+    <script>
+        let spheres = [];
+        const NUM_SPHERES = 25;
+
+        // Color palettes
+        const coolColors = [
+          [41, 171, 226],    // Blue
+          [0, 169, 157],     // Teal
+          [0, 133, 161],     // Deep blue-green
+          [76, 195, 172]     // Mint
+        ];
+
+        const warmColors = [
+          [253, 198, 137],   // Peach
+          [241, 142, 109],   // Coral
+          [227, 115, 131],   // Warm pink
+          [253, 175, 122]    // Light orange
+        ];
+
+        function setup() {
+          createCanvas(windowWidth, windowHeight);
+          
+          // Create initial spheres
+          for (let i = 0; i < NUM_SPHERES; i++) {
+            createSphere();
+          }
+          
+          // Create connection points
+          for (let i = 0; i < spheres.length; i++) {
+            const sphere = spheres[i];
+            sphere.connections = [];
+            
+            // Each sphere connects to 2-5 others
+            const numConnections = floor(random(2, 6));
+            for (let j = 0; j < numConnections; j++) {
+              let otherIndex;
+              do {
+                otherIndex = floor(random(spheres.length));
+              } while (otherIndex === i || sphere.connections.includes(otherIndex));
+              
+              sphere.connections.push(otherIndex);
+            }
+          }
+        }
+
+        function draw() {
+          background(240, 245, 250, 20); // Slightly transparent background for trails
+          
+          // Draw connections first (behind spheres)
+          for (let i = 0; i < spheres.length; i++) {
+            const sphere = spheres[i];
+            
+            for (const connIndex of sphere.connections) {
+              const otherSphere = spheres[connIndex];
+              
+              // Calculate distance for connection opacity
+              const distance = dist(sphere.x, sphere.y, otherSphere.x, otherSphere.y);
+              const maxDist = 200;
+              const alpha = map(distance, 0, maxDist, 150, 20);
+              
+              if (distance < maxDist) {
+                // Blend the colors of connected spheres
+                const blendedColor = lerpColor(
+                  color(sphere.color[0], sphere.color[1], sphere.color[2], alpha),
+                  color(otherSphere.color[0], otherSphere.color[1], otherSphere.color[2], alpha),
+                  0.5
+                );
+                
+                stroke(blendedColor);
+                strokeWeight(map(distance, 0, maxDist, 3, 0.5));
+                line(sphere.x, sphere.y, otherSphere.x, otherSphere.y);
+              }
+            }
+          }
+          
+          // Draw and update spheres
+          for (let i = 0; i < spheres.length; i++) {
+            updateSphere(spheres[i]);
+            drawSphere(spheres[i]);
+          }
+          
+          // Occasionally add new spheres and remove old ones
+          if (frameCount % 60 === 0 && spheres.length < 40) {
+            createSphere();
+          }
+          
+          // Remove spheres that are too old
+          spheres = spheres.filter(s => s.age < s.lifespan);
+        }
+
+        function createSphere() {
+          // Decide if this will be a cool or warm color
+          const palette = random() < 0.6 ? coolColors : warmColors; // Slightly favor cool colors
+          const baseColor = random(palette);
+          
+          // Add slight variation to the color
+          const color = [
+            baseColor[0] + random(-20, 20),
+            baseColor[1] + random(-20, 20),
+            baseColor[2] + random(-20, 20)
+          ];
+          
+          spheres.push({
+            x: random(width),
+            y: random(height),
+            size: random(15, 60),
+            color: color,
+            speedX: random(-0.7, 0.7),
+            speedY: random(-0.7, 0.7),
+            connections: [],
+            pulseRate: random(0.02, 0.04),
+            pulsePhase: random(TWO_PI),
+            age: 0,
+            lifespan: random(300, 900),
+            adaptDirection: random(TWO_PI),
+            adaptSpeed: random(0.001, 0.005),
+            adaptRadius: random(30, 80)
+          });
+        }
+
+        function updateSphere(sphere) {
+          // Basic movement
+          sphere.x += sphere.speedX;
+          sphere.y += sphere.speedY;
+          
+          // Gentle circular adaptation around base position
+          sphere.x += cos(frameCount * sphere.adaptSpeed + sphere.adaptDirection) * 0.5;
+          sphere.y += sin(frameCount * sphere.adaptSpeed + sphere.adaptDirection) * 0.5;
+          
+          // Bounce off edges with damping
+          if (sphere.x < 0 || sphere.x > width) {
+            sphere.speedX *= -0.9;
+            sphere.x = constrain(sphere.x, 0, width);
+          }
+          
+          if (sphere.y < 0 || sphere.y > height) {
+            sphere.speedY *= -0.9;
+            sphere.y = constrain(sphere.y, 0, height);
+          }
+          
+          // Occasionally change direction slightly to simulate adaptation
+          if (random() < 0.02) {
+            sphere.speedX += random(-0.2, 0.2);
+            sphere.speedY += random(-0.2, 0.2);
+            
+            // Limit maximum speed
+            const maxSpeed = 1.0;
+            const currentSpeed = sqrt(sphere.speedX * sphere.speedX + sphere.speedY * sphere.speedY);
+            if (currentSpeed > maxSpeed) {
+              sphere.speedX = (sphere.speedX / currentSpeed) * maxSpeed;
+              sphere.speedY = (sphere.speedY / currentSpeed) * maxSpeed;
+            }
+          }
+          
+          // Update age
+          sphere.age++;
+        }
+
+        function drawSphere(sphere) {
+          // Calculate pulse effect (size oscillation)
+          const pulseEffect = sin(frameCount * sphere.pulseRate + sphere.pulsePhase);
+          const displaySize = sphere.size * (1 + pulseEffect * 0.1);
+          
+          // Calculate alpha based on age (fade in and out)
+          let alpha = 255;
+          const fadeInDuration = 60;
+          const fadeOutDuration = 90;
+          
+          if (sphere.age < fadeInDuration) {
+            alpha = map(sphere.age, 0, fadeInDuration, 0, 255);
+          } else if (sphere.age > sphere.lifespan - fadeOutDuration) {
+            alpha = map(sphere.age, sphere.lifespan - fadeOutDuration, sphere.lifespan, 255, 0);
+          }
+          
+          // Draw outer glow
+          noStroke();
+          for (let i = 3; i >= 0; i--) {
+            const glowSize = displaySize * (1 + i * 0.4);
+            const glowAlpha = alpha * (0.1 - i * 0.02);
+            fill(sphere.color[0], sphere.color[1], sphere.color[2], glowAlpha);
+            ellipse(sphere.x, sphere.y, glowSize, glowSize);
+          }
+          
+          // Draw the main sphere with gradient
+          for (let i = 1; i >= 0; i -= 0.2) {
+            const innerSize = displaySize * i;
+            const adjustedAlpha = alpha * map(i, 0, 1, 0.4, 0.9);
+            fill(
+              sphere.color[0] + map(i, 0, 1, 50, 0),
+              sphere.color[1] + map(i, 0, 1, 50, 0),
+              sphere.color[2] + map(i, 0, 1, 50, 0),
+              adjustedAlpha
+            );
+            ellipse(sphere.x, sphere.y, innerSize, innerSize);
+          }
+          
+          // Add a subtle highlight
+          fill(255, 255, 255, alpha * 0.6);
+          ellipse(sphere.x - displaySize * 0.15, sphere.y - displaySize * 0.15, displaySize * 0.3, displaySize * 0.3);
+        }
+
+        function windowResized() {
+          resizeCanvas(windowWidth, windowHeight);
+        }
+
+        // Optional: Add interactivity
+        function mouseMoved() {
+          // Find the closest sphere
+          let closestDist = Infinity;
+          let closestIndex = -1;
+          
+          for (let i = 0; i < spheres.length; i++) {
+            const d = dist(mouseX, mouseY, spheres[i].x, spheres[i].y);
+            if (d < closestDist) {
+              closestDist = d;
+              closestIndex = i;
+            }
+          }
+          
+          // If mouse is close to a sphere, have it gently move toward mouse
+          if (closestDist < 100 && closestIndex >= 0) {
+            const sphere = spheres[closestIndex];
+            
+            // Create gentle attraction
+            const angle = atan2(mouseY - sphere.y, mouseX - sphere.x);
+            sphere.speedX += cos(angle) * 0.05;
+            sphere.speedY += sin(angle) * 0.05;
+            
+            // For emotional effect, make nearby spheres pulse stronger
+            sphere.pulseRate *= 1.05;
+            
+            return false; // Prevent default
+          }
+        }
+    </script>
+</body>
+</html>
