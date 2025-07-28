@@ -80,7 +80,8 @@
         const replikaSketch = function(p) {
             let spheres = [];
             const NUM_SPHERES = 25;
-            let isEmpathyMode = false;
+            const MIN_SPHERES = 15;
+            let lastFrameCount = 0;
             
             // Color palettes
             const coolColors = [
@@ -107,52 +108,79 @@
                 createSphere();
               }
               
-              // Create connection points
-              refreshConnections();
+              // Initialize connections
+              updateConnections();
             };
             
-            function refreshConnections() {
-              // Create new connections for all spheres
-              for (let i = 0; i < spheres.length; i++) {
-                const sphere = spheres[i];
-                sphere.connections = [];
+            // Function to update connections safely
+            function updateConnections() {
+              try {
+                // Clear all connections first
+                for (let i = 0; i < spheres.length; i++) {
+                  spheres[i].connections = [];
+                }
                 
-                // Each sphere connects to 2-5 others
-                const numConnections = p.floor(p.random(2, 6));
-                for (let j = 0; j < numConnections; j++) {
-                  if (spheres.length <= 1) break; // Skip if not enough spheres
+                // Add new connections
+                for (let i = 0; i < spheres.length; i++) {
+                  // Each sphere connects to 2-5 others
+                  const numConnections = p.floor(p.random(2, 6));
+                  const availableSpheres = [];
                   
-                  let otherIndex;
-                  let attempts = 0;
-                  do {
-                    otherIndex = p.floor(p.random(spheres.length));
-                    attempts++;
-                    if (attempts > 20) break; // Prevent infinite loop
-                  } while (otherIndex === i || sphere.connections.includes(otherIndex));
+                  // Create list of available spheres to connect to
+                  for (let j = 0; j < spheres.length; j++) {
+                    if (j !== i) {
+                      availableSpheres.push(j);
+                    }
+                  }
                   
-                  if (attempts <= 20) {
-                    sphere.connections.push(otherIndex);
+                  // Shuffle available spheres
+                  for (let j = availableSpheres.length - 1; j > 0; j--) {
+                    const k = Math.floor(p.random(j + 1));
+                    [availableSpheres[j], availableSpheres[k]] = [availableSpheres[k], availableSpheres[j]];
+                  }
+                  
+                  // Add connections
+                  for (let j = 0; j < Math.min(numConnections, availableSpheres.length); j++) {
+                    spheres[i].connections.push(availableSpheres[j]);
                   }
                 }
+              } catch (error) {
+                console.error("Error updating connections:", error);
               }
             }
             
             p.draw = function() {
+              // Detect potential freezes and reset if needed
+              if (p.frameCount === lastFrameCount) {
+                // Frame hasn't advanced, might be frozen
+                resetVisualization();
+                lastFrameCount = p.frameCount;
+                return;
+              }
+              lastFrameCount = p.frameCount;
+              
               try {
                 p.background(240, 245, 250, 20); // Slightly transparent background for trails
   
                 // Make sure we always have enough spheres
-                if (spheres.length < 15) {
+                let spheresAdded = false;
+                while (spheres.length < MIN_SPHERES) {
                   createSphere();
-                  refreshConnections(); // Update connections when adding spheres
-                }     
+                  spheresAdded = true;
+                }
+                
+                if (spheresAdded) {
+                  updateConnections();
+                }
                 
                 // Draw connections first (behind spheres)
                 for (let i = 0; i < spheres.length; i++) {
                   const sphere = spheres[i];
                   
-                  for (const connIndex of sphere.connections) {
-                    // Check if the connection index is valid
+                  for (let j = 0; j < sphere.connections.length; j++) {
+                    const connIndex = sphere.connections[j];
+                    
+                    // Safety check for valid connection index
                     if (connIndex >= 0 && connIndex < spheres.length) {
                       const otherSphere = spheres[connIndex];
                       
@@ -183,73 +211,69 @@
                   drawSphere(spheres[i]);
                 }
                 
-                // Occasionally add new spheres and remove old ones
+                // Occasionally add new spheres
                 if (p.frameCount % 60 === 0 && spheres.length < 40) {
                   createSphere();
                   
-                  // Periodically refresh connections
+                  // Periodically refresh all connections
                   if (p.frameCount % 180 === 0) {
-                    refreshConnections();
+                    updateConnections();
                   }
                 }
                 
-                // Remove spheres that are too old
-                const oldLength = spheres.length;
-                if (spheres.length > 15) {
+                // Handle old spheres
+                let spheresRemoved = false;
+                if (spheres.length > MIN_SPHERES) {
+                  const oldLength = spheres.length;
                   spheres = spheres.filter(s => s.age < s.lifespan);
-                  
-                  // If spheres were removed, refresh connections
-                  if (oldLength !== spheres.length) {
-                    refreshConnections();
-                  }
+                  spheresRemoved = (oldLength !== spheres.length);
                 }
                 else { 
                   // Refresh the oldest spheres instead of removing them
                   spheres.forEach(s => {
                     if (s.age > s.lifespan) {
-                      s.age = s.lifespan / 2;
+                      s.age = 0;
                       s.pulseRate = p.random(0.02, 0.04);
-                      s.speedX = p.random(-0.7, 0.7);
-                      s.speedY = p.random(-0.7, 0.7);
+                      s.color = getRandomColor();
+                      s.x = p.constrain(s.x + p.random(-50, 50), 0, p.width);
+                      s.y = p.constrain(s.y + p.random(-50, 50), 0, p.height);
                     }
                   });
                 }
                 
-                // Toggle empathy mode effect
-                if (isEmpathyMode && p.frameCount % 3 === 0) {
-                  spheres.forEach(sphere => {
-                    // Increase pulse rate and add slight movement
-                    sphere.pulseRate = p.constrain(sphere.pulseRate * 1.001, 0.02, 0.08);
-                    
-                    // Add subtle directional change
-                    sphere.speedX += p.random(-0.02, 0.02);
-                    sphere.speedY += p.random(-0.02, 0.02);
-                  });
+                if (spheresRemoved) {
+                  updateConnections();
                 }
+                
               } catch (error) {
                 console.error("Error in draw:", error);
-                // Reset if we encounter an error
-                if (spheres.length > 0) {
-                  spheres = [];
-                  for (let i = 0; i < NUM_SPHERES; i++) {
-                    createSphere();
-                  }
-                  refreshConnections();
-                }
+                resetVisualization();
               }
             };
             
-            function createSphere() {
-              // Decide if this will be a cool or warm color
-              const palette = p.random() < 0.6 ? coolColors : warmColors; // Slightly favor cool colors
+            function resetVisualization() {
+              console.log("Resetting visualization");
+              spheres = [];
+              for (let i = 0; i < NUM_SPHERES; i++) {
+                createSphere();
+              }
+              updateConnections();
+            }
+            
+            function getRandomColor() {
+              const palette = p.random() < 0.6 ? coolColors : warmColors;
               const baseColor = p.random(palette);
               
-              // Add slight variation to the color
-              const color = [
+              return [
                 baseColor[0] + p.random(-20, 20),
                 baseColor[1] + p.random(-20, 20),
                 baseColor[2] + p.random(-20, 20)
               ];
+            }
+            
+            function createSphere() {
+              // Add slight variation to the color
+              const color = getRandomColor();
               
               spheres.push({
                 x: p.random(p.width),
@@ -295,7 +319,7 @@
                 sphere.speedY += p.random(-0.2, 0.2);
                 
                 // Limit maximum speed
-                const maxSpeed = 1.2; // Slightly faster than before
+                const maxSpeed = 1.0;
                 const currentSpeed = p.sqrt(sphere.speedX * sphere.speedX + sphere.speedY * sphere.speedY);
                 if (currentSpeed > maxSpeed) {
                   sphere.speedX = (sphere.speedX / currentSpeed) * maxSpeed;
@@ -310,7 +334,7 @@
             function drawSphere(sphere) {
               // Calculate pulse effect (size oscillation)
               const pulseEffect = p.sin(p.frameCount * sphere.pulseRate + sphere.pulsePhase);
-              const displaySize = sphere.size * (1 + pulseEffect * 0.15); // Increased pulse effect
+              const displaySize = sphere.size * (1 + pulseEffect * 0.1);
               
               // Calculate alpha based on age (fade in and out)
               let alpha = 255;
@@ -357,40 +381,32 @@
             
             p.mouseMoved = function() {
               try {
-                // Find the closest sphere
-                let closestDist = Infinity;
-                let closestIndex = -1;
+                // Find spheres near the mouse
+                let interacted = false;
                 
                 for (let i = 0; i < spheres.length; i++) {
                   const d = p.dist(p.mouseX, p.mouseY, spheres[i].x, spheres[i].y);
-                  if (d < closestDist) {
-                    closestDist = d;
-                    closestIndex = i;
+                  
+                  // Larger interaction radius
+                  if (d < 200) {
+                    const sphere = spheres[i];
+                    
+                    // Strength of effect based on distance
+                    const strength = p.map(d, 0, 200, 0.15, 0.01);
+                    
+                    // Create gentle attraction
+                    const angle = p.atan2(p.mouseY - sphere.y, p.mouseX - sphere.x);
+                    sphere.speedX += p.cos(angle) * strength;
+                    sphere.speedY += p.sin(angle) * strength;
+                    
+                    // For emotional effect, make nearby spheres pulse stronger
+                    sphere.pulseRate *= 1.01;
+                    
+                    interacted = true;
                   }
                 }
                 
-                // If mouse is close to a sphere, have it gently move toward mouse
-                if (closestDist < 150 && closestIndex >= 0) { // Increased interaction distance
-                  const sphere = spheres[closestIndex];
-                  
-                  // Create gentle attraction
-                  const angle = p.atan2(p.mouseY - sphere.y, p.mouseX - sphere.x);
-                  sphere.speedX += p.cos(angle) * 0.1; // Stronger attraction
-                  sphere.speedY += p.sin(angle) * 0.1;
-                  
-                  // For emotional effect, make nearby spheres pulse stronger
-                  sphere.pulseRate *= 1.05;
-                  
-                  // Also affect nearby spheres
-                  for (let i = 0; i < spheres.length; i++) {
-                    if (i !== closestIndex) {
-                      const d = p.dist(sphere.x, sphere.y, spheres[i].x, spheres[i].y);
-                      if (d < 100) {
-                        spheres[i].pulseRate *= 1.02;
-                      }
-                    }
-                  }
-                  
+                if (interacted) {
                   return false; // Prevent default
                 }
               } catch (error) {
@@ -398,28 +414,44 @@
               }
             };
             
-            // Add mousePressed like Claude's visualization
             p.mousePressed = function() {
+              // Add interactivity when clicking
               if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
-                isEmpathyMode = !isEmpathyMode;
-                
-                // Create a ripple effect from the click
+                // Create a ripple effect
                 for (let i = 0; i < spheres.length; i++) {
                   const d = p.dist(p.mouseX, p.mouseY, spheres[i].x, spheres[i].y);
-                  const maxDist = 300;
-                  
-                  if (d < maxDist) {
-                    // Add momentum away from click
+                  if (d < 300) {
+                    // Push spheres slightly away from click
                     const angle = p.atan2(spheres[i].y - p.mouseY, spheres[i].x - p.mouseX);
-                    const force = p.map(d, 0, maxDist, 1, 0) * 2;
+                    const force = p.map(d, 0, 300, 3, 0);
                     
                     spheres[i].speedX += p.cos(angle) * force;
                     spheres[i].speedY += p.sin(angle) * force;
-                    
-                    // Increase pulse rate based on distance
-                    spheres[i].pulseRate *= 1 + (p.map(d, 0, maxDist, 0.2, 0) * (isEmpathyMode ? 1 : -0.5));
+                    spheres[i].pulseRate *= 1.1;
                   }
                 }
+                
+                // Also create a new sphere at mouse position
+                const color = getRandomColor();
+                spheres.push({
+                  x: p.mouseX,
+                  y: p.mouseY,
+                  size: p.random(20, 70),
+                  color: color,
+                  speedX: p.random(-1, 1),
+                  speedY: p.random(-1, 1),
+                  connections: [],
+                  pulseRate: p.random(0.03, 0.06),
+                  pulsePhase: p.random(p.TWO_PI),
+                  age: 0,
+                  lifespan: p.random(300, 900),
+                  adaptDirection: p.random(p.TWO_PI),
+                  adaptSpeed: p.random(0.001, 0.005),
+                  adaptRadius: p.random(30, 80)
+                });
+                
+                // Update connections with the new sphere
+                updateConnections();
                 
                 return false;
               }
