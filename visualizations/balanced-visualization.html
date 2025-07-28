@@ -126,6 +126,11 @@
             
             p.draw = function() {
               p.background(240, 245, 250, 20); // Slightly transparent background for trails
+
+              // Make sure we always have enough spheres
+                if (spheres.length < 15) {
+                    createSphere();
+              }     
               
               // Draw connections first (behind spheres)
               for (let i = 0; i < spheres.length; i++) {
@@ -166,7 +171,17 @@
               }
               
               // Remove spheres that are too old
-              spheres = spheres.filter(s => s.age < s.lifespan);
+              if (spheres.length > 15) {
+                spheres = spheres.filter(s => s.age < s.lifespan);
+              }
+              else { 
+                // Refresh the oldest spheres instead of removing them (NEW LINE)
+                spheres.forEach(s => {
+                    if (s.age > s.lifespan) { // (NEW LINE)
+                      s.age = s.lifespan / 2; // (NEW LINE)
+                    }
+                  });
+                }         
             };
             
             function createSphere() {
