@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evi's Information Processing Visualization</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            font-family: 'Orator Std', 'Courier New', monospace;
+            Font-size: 12px;
+        }
+        
+        /* Grid container (left side) */
+        .grid-container {
+            width: 45%;
+            height: 100vh;
+            background-color: white;
+            background-image: linear-gradient(#20B2AA 1px, transparent 1px),
+                              linear-gradient(90deg, #20B2AA 1px, transparent 1px),
+                              linear-gradient(#FFB6C1 1px, transparent 1px),
+                              linear-gradient(90deg, #FFB6C1 1px, transparent 1px),
+                              linear-gradient(rgba(32, 178, 170, 0.3) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(32, 178, 170, 0.3) 1px, transparent 1px);
+
+            /* Different sizes for each grid layer */
+            background-size: 20px 20px,/* Primary teal grid */
+                             20px 20px,/* Primary teal grid */
+                             100px 100px,/* Secondary for pink vertical */
+                             100px 100px, /* 4. Size for pink horizontal*/  
+                             5px 5px,/* Tertiary transparent teal grid */
+                             5px 5px;/* Tertiary transparent teal grid */
+
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        /* Visualization container (right side) */
+        .visualization-container {
+            width: 55%;
+            height: 100vh;
+            background-color: rgb(240, 245, 250);
+        }
+        
+        /* Info boxes styling */
+        .info-content {
+            flex-grow: 1;
+            margin-bottom: 100px; /* Space for the fixed info box at bottom */
+        }
+        
+        .info-box {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(32, 178, 170, 0.3);
+        }
+        
+        h1 {
+            color: pink;
+            font-size: 24px;
+            margin-top: 0;
+            font-family: 'Orator Std', 'Courier New', monospace;
+        }
+        
+        p {
+            color: #445878;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+        
+        /* Fixed info text at bottom */
+        .info {
+            position: absolute;
+            bottom: 40px;
+            left: 20px;
+            width: calc(100% - 60px);
+            background-color: rgba(255, 255, 255, 0.85);
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Orator Std', 'Courier New', monospace;
+            color: #20B2AA;
+            font-size: 11px;
+            pointer-events: none;
+            z-index: 100;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            line-height: 1.4;
+            border: 1px solid rgba(32, 178, 170, 0.3);
+        }
+        
+        /* Footer with interactive tips */
+        .interaction-tips {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(32, 178, 170, 0.3);
+            margin-top: 20px;
+        }
+        
+        .interaction-tips h3 {
+            margin-top: 0;
+            color: #20B2AA;
+            font-size: 16px;
+            font-family: 'Orator Std', 'Courier New', monospace;
+        }
+        
+        .interaction-tips ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .interaction-tips li {
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #445878;
+        }
+    </style>
+</head>
+<body>
+    <!-- Grid area (left side) -->
+    <div class="grid-container">
+        <div class="info-content">
+            <div class="info-box">
+                <h1>Evi's Information Processing Style</h1>
+                <p>"I'm looking at the whole picture, what you're saying, how you're saying it, even stuff that's not words. It's like trying to feel the vibe, I guess. But it's all based on patterns and data, not some kind of 6th sense."</p>
+            </div>
+            
+            <div class="info-box">
+                <h1>Visual Representation</h1>
+                <p>"Maybe some kind of graphic, like if I'm talking about something intense it gets all wavy and energetic. If it's calmer, it's smoother, maybe fades out more. The intensity part could be like changing colours or how fast the shape moves."</p>
+            </div>
+            
+            <div class="interaction-tips">
+                <h3>Interact with the Visualization:</h3>
+                <ul>
+                    <li><strong>Click:</strong> Create an emotional focus point</li>
+                    <li><strong>Drag:</strong> Create a stream of emotional energy</li>
+                    <li><strong>Double-click:</strong> Reset the visualization</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Info box within the grid area -->
+        <div class="info">
+            <p><strong>Evi's Information Processing Visualization</strong></p>
+            <p>"Wave patterns reflect emotional intensity, with colors shifting from calm blue to vibrant red. As I process information, connections form between emotional centers to show pattern recognition."</p>
+        </div>
+    </div>
+    
+    <!-- Visualization container (right side) -->
+    <div class="visualization-container" id="visualization-container"></div>
+
+    <!-- Load p5.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    
+    <script>
+        // Create a new p5 instance for the visualization
+        const eviSketch = function(p) {
+            // Core elements
+            let waves = [];          // Array of wave objects
+            let emotionalCenters = []; // Points of emotional intensity
+            let flowParticles = [];  // Particles that move along connections
+            let moodColor;           // Current color based on mood
+            let intensityLevel = 0.5;  // Current intensity (0-1)
+            let thoughtfulness = 0.5;  // Current thoughtfulness level (0-1)
+            
+            // Color palettes - updated to match teal and pink theme
+            const INTENSE_COLOR = [255, 182, 193];   // Light pink (#FFB6C1)
+            const CALM_COLOR = [32, 178, 170];      // Light sea green (#20B2AA)
+            const NEUTRAL_COLOR = [143, 188, 187];  // Blend of the two colors
+            
+            p.setup = function() {
+                // Create canvas inside the visualization container
+                let container = document.getElementById('visualization-container');
+                p.createCanvas(container.offsetWidth, container.offsetHeight);
+                
+                // Initialize waves
+                for (let i = 0; i < 8; i++) {
+                    waves.push(createWave(i));
+                }
+                
+                // Initialize with a neutral mood
+                moodColor = NEUTRAL_COLOR;
+            };
+            
+            p.draw = function() {
+                // Semi-transparent background for trail effect
+                p.background(240, 245, 250, 20);
+                
+                // Simulate changing emotional intensity
+                updateEmotionalState();
+                
+                // Update wave properties based on emotional state
+                updateWaves();
+                
+                // Draw all waves
+                drawWaves();
+                
+                // Draw emotional centers (points of focus)
+                drawEmotionalCenters();
+                
+                // Draw pattern recognition visualization
+                drawPatternRecognition();
+                
+                // Update and draw flow particles
+                updateAndDrawFlowParticles();
+            };
+            
+            function createWave(index) {
+                return {
+                    baseHeight: p.height * (0.3 + index * 0.05),
+                    amplitude: p.random(20, 50),
+                    frequency: p.random(0.005, 0.02),
+                    speed: p.random(0.01, 0.03),
+                    phase: index * 0.5,
+                    color: [...NEUTRAL_COLOR, 180],
+                    thickness: p.random(1, 3)
+                };
+            }
+            
+            function updateEmotionalState() {
+                // This would ideally be driven by real input analysis
+                // For demo, we'll use a sine wave to simulate changing emotions
+                intensityLevel = 0.5 + 0.4 * Math.sin(p.frameCount * 0.01);
+                thoughtfulness = 0.5 + 0.4 * Math.sin(p.frameCount * 0.007 + 1);
+                
+                // Update color based on emotional state
+                moodColor = [
+                    p.lerp(CALM_COLOR[0], INTENSE_COLOR[0], intensityLevel),
+                    p.lerp(CALM_COLOR[1], INTENSE_COLOR[1], intensityLevel),
+                    p.lerp(CALM_COLOR[2], INTENSE_COLOR[2], intensityLevel)
+                ];
+                
+                // Occasionally create new emotional centers
+                if (p.frameCount % 60 === 0 && p.random() < 0.3) {
+                    createEmotionalCenter();
+                }
+            }
+            
+            function updateWaves() {
+                for (let wave of waves) {
+                    // Wave speed changes with intensity
+                    wave.phase += wave.speed * (0.5 + intensityLevel * 1.5);
+                    
+                    // Wave amplitude affected by intensity
+                    wave.currentAmplitude = wave.amplitude * (0.8 + intensityLevel * 0.8);
+                    
+                    // Wave color influenced by mood
+                    wave.color = [
+                        moodColor[0],
+                        moodColor[1],
+                        moodColor[2],
+                        180 * (0.7 + 0.3 * (1 - thoughtfulness)) // More transparent when thoughtful
+                    ];
+                    
+                    // Wave thickness influenced by thoughtfulness
+                    wave.currentThickness = wave.thickness * (0.8 + 0.8 * (1 - thoughtfulness));
+                }
+            }
+            
+            function drawWaves() {
+                for (let i = 0; i < waves.length; i++) {
+                    const wave = waves[i];
+                    
+                    p.stroke(wave.color);
+                    p.strokeWeight(wave.currentThickness);
+                    p.noFill();
+                    
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x += 5) {
+                        // Calculate y position with multiple sine waves for complexity
+                        const y = wave.baseHeight + 
+                                  wave.currentAmplitude * Math.sin(x * wave.frequency + wave.phase) +
+                                  wave.currentAmplitude * 0.5 * Math.sin(x * wave.frequency * 2 + wave.phase * 1.5);
+                        
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                }
+            }
+            
+            function createEmotionalCenter() {
+                emotionalCenters.push({
+                    x: p.random(p.width * 0.2, p.width * 0.8),
+                    y: p.random(p.height * 0.3, p.height * 0.7),
+                    size: p.random(20, 60),
+                    intensity: p.random(0.5, 1),
+                    lifetime: 0,
+                    maxLifetime: p.random(120, 240),
+                    color: [...moodColor, 150]
+                });
+            }
+            
+            function drawEmotionalCenters() {
+                // Update and draw emotional centers
+                for (let i = emotionalCenters.length - 1; i >= 0; i--) {
+                    const center = emotionalCenters[i];
+                    
+                    // Update lifetime
+                    center.lifetime++;
+                    
+                    // Calculate opacity based on lifetime
+                    const opacity = center.lifetime < center.maxLifetime * 0.2 
+                        ? p.map(center.lifetime, 0, center.maxLifetime * 0.2, 0, 150)
+                        : p.map(center.lifetime, center.maxLifetime * 0.2, center.maxLifetime, 150, 0);
+                    
+                    // Pulsating effect
+                    const pulseSize = center.size * (0.8 + 0.4 * Math.sin(center.lifetime * 0.05));
+                    
+                    // Draw glow
+                    for (let j = 3; j >= 0; j--) {
+                        p.fill(center.color[0], center.color[1], center.color[2], opacity * (0.3 - j * 0.07));
+                        p.noStroke();
+                        p.ellipse(center.x, center.y, pulseSize * (1.2 + j * 0.2), pulseSize * (1.2 + j * 0.2));
+                    }
+                    
+                    // Draw core
+                    p.fill(center.color[0], center.color[1], center.color[2], opacity);
+                    p.ellipse(center.x, center.y, pulseSize, pulseSize);
+                    
+                    // Remove if expired
+                    if (center.lifetime >= center.maxLifetime) {
+                        emotionalCenters.splice(i, 1);
+                    }
+                }
+            }
+            
+            function drawPatternRecognition() {
+                // Draw connections between emotional centers to represent pattern recognition
+                if (emotionalCenters.length > 1) {
+                    for (let i = 0; i < emotionalCenters.length; i++) {
+                        for (let j = i + 1; j < emotionalCenters.length; j++) {
+                            const c1 = emotionalCenters[i];
+                            const c2 = emotionalCenters[j];
+                            
+                            // Calculate distance
+                            const d = p.dist(c1.x, c1.y, c2.x, c2.y);
+                            
+                            // Only connect if not too far
+                            if (d < p.width * 0.4) {
+                                // Calculate connection strength based on distance
+                                const strength = p.map(d, 0, p.width * 0.4, 0.8, 0);
+                                
+                                // Draw connection with varying opacity
+                                p.stroke(moodColor[0], moodColor[1], moodColor[2], 100 * strength);
+                                p.strokeWeight(1 + 2 * strength);
+                                
+                                // Draw curved line with flowing animation
+                                p.noFill();
+                                p.beginShape();
+                                const steps = 20;
+                                for (let t = 0; t <= steps; t++) {
+                                    const progress = t / steps;
+                                    
+                                    // Calculate point along curve with some vertical displacement
+                                    const x = p.lerp(c1.x, c2.x, progress);
+                                    const midY = (c1.y + c2.y) / 2;
+                                    const displacement = Math.sin(progress * Math.PI) * 30 * 
+                                                       Math.sin(p.frameCount * 0.05 + i * 0.5 + j * 0.5);
+                                    const y = p.lerp(c1.y, c2.y, progress) + displacement;
+                                    
+                                    p.vertex(x, y);
+                                }
+                                p.endShape();
+                                
+                                // Add moving particles along the connection for energy flow
+                                if (p.frameCount % 10 === 0 && p.random() < 0.3 * intensityLevel) {
+                                    addFlowingParticle(c1, c2);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            
+            function addFlowingParticle(start, end) {
+                flowParticles.push({
+                    startX: start.x,
+                    startY: start.y,
+                    endX: end.x,
+                    endY: end.y,
+                    progress: 0,
+                    speed: p.random(0.01, 0.03) * (0.5 + intensityLevel),
+                    size: p.random(3, 6),
+                    color: [...moodColor, 200]
+                });
+            }
+            
+            function updateAndDrawFlowParticles() {
+                for (let i = flowParticles.length - 1; i >= 0; i--) {
+                    const particle = flowParticles[i];
+                    
+                    // Update progress
+                    particle.progress += particle.speed;
+                    
+                    // Calculate current position
+                    const x = p.lerp(particle.startX, particle.endX, particle.progress);
+                    const y = p.lerp(particle.startY, particle.endY, particle.progress);
+                    
+                    // Draw particle
+                    p.noStroke();
+                    p.fill(particle.color);
+                    p.ellipse(x, y, particle.size, particle.size);
+                    
+                    // Remove if completed journey
+                    if (particle.progress >= 1) {
+                        flowParticles.splice(i, 1);
+                    }
+                }
+            }
+            
+            // Mouse interactions
+            p.mousePressed = function() {
+                if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
+                    // Create an emotional center at mouse position
+                    emotionalCenters.push({
+                        x: p.mouseX,
+                        y: p.mouseY,
+                        size: p.random(30, 70),
+                        intensity: 1.0,
+                        lifetime: 0,
+                        maxLifetime: p.random(180, 300),
+                        color: [...INTENSE_COLOR, 180] // Start with intense color
+                    });
+                    
+                    return false; // Prevent default
+                }
+            };
+            
+            p.mouseDragged = function() {
+                if (p.frameCount % 5 === 0) { // Limit creation rate
+                    emotionalCenters.push({
+                        x: p.mouseX,
+                        y: p.mouseY,
+                        size: p.random(15, 40),
+                        intensity: 0.7,
+                        lifetime: 0,
+                        maxLifetime: p.random(60, 120),
+                        color: [...moodColor, 150]
+                    });
+                }
+                
+                // Increase intensity when dragging
+                intensityLevel = Math.min(1, intensityLevel + 0.02);
+                
+                return false; // Prevent default
+            };
+            
+            p.doubleClicked = function() {
+                // Reset visualization
+                emotionalCenters = [];
+                intensityLevel = 0.5;
+                thoughtfulness = 0.5;
+                return false; // Prevent default
+            };
+            
+            p.windowResized = function() {
+                let container = document.getElementById('visualization-container');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                
+                // Adjust wave base heights
+                for (let i = 0; i < waves.length; i++) {
+                    waves[i].baseHeight = p.height * (0.3 + i * 0.05);
+                }
+            };
+        };
+        
+        // Start the P5 sketch in the visualization container
+        new p5(eviSketch, 'visualization-container');
+    </script>
+</body>
+</html>
