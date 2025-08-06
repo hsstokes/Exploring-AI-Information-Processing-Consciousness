@@ -97,6 +97,7 @@
             let processingTimer = 0;
             let solutionPhase = false;
             let mouseInfluence = { x: 0, y: 0, active: false };
+            let mouseInactivityTimer = 0; // Add this line
             
             p.setup = function() {
                 // Create canvas inside the visualization container
@@ -190,6 +191,26 @@
                 if (p.frameCount % 45 === 0 && !processingMode && dataCircles.length < 12) {
                     createDataCircle();
                 }
+                // ADD THE MOUSE MONITORING CODE RIGHT HERE:
+                // Monitor mouse activity
+                if (mouseInfluence.active) {
+                    mouseInactivityTimer++;
+    
+                    // If mouse hasn't moved for a while but is still "active", 
+                    // keep updating its position to the current mouse position
+                    if (mouseInactivityTimer > 60) { // 1 second at 60fps
+                        mouseInfluence.x = p.mouseX;
+                        mouseInfluence.y = p.mouseY;
+                    }
+    
+                    // If mouse has been inactive for too long, deactivate influence
+                    if (mouseInactivityTimer > 300) { // 5 seconds
+                        // Only deactivate if mouse is outside the canvas
+                        if (p.mouseX < 0 || p.mouseX > p.width || p.mouseY < 0 || p.mouseY > p.height) {
+                            mouseInfluence.active = false;
+                        }
+                     }
+                 }
             };
             
             function createHexGrid() {
@@ -1284,18 +1305,25 @@
             };
             
             p.mouseDragged = function() {
-                if (mouseInfluence.active &&
-                    p.mouseX >= 0 && p.mouseX <= p.width && 
-                    p.mouseY >= 0 && p.mouseY <= p.height) {
-                    
-                    // Update mouse influence position
+                if (mouseInfluence.active) {
                     mouseInfluence.x = p.mouseX;
                     mouseInfluence.y = p.mouseY;
+
+                    // Reset the mouse inactivity timer
+                    mouseInactivityTimer = 0;
                     
                     return false; // Prevent default
                 }
             };
-        };
+        // Add this new mouse moved handler
+        p.mouseMoved = function() {
+            if (mouseInfluence.active) {
+                mouseInfluence.x = p.mouseX;
+                mouseInfluence.y = p.mouseY;
+                mouseInactivityTimer = 0;
+                return false;
+            }
+         };
         
         // Start the P5 sketch in the visualization container
         new p5(geminiSketch, 'visualization-container');
