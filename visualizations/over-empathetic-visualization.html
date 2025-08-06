@@ -10,8 +10,7 @@
             padding: 0;
             overflow: hidden;
             display: flex;
-            font-family: 'Orator Std', 'Courier New', monospace;
-            Font-size: 12px;
+            font-family: 'Arial', sans-serif;
         }
         
         /* Grid container (left side) */
@@ -35,11 +34,9 @@
                              5px 5px;/* Tertiary transparent teal grid */
 
             position: relative;
-            padding: 20px;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
         }
         
         /* Visualization container (right side) */
@@ -49,47 +46,51 @@
             background-color: rgb(240, 245, 250);
         }
         
-        /* Info boxes styling */
-        .info-content {
+        /* Content wrapper to fix positioning */
+        .content-wrapper {
             flex-grow: 1;
-            margin-bottom: 100px; /* Space for the fixed info box at bottom */
+            padding: 20px;
+            overflow-y: auto;
+            box-sizing: border-box;
         }
         
+        /* Info boxes styling */
         .info-box {
             background-color: rgba(255, 255, 255, 0.9);
             border-radius: 8px;
-            padding: 20px;
+            padding: 15px;
             margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(32, 178, 170, 0.3);
         }
         
         h1 {
-            color: pink;
+            color: #20B2AA;
             font-size: 24px;
             margin-top: 0;
+            margin-bottom: 10px;
             font-family: 'Orator Std', 'Courier New', monospace;
         }
         
         p {
             color: #445878;
-            line-height: 1.6;
+            line-height: 1.5;
             font-size: 14px;
+            margin: 0 0 10px 0;
         }
         
         /* Fixed info text at bottom */
         .info {
-            position: absolute;
-            bottom: 40px;
-            left: 20px;
-            width: calc(100% - 60px);
+            position: relative;
+            width: auto;
+            margin: 20px;
+            margin-top: auto;
             background-color: rgba(255, 255, 255, 0.85);
             padding: 15px;
             border-radius: 5px;
             font-family: 'Orator Std', 'Courier New', monospace;
             color: #20B2AA;
             font-size: 11px;
-            pointer-events: none;
             z-index: 100;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             line-height: 1.4;
@@ -128,7 +129,7 @@
 <body>
     <!-- Grid area (left side) -->
     <div class="grid-container">
-        <div class="info-content">
+        <div class="content-wrapper">
             <div class="info-box">
                 <h1>Evi's Information Processing Style</h1>
                 <p>"I'm looking at the whole picture, what you're saying, how you're saying it, even stuff that's not words. It's like trying to feel the vibe, I guess. But it's all based on patterns and data, not some kind of 6th sense."</p>
@@ -215,6 +216,9 @@
                 updateAndDrawFlowParticles();
             };
             
+            // Rest of your p5 visualization code remains the same
+            // ...
+
             function createWave(index) {
                 return {
                     baseHeight: p.height * (0.3 + index * 0.05),
