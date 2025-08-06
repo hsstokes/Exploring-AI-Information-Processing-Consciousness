@@ -129,13 +129,11 @@
             p.draw = function() {
                 // Semi-transparent background for trail effect
                 p.background(COOL_GRAY[0], COOL_GRAY[1], COOL_GRAY[2], 25);
-                
-                // Update mouse influence position with smoothing
-                if (mouseInfluence.active) {
-                    mouseInfluence.x = p.lerp(mouseInfluence.x, p.mouseX, 0.1);
-                    mouseInfluence.y = p.lerp(mouseInfluence.y, p.mouseY, 0.1);
-                }
-                
+
+                // WITH THIS:
+                // Mouse influence position is now updated directly in mouse events
+                // No smoothing needed here as it causes lag
+    
                 // Draw grid background effects (moving subtle waves)
                 drawGridBackground();
                 
@@ -1286,7 +1284,10 @@
             };
             
             p.mouseDragged = function() {
-                if (mouseInfluence.active) {
+                if (mouseInfluence.active &&
+                    p.mouseX >= 0 && p.mouseX <= p.width && 
+                    p.mouseY >= 0 && p.mouseY <= p.height) {
+                    
                     // Update mouse influence position
                     mouseInfluence.x = p.mouseX;
                     mouseInfluence.y = p.mouseY;
