@@ -1226,11 +1226,11 @@
                 processingTimer = 0;
                 
                 // Clear most pathways
-                pathways = pathways.filter(path => p.random() < 0.2); // Keep a few
+                pathways = pathways.filter(path => p.random() < 0.5); // Keep a few
                 
                 // Deactivate all hexagons gradually
                 for (let hex of hexGrid) {
-                    if (p.random() < 0.7) { // Keep some active for visual interest
+                    if (p.random() < 0.3) { // Keep some active for visual interest
                         hex.active = false;
                     }
                 }
