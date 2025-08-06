@@ -84,7 +84,6 @@
             let pathways = [];
             let particles = [];
             let emergedSolution = null;
-            let mouseInactivityTimer = 0; // Added variable for mouse inactivity
             
             // Central node representing core focus
             let centralNode;
@@ -98,6 +97,7 @@
             let processingTimer = 0;
             let solutionPhase = false;
             let mouseInfluence = { x: 0, y: 0, active: false };
+            let mouseInactivityTimer = 0;
             
             p.setup = function() {
                 // Create canvas inside the visualization container
@@ -130,7 +130,7 @@
             p.draw = function() {
                 // Semi-transparent background for trail effect
                 p.background(COOL_GRAY[0], COOL_GRAY[1], COOL_GRAY[2], 25);
-    
+                
                 // Draw grid background effects (moving subtle waves)
                 drawGridBackground();
                 
@@ -209,10 +209,7 @@
                 }
             };
             
-            // Rest of your functions...
-            // [all your existing functions remain unchanged]
-            
-            // Define mouse event handlers within the p5 instance
+            // Mouse event handlers - these belong inside the p5 sketch!
             p.mousePressed = function() {
                 if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
                     // When mouse is pressed inside visualization area
@@ -239,7 +236,10 @@
                 if (mouseInfluence.active) {
                     mouseInfluence.x = p.mouseX;
                     mouseInfluence.y = p.mouseY;
-                    mouseInactivityTimer = 0; // Reset timer when mouse is dragged
+                    
+                    // Reset the mouse inactivity timer
+                    mouseInactivityTimer = 0;
+                    
                     return false; // Prevent default
                 }
             };
@@ -248,8 +248,28 @@
                 if (mouseInfluence.active) {
                     mouseInfluence.x = p.mouseX;
                     mouseInfluence.y = p.mouseY;
-                    mouseInactivityTimer = 0; // Reset timer when mouse is moved
+                    mouseInactivityTimer = 0;
                     return false;
+                }
+            };
+            
+            p.windowResized = function() {
+                let container = document.getElementById('visualization-container');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                
+                // Update central node position
+                centralNode.x = p.width / 2;
+                centralNode.y = p.height / 2;
+                
+                // Recalculate hexagon positions relative to new center
+                for (let hex of hexGrid) {
+                    const angle = Math.atan2(hex.y - centralNode.y, hex.x - centralNode.x);
+                    const dist = p.dist(hex.x, hex.y, centralNode.x, centralNode.y);
+                    
+                    hex.angleFromCenter = angle;
+                    hex.distanceFromCenter = dist;
+                    hex.baseX = centralNode.x + Math.cos(angle) * dist;
+                    hex.baseY = centralNode.y + Math.sin(angle) * dist;
                 }
             };
             
@@ -622,82 +642,686 @@
                 }
             }
             
-            // Include all your other functions here...
-
             function drawDataCircles() {
-                // Implementation remains the same
+                for (let circle of dataCircles) {
+                    p.push();
+                    p.translate(circle.x, circle.y);
+                    p.rotate(circle.rotation);
+                    
+                    const displaySize = circle.size + circle.pulseAmount;
+                    
+                    // Draw outer glow
+                    for (let i = 3; i >= 0; i--) {
+                        const glowSize = displaySize * (1 + i * 0.15);
+                        const glowAlpha = Math.max(0, 50 - i * 15 - circle.mergeProgress * 50);
+                        p.fill(circle.color[0], circle.color[1], circle.color[2], glowAlpha);
+                        p.noStroke();
+                        p.ellipse(0, 0, glowSize, glowSize);
+                    }
+                    
+                    // Draw main circle
+                    p.fill(
+                        circle.color[0],
+                        circle.color[1],
+                        circle.color[2],
+                        Math.max(0, circle.color[3] - circle.mergeProgress * 180)
+                    );
+                    p.ellipse(0, 0, displaySize, displaySize);
+                    
+                    // Inner highlight
+                    p.fill(255, 255, 255, Math.max(0, 80 - circle.mergeProgress * 80));
+                    p.ellipse(-displaySize * 0.2, -displaySize * 0.2, displaySize * 0.4, displaySize * 0.4);
+                    
+                    // Optional: add a subtle pattern inside
+                    if (!circle.merging) {
+                        p.stroke(255, 255, 255, 30);
+                        p.strokeWeight(0.5);
+                        p.noFill();
+                        
+                        // Draw internal pattern
+                        for (let i = 0; i < 3; i++) {
+                            const patternSize = displaySize * (0.3 + i * 0.2);
+                            p.ellipse(0, 0, patternSize, patternSize);
+                        }
+                    }
+                    
+                    p.pop();
+                }
             }
             
             function createPathway() {
-                // Implementation remains the same
+                // Find active hexagons that can be starting points
+                const activeHexagons = hexGrid.filter(h => h.active);
+                
+                if (activeHexagons.length < 2) {
+                    // If not enough active hexagons, create a path from central node
+                    if (activeHexagons.length === 1) {
+                        createPathFromCentralNode(activeHexagons[0]);
+                    }
+                    return;
+                }
+                
+                // Choose random start and end points
+                const startHex = p.random(activeHexagons);
+                let endHex;
+                
+                // Prefer hexagons that are not too close but not too far
+                let validEndpoints = activeHexagons.filter(h => {
+                    const d = p.dist(startHex.x, startHex.y, h.x, h.y);
+                    return h !== startHex && d > 100 && d < 300;
+                });
+                
+                if (validEndpoints.length === 0) {
+                    // Fall back to any different hexagon
+                    validEndpoints = activeHexagons.filter(h => h !== startHex);
+                }
+                
+                if (validEndpoints.length === 0) return;
+                
+                endHex = p.random(validEndpoints);
+                
+                // Create path between them
+                const path = {
+                    start: { x: startHex.x, y: startHex.y },
+                    end: { x: endHex.x, y: endHex.y },
+                    startObject: startHex,
+                    endObject: endHex,
+                    controlPoint1: {
+                        x: (startHex.x + endHex.x) / 2 + p.random(-50, 50),
+                        y: (startHex.y + endHex.y) / 2 + p.random(-50, 50)
+                    },
+                    controlPoint2: {
+                        x: (startHex.x + endHex.x) / 2 + p.random(-50, 50),
+                        y: (startHex.y + endHex.y) / 2 + p.random(-50, 50)
+                    },
+                    progress: 0,
+                    maxProgress: 1,
+                    color: VIBRANT_TEAL,
+                    width: p.random(1.5, 3),
+                    lifetime: 0,
+                    maxLifetime: p.random(180, 300),
+                    particles: [],
+                    particleRate: p.random(0.2, 0.4),
+                    particleSpeed: p.random(0.01, 0.04)
+                };
+                
+                // Add variance to the control points based on distance
+                const dist = p.dist(path.start.x, path.start.y, path.end.x, path.end.y);
+                const variance = dist * 0.3;
+                path.controlPoint1.x += p.random(-variance, variance);
+                path.controlPoint1.y += p.random(-variance, variance);
+                path.controlPoint2.x += p.random(-variance, variance);
+                path.controlPoint2.y += p.random(-variance, variance);
+                
+                pathways.push(path);
             }
             
             function createPathFromCentralNode(targetHex) {
-                // Implementation remains the same
+                const path = {
+                    start: { x: centralNode.x, y: centralNode.y },
+                    end: { x: targetHex.x, y: targetHex.y },
+                    startObject: centralNode,
+                    endObject: targetHex,
+                    controlPoint1: {
+                        x: centralNode.x + p.random(-30, 30),
+                        y: centralNode.y + p.random(-30, 30)
+                    },
+                    controlPoint2: {
+                        x: targetHex.x + p.random(-30, 30),
+                        y: targetHex.y + p.random(-30, 30)
+                    },
+                    progress: 0,
+                    maxProgress: 1,
+                    color: VIBRANT_TEAL,
+                    width: p.random(1.5, 3),
+                    lifetime: 0,
+                    maxLifetime: p.random(180, 300),
+                    particles: [],
+                    particleRate: p.random(0.2, 0.4),
+                    particleSpeed: p.random(0.01, 0.04)
+                };
+                
+                pathways.push(path);
+                
+                // Add to central node's active connections
+                centralNode.activeConnections.push({
+                    target: targetHex,
+                    strength: 1
+                });
             }
             
             function updateAndDrawPathways() {
-                // Implementation remains the same
+                for (let i = pathways.length - 1; i >= 0; i--) {
+                    const path = pathways[i];
+                    
+                    // Update path properties
+                    path.lifetime++;
+                    
+                    // Update start and end positions if objects move
+                    if (path.startObject) {
+                        path.start.x = path.startObject.x;
+                        path.start.y = path.startObject.y;
+                    }
+                    
+                    if (path.endObject) {
+                        path.end.x = path.endObject.x;
+                        path.end.y = path.endObject.y;
+                    }
+                    
+                    // Progress the path drawing during processing mode
+                    if (processingMode && path.progress < path.maxProgress) {
+                        path.progress += 0.03;
+                    }
+                    
+                    // Calculate opacity based on lifetime
+                    let alpha;
+                    const fadeInDuration = 30;
+                    const fadeOutDuration = 60;
+                    
+                    if (path.lifetime < fadeInDuration) {
+                        alpha = p.map(path.lifetime, 0, fadeInDuration, 0, 255);
+                    } else if (path.lifetime > path.maxLifetime - fadeOutDuration) {
+                        alpha = p.map(path.lifetime, path.maxLifetime - fadeOutDuration, path.maxLifetime, 255, 0);
+                    } else {
+                        alpha = 255;
+                    }
+                    
+                    // Draw the bezier curve path with segments to create animated effect
+                    p.noFill();
+                    const segments = 30;
+                    
+                    for (let j = 1; j <= segments * path.progress; j++) {
+                        const t1 = (j - 1) / segments;
+                        const t2 = j / segments;
+                        
+                        // Get points along the bezier curve
+                        const x1 = p.bezierPoint(path.start.x, path.controlPoint1.x, path.controlPoint2.x, path.end.x, t1);
+                        const y1 = p.bezierPoint(path.start.y, path.controlPoint1.y, path.controlPoint2.y, path.end.y, t1);
+                        const x2 = p.bezierPoint(path.start.x, path.controlPoint1.x, path.controlPoint2.x, path.end.x, t2);
+                        const y2 = p.bezierPoint(path.start.y, path.controlPoint1.y, path.controlPoint2.y, path.end.y, t2);
+                        
+                        // Gradient effect along the path with pulsating width
+                        const segmentProgress = j / segments;
+                        const pulseEffect = 0.7 + 0.3 * p.sin(segmentProgress * p.PI + p.frameCount * 0.1);
+                        const segmentAlpha = alpha * pulseEffect;
+                        
+                        // Make the pathway glow
+                        for (let g = 2; g >= 0; g--) {
+                            const glowWidth = path.width * (1 + g * 0.5) * pulseEffect;
+                            const glowAlpha = segmentAlpha * (1 - g * 0.3);
+                            
+                            p.stroke(path.color[0], path.color[1], path.color[2], glowAlpha);
+                            p.strokeWeight(glowWidth);
+                            p.line(x1, y1, x2, y2);
+                        }
+                        
+                        // Occasionally create particles along the path
+                        if (processingMode && p.random() < path.particleRate && j % 3 === 0) {
+                            const particlePos = {
+                                x: x2,
+                                y: y2,
+                                progress: segmentProgress
+                            };
+                            
+                            createPathParticle(path, particlePos);
+                        }
+                    }
+                    
+                    // Remove paths that have completed their lifetime
+                    if (path.lifetime > path.maxLifetime) {
+                        // Remove from central node's connections if needed
+                        if (path.startObject === centralNode || path.endObject === centralNode) {
+                            centralNode.activeConnections = centralNode.activeConnections.filter(
+                                conn => conn.target !== path.startObject && conn.target !== path.endObject
+                            );
+                        }
+                        
+                        pathways.splice(i, 1);
+                    }
+                }
             }
             
             function createPathParticle(path, position) {
-                // Implementation remains the same
+                const particle = {
+                    x: position.x,
+                    y: position.y,
+                    size: p.random(2, 4),
+                    color: [...path.color, 200],
+                    speed: p.random(1, 3) * path.particleSpeed,
+                    direction: position.progress > 0.5 ? -1 : 1, // Move toward closest endpoint
+                    progress: position.progress,
+                    lifetime: 0,
+                    maxLifetime: p.random(30, 60),
+                    path: path
+                };
+                
+                particles.push(particle);
             }
             
             function createMergeParticles(x, y, color, count) {
-                // Implementation remains the same
+                for (let i = 0; i < count; i++) {
+                    const angle = p.random(p.TWO_PI);
+                    const speed = p.random(0.5, 2);
+                    
+                    particles.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        size: p.random(2, 6),
+                        color: [...color, 200],
+                        lifetime: 0,
+                        maxLifetime: p.random(20, 60),
+                        type: 'burst'
+                    });
+                }
             }
             
             function updateAndDrawParticles() {
-                // Implementation remains the same
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const particle = particles[i];
+                    
+                    // Update particle
+                    particle.lifetime++;
+                    
+                    if (particle.type === 'burst') {
+                        // Update burst particles
+                        particle.x += particle.vx;
+                        particle.y += particle.vy;
+                        particle.vx *= 0.95;
+                        particle.vy *= 0.95;
+                        particle.size *= 0.97;
+                    } else {
+                        // Update path particles
+                        const path = particle.path;
+                        
+                        // Move along the path
+                        particle.progress += particle.direction * particle.speed;
+                        
+                        // Constrain progress
+                        particle.progress = p.constrain(particle.progress, 0, 1);
+                        
+                        // Calculate position along the bezier path
+                        particle.x = p.bezierPoint(
+                            path.start.x, path.controlPoint1.x, path.controlPoint2.x, path.end.x, 
+                            particle.progress
+                        );
+                        particle.y = p.bezierPoint(
+                            path.start.y, path.controlPoint1.y, path.controlPoint2.y, path.end.y, 
+                            particle.progress
+                        );
+                    }
+                    
+                    // Calculate alpha based on lifetime
+                    const alpha = particle.lifetime < particle.maxLifetime * 0.2 
+                        ? p.map(particle.lifetime, 0, particle.maxLifetime * 0.2, 0, particle.color[3])
+                        : p.map(particle.lifetime, particle.maxLifetime * 0.2, particle.maxLifetime, particle.color[3], 0);
+                    
+                    // Draw particle
+                    p.noStroke();
+                    p.fill(particle.color[0], particle.color[1], particle.color[2], alpha);
+                    p.ellipse(particle.x, particle.y, particle.size, particle.size);
+                    
+                    // Remove if expired
+                    if (particle.lifetime >= particle.maxLifetime) {
+                        particles.splice(i, 1);
+                    }
+                }
             }
             
             function updateCentralNode() {
-                // Implementation remains the same
+                // Pulsating effect
+                centralNode.pulseAmount = 2 + p.sin(p.frameCount * 0.05) * 2;
+                centralNode.size = centralNode.baseSize + centralNode.pulseAmount;
+                
+                // Rotation
+                centralNode.rotation += centralNode.rotationSpeed;
+                
+                // During processing mode, make central node more active
+                if (processingMode) {
+                    centralNode.pulseAmount = 3 + p.sin(p.frameCount * 0.1) * 3;
+                    centralNode.rotationSpeed = 0.01;
+                } else {
+                    centralNode.rotationSpeed = 0.005;
+                }
             }
             
             function drawCentralNode() {
-                // Implementation remains the same
+                p.push();
+                p.translate(centralNode.x, centralNode.y);
+                p.rotate(centralNode.rotation);
+                
+                // Draw glow
+                for (let i = 4; i >= 0; i--) {
+                    const glowSize = centralNode.size * (1 + i * 0.15);
+                    const glowAlpha = 80 - i * 15;
+                    p.fill(centralNode.color[0], centralNode.color[1], centralNode.color[2], glowAlpha);
+                    p.noStroke();
+                    drawPolygon(0, 0, glowSize, 8); // Octagon for central node
+                }
+                
+                // Main shape
+                p.fill(centralNode.color[0], centralNode.color[1], centralNode.color[2], centralNode.alpha);
+                drawPolygon(0, 0, centralNode.size, 8);
+                
+                // Inner details
+                p.fill(255, 255, 255, 40);
+                drawPolygon(0, 0, centralNode.size * 0.7, 8);
+                
+                p.fill(centralNode.color[0], centralNode.color[1], centralNode.color[2], centralNode.alpha * 0.8);
+                drawPolygon(0, 0, centralNode.size * 0.5, 8);
+                
+                p.fill(255, 255, 255, 70);
+                drawPolygon(0, 0, centralNode.size * 0.3, 8);
+                
+                p.pop();
+                
+                // Draw connections to active hexagons
+                for (let conn of centralNode.activeConnections) {
+                    const target = conn.target;
+                    
+                    if (!target.active) continue;
+                    
+                    p.stroke(VIBRANT_TEAL[0], VIBRANT_TEAL[1], VIBRANT_TEAL[2], 80);
+                    p.strokeWeight(2);
+                    p.line(centralNode.x, centralNode.y, target.x, target.y);
+                }
             }
             
             function createSolution() {
-                // Implementation remains the same
+                // Find center point of active hexagons
+                const activeHexagons = hexGrid.filter(h => h.active);
+                
+                if (activeHexagons.length < 5) return; // Need enough active hexagons
+                
+                let centerX = 0, centerY = 0;
+                let totalWeight = 0;
+                
+                // Weighted center calculation giving more weight to hexagons closer to center
+                for (let hex of activeHexagons) {
+                    const distToCenter = p.dist(hex.x, hex.y, centralNode.x, centralNode.y);
+                    const weight = 1 / (0.1 + distToCenter * 0.01);
+                    centerX += hex.x * weight;
+                    centerY += hex.y * weight;
+                    totalWeight += weight;
+                }
+                
+                centerX /= totalWeight;
+                centerY /= totalWeight;
+                
+                // Create an emergent solution shape (crystal/star)
+                emergedSolution = {
+                    x: centerX,
+                    y: centerY,
+                    baseX: centerX,
+                    baseY: centerY,
+                    size: 0,
+                    targetSize: 120,
+                    points: p.floor(p.random(5, 9)), // 5-8 pointed star/crystal
+                    innerRadius: 0.4, // Ratio for inner points
+                    rotation: p.random(p.TWO_PI),
+                    rotationSpeed: 0.002,
+                    orbitSpeed: 0.01,
+                    orbitRadius: 5,
+                    orbitPhase: 0,
+                    color: VIBRANT_TEAL,
+                    alpha: 0,
+                    growthProgress: 0,
+                    particles: [],
+                    connections: [],
+                    rayEffects: []
+                };
+                
+                // Create connections to active hexagons
+                for (let hex of activeHexagons) {
+                    if (p.random() < 0.7) { // Connect to most but not all hexagons
+                        emergedSolution.connections.push({
+                            target: hex,
+                            strength: p.random(0.5, 1),
+                            phase: p.random(p.TWO_PI),
+                            pulseSpeed: p.random(0.03, 0.07)
+                        });
+                    }
+                }
+                
+                // Create ray effects
+                const numRays = p.floor(p.random(4, 8));
+                for (let i = 0; i < numRays; i++) {
+                    emergedSolution.rayEffects.push({
+                        angle: p.TWO_PI * i / numRays,
+                        length: p.random(100, 200),
+                        width: p.random(1, 3),
+                        phase: p.random(p.TWO_PI),
+                        speed: p.random(0.03, 0.07)
+                    });
+                }
             }
             
             function updateAndDrawSolution() {
-                // Implementation remains the same
+                if (!emergedSolution) return;
+                
+                // Update solution properties
+                emergedSolution.growthProgress = Math.min(1, emergedSolution.growthProgress + 0.008);
+                emergedSolution.size = p.lerp(0, emergedSolution.targetSize, emergedSolution.growthProgress);
+                emergedSolution.alpha = p.lerp(0, 220, emergedSolution.growthProgress);
+                emergedSolution.rotation += emergedSolution.rotationSpeed;
+                
+                // Orbital movement
+                emergedSolution.orbitPhase += emergedSolution.orbitSpeed;
+                emergedSolution.x = emergedSolution.baseX + Math.cos(emergedSolution.orbitPhase) * emergedSolution.orbitRadius;
+                emergedSolution.y = emergedSolution.baseY + Math.sin(emergedSolution.orbitPhase) * emergedSolution.orbitRadius;
+                
+                // First draw ray effects behind
+                drawSolutionRays();
+                
+                // Draw connections to hexagons
+                drawSolutionConnections();
+                
+                // Draw the main solution shape
+                p.push();
+                p.translate(emergedSolution.x, emergedSolution.y);
+                p.rotate(emergedSolution.rotation);
+                
+                // Draw outer glow
+                for (let i = 4; i >= 0; i--) {
+                    const glowSize = emergedSolution.size * (1 + i * 0.15);
+                    const glowAlpha = Math.max(0, emergedSolution.alpha * 0.3 - i * 10);
+                    
+                    p.fill(emergedSolution.color[0], emergedSolution.color[1], emergedSolution.color[2], glowAlpha);
+                    p.noStroke();
+                    
+                    drawStar(0, 0, glowSize, glowSize * emergedSolution.innerRadius, emergedSolution.points);
+                }
+                
+                // Draw main shape
+                p.fill(emergedSolution.color[0], emergedSolution.color[1], emergedSolution.color[2], emergedSolution.alpha);
+                drawStar(0, 0, emergedSolution.size, emergedSolution.size * emergedSolution.innerRadius, emergedSolution.points);
+                
+                // Inner highlight for depth
+                p.fill(255, 255, 255, 40);
+                drawStar(0, 0, emergedSolution.size * 0.7, emergedSolution.size * 0.7 * emergedSolution.innerRadius, emergedSolution.points);
+                
+                // Core
+                p.fill(emergedSolution.color[0], emergedSolution.color[1], emergedSolution.color[2], emergedSolution.alpha * 0.8);
+                drawStar(0, 0, emergedSolution.size * 0.4, emergedSolution.size * 0.4 * emergedSolution.innerRadius, emergedSolution.points);
+                
+                p.fill(255, 255, 255, 70);
+                p.ellipse(0, 0, emergedSolution.size * 0.2, emergedSolution.size * 0.2);
+                
+                p.pop();
+                
+                // Occasionally emit particles
+                if (processingMode && emergedSolution.growthProgress > 0.5 && p.frameCount % 5 === 0) {
+                    emitSolutionParticles();
+                }
+                
+                // If solution is fully grown and processing is done, start fading it out
+                if (emergedSolution.growthProgress >= 1 && !processingMode) {
+                    emergedSolution.alpha = Math.max(0, emergedSolution.alpha - 1);
+                    
+                    // Remove solution when fully faded
+                    if (emergedSolution.alpha <= 0) {
+                        emergedSolution = null;
+                    }
+                }
             }
             
             function drawSolutionRays() {
-                // Implementation remains the same
+                if (!emergedSolution || !emergedSolution.rayEffects) return;
+                
+                for (let ray of emergedSolution.rayEffects) {
+                    // Calculate pulsating effect
+                    const pulseEffect = 0.5 + 0.5 * Math.sin(p.frameCount * ray.speed + ray.phase);
+                    const rayLength = ray.length * pulseEffect * emergedSolution.growthProgress;
+                    const alpha = 120 * pulseEffect * emergedSolution.growthProgress;
+                    
+                    // Calculate start and end points
+                    const startX = emergedSolution.x;
+                    const startY = emergedSolution.y;
+                    const endX = startX + Math.cos(ray.angle) * rayLength;
+                    const endY = startY + Math.sin(ray.angle) * rayLength;
+                    
+                    // Draw ray with gradient
+                    for (let i = 0; i < 3; i++) {
+                        const rayWidth = ray.width * (3 - i) * pulseEffect;
+                        p.stroke(emergedSolution.color[0], emergedSolution.color[1], emergedSolution.color[2], alpha * (3-i)/3);
+                        p.strokeWeight(rayWidth);
+                        p.line(startX, startY, endX, endY);
+                    }
+                }
             }
             
             function drawSolutionConnections() {
-                // Implementation remains the same
+                if (!emergedSolution || !emergedSolution.connections) return;
+                
+                for (let conn of emergedSolution.connections) {
+                    // Skip if target is no longer active
+                    if (!conn.target.active) continue;
+                    
+                    // Calculate pulsating effect
+                    const pulseEffect = 0.3 + 0.7 * Math.sin(p.frameCount * conn.pulseSpeed + conn.phase);
+                    const alpha = 150 * pulseEffect * emergedSolution.growthProgress;
+                    
+                    // Draw curved connection
+                    p.noFill();
+                    
+                    // Draw multiple layers for glow effect
+                    for (let i = 0; i < 3; i++) {
+                        const connWidth = (3 - i) * pulseEffect;
+                        p.stroke(emergedSolution.color[0], emergedSolution.color[1], emergedSolution.color[2], alpha * (3-i)/3);
+                        p.strokeWeight(connWidth);
+                        
+                        // Calculate midpoint with offset for curve
+                        const midX = (emergedSolution.x + conn.target.x) / 2;
+                        const midY = (emergedSolution.y + conn.target.y) / 2;
+                        const perpAngle = Math.atan2(conn.target.y - emergedSolution.y, conn.target.x - emergedSolution.x) + Math.PI/2;
+                        const offsetDist = p.dist(emergedSolution.x, emergedSolution.y, conn.target.x, conn.target.y) * 0.2;
+                        const ctrlX = midX + Math.cos(perpAngle) * offsetDist * pulseEffect;
+                        const ctrlY = midY + Math.sin(perpAngle) * offsetDist * pulseEffect;
+                        
+                        p.beginShape();
+                        p.vertex(emergedSolution.x, emergedSolution.y);
+                        p.quadraticVertex(ctrlX, ctrlY, conn.target.x, conn.target.y);
+                        p.endShape();
+                    }
+                    
+                    // Draw moving particles along the connection
+                    if (processingMode) {
+                        const t = (p.frameCount * 0.01) % 1;
+                        const ptX = p.bezierPoint(emergedSolution.x, ctrlX, conn.target.x, t);
+                        const ptY = p.bezierPoint(emergedSolution.y, ctrlY, conn.target.y, t);
+                        
+                        p.noStroke();
+                        p.fill(255, 255, 255, alpha);
+                        p.ellipse(ptX, ptY, 4 * pulseEffect, 4 * pulseEffect);
+                    }
+                }
             }
             
             function emitSolutionParticles() {
-                // Implementation remains the same
+                const numParticles = p.floor(p.random(1, 4));
+                
+                for (let i = 0; i < numParticles; i++) {
+                    const angle = p.random(p.TWO_PI);
+                    const speed = p.random(0.5, 2);
+                    
+                    particles.push({
+                        x: emergedSolution.x,
+                        y: emergedSolution.y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        size: p.random(3, 7),
+                        color: [
+                            emergedSolution.color[0] + p.random(-20, 20),
+                            emergedSolution.color[1] + p.random(-20, 20),
+                            emergedSolution.color[2] + p.random(-20, 20),
+                            200
+                        ],
+                        lifetime: 0,
+                        maxLifetime: p.random(30, 90),
+                        type: 'burst'
+                    });
+                }
             }
             
             function drawStar(x, y, radius1, radius2, npoints) {
-                // Implementation remains the same
+                p.beginShape();
+                for (let i = 0; i < npoints * 2; i++) {
+                    const angle = p.map(i, 0, npoints * 2, 0, p.TWO_PI);
+                    const radius = i % 2 === 0 ? radius1 : radius2;
+                    const sx = x + p.cos(angle) * radius;
+                    const sy = y + p.sin(angle) * radius;
+                    p.vertex(sx, sy);
+                }
+                p.endShape(p.CLOSE);
             }
             
             function triggerProcessingMode() {
-                // Implementation remains the same
+                processingMode = true;
+                processingTimer = 0;
+                solutionPhase = false;
+                
+                // Activate several random hexagons to start
+                const inactiveHexagons = hexGrid.filter(h => !h.active);
+                const numToActivate = Math.min(7, inactiveHexagons.length);
+                
+                for (let i = 0; i < numToActivate; i++) {
+                    const index = p.floor(p.random(inactiveHexagons.length));
+                    inactiveHexagons[index].active = true;
+                    inactiveHexagons[index].highlight = 80;
+                    
+                    // Create particles at activation point
+                    createMergeParticles(
+                        inactiveHexagons[index].x, 
+                        inactiveHexagons[index].y, 
+                        inactiveHexagons[index].color,
+                        8
+                    );
+                    
+                    inactiveHexagons.splice(index, 1); // Remove from array to avoid duplicates
+                }
             }
             
             function resetProcessing() {
-                // Implementation remains the same
+                processingMode = false;
+                processingTimer = 0;
+                
+                // Clear most pathways
+                pathways = pathways.filter(path => p.random() < 0.5); // Keep a few
+                
+                // Deactivate all hexagons gradually
+                for (let hex of hexGrid) {
+                    if (p.random() < 0.3) { // Keep some active for visual interest
+                        hex.active = false;
+                    }
+                }
+                
+                // Clear central node connections
+                centralNode.activeConnections = [];
             }
-
-            p.windowResized = function() {
-                // Implementation remains the same
-            };
-        };
+        }; 
         
-        // Start the P5 sketch in the visualization container AFTER the entire geminiSketch function
+        // Start the P5 sketch in the visualization container
         new p5(geminiSketch, 'visualization-container');
     </script>
 </body>
