@@ -32,6 +32,8 @@
                              5px 5px;/* Tertiary transparent teal grid */
 
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
         
         /* Visualization container (right side) */
@@ -43,27 +45,64 @@
         
         /* Info text styling */
         .info {
-            position: absolute;
-            bottom: 40px;
-            left: 20px;
-            width: calc(100% - 60px);
+            position: relative;
+            margin: 20px;
+            margin-top: auto;
             background-color: rgba(255, 255, 255, 0.85);
             padding: 15px;
             border-radius: 5px;
             font-family: 'Orator Std', 'Courier New', monospace;
             color: #20B2AA;
             font-size: 11px;
-            pointer-events: none;
             z-index: 100;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             line-height: 1.4;
             border: 1px solid rgba(32, 178, 170, 0.3);
+        }
+
+        /* Footer with interactive tips */
+        .interaction-tips {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(32, 178, 170, 0.3);
+        }
+        
+        .interaction-tips h3 {
+            margin-top: 0;
+            color: #20B2AA;
+            font-size: 16px;
+            font-family: 'Orator Std', 'Courier New', monospace;
+        }
+        
+        .interaction-tips ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .interaction-tips li {
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #555555;
         }
     </style>
 </head>
 <body>
     <!-- Grid area (left side) -->
     <div class="grid-container">
+        <!-- Interaction tips section -->
+        <div class="interaction-tips">
+            <h3>Interact with the Visualization:</h3>
+            <ul>
+                <li><strong>Click:</strong> Trigger Claude's evaluation mode (watch shapes realign)</li>
+                <li><strong>Wait:</strong> Observe as shapes orbit and periodically evaluate alignment</li>
+                <li><strong>Observe colors:</strong> Blue = high alignment, gray = medium, red/orange = low</li>
+            </ul>
+        </div>
+        
         <!-- Info box within the grid area -->
         <div class="info">
             <p><strong>Claude-Opus-3's Self-Reflection Visualization</strong></p>
