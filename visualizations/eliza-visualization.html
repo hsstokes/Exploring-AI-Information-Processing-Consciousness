@@ -182,7 +182,6 @@
 
     <!-- Load p5.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/addons/p5.sound.min.js"></script>
     
     <script>
         // Create a new p5 instance for the visualization
@@ -193,13 +192,6 @@
             let questionMarks = [];       // Floating question marks
             let echoText = [];            // Text that echoes and disappears
             let mirrorFrame;              // Frame that simulates a mirror
-            
-            // Sound elements
-            let osc;
-            let envelope;
-            let reverb;
-            let delay;
-            let soundInitialized = false;
             
             // Text responses from ELIZA
             const elizaResponses = [
@@ -235,9 +227,6 @@
                     opacity: 180
                 };
                 
-                // Setup sound components
-                setupSound();
-                
                 // Add some initial question marks
                 for (let i = 0; i < 8; i++) {
                     addQuestionMark();
@@ -263,56 +252,6 @@
                 // Draw and update echo text
                 updateAndDrawEchoText();
             };
-            
-            function setupSound() {
-                try {
-                    // Create oscillator
-                    osc = new p5.Oscillator('sine');
-                    
-                    // Create amplitude envelope
-                    envelope = new p5.Envelope();
-                    envelope.setADSR(0.01, 0.2, 0.2, 1.5);
-                    envelope.setRange(0.4, 0);
-                    
-                    // Create reverb
-                    reverb = new p5.Reverb();
-                    
-                    // Create delay
-                    delay = new p5.Delay();
-                    
-                    // Connect the components
-                    osc.amp(0);
-                    osc.start();
-                    osc.disconnect();
-                    
-                    // Connect through effects
-                    reverb.process(osc, 3, 2);
-                    delay.process(reverb, 0.5, 0.4, 2300);
-                    
-                    soundInitialized = true;
-                } catch (e) {
-                    console.log('Sound initialization failed:', e);
-                }
-            }
-            
-            function playEchoSound() {
-                if (!soundInitialized) return;
-                
-                try {
-                    // Random frequency between A3 and A5
-                    const baseFreq = 440;  // A4
-                    const octaveRange = p.random(-1, 1);
-                    const freq = baseFreq * Math.pow(2, octaveRange);
-                    
-                    // Set oscillator frequency
-                    osc.freq(freq);
-                    
-                    // Trigger envelope
-                    envelope.play(osc);
-                } catch (e) {
-                    console.log('Sound playback failed:', e);
-                }
-            }
             
             function drawMirrorFrame() {
                 // Pulsating effect for the frame
