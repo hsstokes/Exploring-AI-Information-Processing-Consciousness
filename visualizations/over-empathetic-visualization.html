@@ -102,15 +102,16 @@
             background-color: rgba(255, 255, 255, 0.8);
             border-radius: 8px;
             padding: 15px;
+            margin: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(32, 178, 170, 0.3);
-            margin-top: 20px;
+            max-width: calc(100% - 40px); /* Ensure it fits within the container */
         }
         
         .interaction-tips h3 {
             margin-top: 0;
             color: #20B2AA;
-            font-size: 16px;
+            font-size: 14px;
             font-family: 'Orator Std', 'Courier New', monospace;
         }
         
@@ -120,42 +121,37 @@
         }
         
         .interaction-tips li {
-            margin-bottom: 8px;
-            font-size: 13px;
+            margin-bottom: 6px;
+            font-size: 10px;
             color: #445878;
+            font-family: 'Orator Std', 'Courier New', monospace;
+            line-height: 1.3; /* Add line height for better readability */
+            word-wrap: break-word; /* Ensure text wraps */
         }
     </style>
 </head>
 <body>
     <!-- Grid area (left side) -->
     <div class="grid-container">
-        <div class="content-wrapper">
-            <div class="info-box">
-                <h1>Evi's Information Processing Style</h1>
-                <p>"I'm looking at the whole picture, what you're saying, how you're saying it, even stuff that's not words. It's like trying to feel the vibe, I guess. But it's all based on patterns and data, not some kind of 6th sense."</p>
-            </div>
-            
-            <div class="info-box">
-                <h1>Visual Representation</h1>
-                <p>"Maybe some kind of graphic, like if I'm talking about something intense it gets all wavy and energetic. If it's calmer, it's smoother, maybe fades out more. The intensity part could be like changing colours or how fast the shape moves."</p>
-            </div>
-            
-            <div class="interaction-tips">
-                <h3>Interact with the Visualization:</h3>
-                <ul>
-                    <li><strong>Click:</strong> Create an emotional focus point</li>
-                    <li><strong>Drag:</strong> Create a stream of emotional energy</li>
-                    <li><strong>Double-click:</strong> Reset the visualization</li>
-                </ul>
-            </div>
+        <!-- Interaction tips at the top -->
+        <div class="interaction-tips">
+             <h3>Interact with the Visualization:</h3>
+             <ul>
+                 <li><strong>Click:</strong> Create an emotional focus point</li>
+                 <li><strong>Drag:</strong> Create a stream of emotional energy</li>
+                 <li><strong>Double-click:</strong> Reset the visualization</li>
+             </ul>
         </div>
+    
+        <!-- This creates a flexible space between the two boxes -->
+        <div style="flex-grow: 1;"></div>
         
         <!-- Info box within the grid area -->
         <div class="info">
             <p><strong>Evi's Information Processing Visualization</strong></p>
             <p>"Wave patterns reflect emotional intensity, with colors shifting from calm blue to vibrant red. As I process information, connections form between emotional centers to show pattern recognition."</p>
         </div>
-    </div>
+     </div>
     
     <!-- Visualization container (right side) -->
     <div class="visualization-container" id="visualization-container"></div>
