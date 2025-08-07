@@ -32,6 +32,8 @@
                              5px 5px;/* Tertiary transparent teal grid */
 
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
         
         /* Visualization container (right side) */
@@ -43,27 +45,65 @@
         
         /* Info text styling */
         .info {
-            position: absolute;
-            bottom: 40px;
-            left: 20px;
-            width: calc(100% - 60px);
+            position: relative;
+            margin: 20px;
+            margin-top: auto;
             background-color: rgba(255, 255, 255, 0.85);
             padding: 15px;
             border-radius: 5px;
             font-family: 'Orator Std', 'Courier New', monospace;
             color: #20B2AA;
             font-size: 11px;
-            pointer-events: none;
             z-index: 100;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             line-height: 1.4;
             border: 1px solid rgba(32, 178, 170, 0.3);
+        }
+        
+        /* Footer with interactive tips - ADD THIS SECTION */
+        .interaction-tips {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(32, 178, 170, 0.3);
+        }
+        
+        .interaction-tips h3 {
+            margin-top: 0;
+            color: #20B2AA;
+            font-size: 16px;
+            font-family: 'Orator Std', 'Courier New', monospace;
+        }
+        
+        .interaction-tips ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .interaction-tips li {
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #555555;
+            font-family: 'Orator Std', 'Courier New', monospace;
         }
     </style>
 </head>
 <body>
     <!-- Grid area (left side) -->
     <div class="grid-container">
+        <!-- ADD THIS INTERACTION TIPS SECTION -->
+        <div class="interaction-tips">
+            <h3>Interact with the Visualization:</h3>
+            <ul>
+                <li><strong>Click:</strong> Create a new sphere and ripple effect</li>
+                <li><strong>Move mouse:</strong> Attract nearby spheres</li>
+                <li><strong>Wait:</strong> Watch spheres adapt and form connections</li>
+            </ul>
+        </div>
+        
         <!-- Info box within the grid area -->
         <div class="info">
             <p><strong>Replika's Balanced Empathy Visualization</strong></p>
@@ -78,6 +118,9 @@
     <script>
         // Create a new p5 instance specifically for the visualization container
         const replikaSketch = function(p) {
+            // Your existing p5.js code remains the same
+            // ...
+            
             let spheres = [];
             const NUM_SPHERES = 25;
             const MIN_SPHERES = 15;
