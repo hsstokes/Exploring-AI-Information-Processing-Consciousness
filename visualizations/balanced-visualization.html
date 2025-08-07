@@ -69,12 +69,13 @@
             margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(32, 178, 170, 0.3);
+            max-width: calc(100% - 40px); /* Ensure it fits within the container */
         }
         
         .interaction-tips h3 {
             margin-top: 0;
             color: #20B2AA;
-            font-size: 16px;
+            font-size: 14px;
             font-family: 'Orator Std', 'Courier New', monospace;
         }
         
@@ -84,10 +85,12 @@
         }
         
         .interaction-tips li {
-            margin-bottom: 8px;
-            font-size: 13px;
+            margin-bottom: 6px;
+            font-size: 10px;
             color: #555555;
             font-family: 'Orator Std', 'Courier New', monospace;
+            line-height: 1.3; /* Add line height for better readability */
+            word-wrap: break-word; /* Ensure text wraps */
         }
     </style>
 </head>
