@@ -3,6 +3,8 @@
 <head>
     <title>Enhanced Gemini Visualization - Shapes of Utility</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <!-- Add this to the <head> section -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
     <style>
         body {
             margin: 0;
@@ -10,6 +12,31 @@
             overflow: hidden;
             display: flex;
         }
+        /* Then add the media queries at the end of your CSS section */
+    @media screen and (max-width: 768px) {
+        body {
+            flex-direction: column;
+        }
+    
+        .grid-container, .visualization-container {
+            width: 100%;
+            height: 50vh;
+        }
+    
+       .interaction-tips {
+           margin: 10px;
+           padding: 10px;
+       }
+    
+       .info {
+           margin: 10px;
+           padding: 8px;
+       }
+    
+       .interaction-tips h3 {
+          font-size: 12px;
+       }
+     }
         
         /* Grid container (left side) */
         .grid-container {
@@ -59,11 +86,40 @@
             margin-bottom: 3px; /* Further reduced margin between paragraphs */
             margin-top: 3px;
         }
-        /* Make the first paragraph (title) stand out but compact */
         .info p:first-child {
            margin-top: 0;
            margin-bottom: 5px;
            font-size: 10px; /* Slightly larger than regular text */
+        }
+        p.touchStarted = function() {
+           if (p.touches && p.touches.length > 0) {
+               /* When touch begins inside visualization area */
+               mouseInfluence.x = p.touches[0].x;
+               mouseInfluence.y = p.touches[0].y;
+               mouseInfluence.active = true;
+        
+               /* If not in processing mode, trigger it*/
+               if (!processingMode) {
+               triggerProcessingMode();
+               }
+               return false; // Prevent default
+           }
+         };
+
+         p.touchMoved = function() {
+            if (p.touches && p.touches.length > 0 && mouseInfluence.active) {
+               mouseInfluence.x = p.touches[0].x;
+               mouseInfluence.y = p.touches[0].y;
+               mouseInactivityTimer = 0; // Reset timer when touch moves
+               return false; // Prevent default
+           }
+         };
+
+         p.touchEnded = function() {
+             /* Turn off mouse influence */
+             mouseInfluence.active = false;
+             return false; // Prevent default
+         };
         }
         /* Footer with interactive tips - ADD THIS SECTION */
         .interaction-tips {
@@ -106,8 +162,8 @@
          <div class="interaction-tips">
               <h3>Interact with the Visualization:</h3>
               <ul>
-                 <li><strong>Click:</strong> Trigger Gemini's processing mode</li>
-                 <li><strong>Drag mouse:</strong> Influence hexagons and data points</li>
+                 <li><strong>Click/Tap:</strong> Trigger Gemini's processing mode</li>
+                 <li><strong>Drag mouse/finger:</strong> Influence hexagons and data points</li>
                  <li><strong>Wait:</strong> Watch data processing and pattern emergence</li>
               </ul>
          </div>
