@@ -489,15 +489,13 @@
                 return false; // Prevent default
             };
             
-            // ADD YOUR NEW TOUCH FUNCTION RIGHT HERE, after mousePressed and before the closing bracket of claudeSketch
+            // Add this simple version that just calls the existing mousePressed function
             p.touchStarted = function() {
-           // When touch occurs, trigger evaluation mode (same as mousePressed)
-              if (!evaluationMode) {
-                  triggerEvaluationMode();
-               }
-               return false; // Prevent default behavior
+                // Simply call the existing mousePressed function's behavior
+                p.mousePressed();
+                return false; // Prevent default
             };
-        
+        };
         // Start the P5 sketch in the visualization container
         new p5(claudeSketch, 'visualization-container');
     </script>
