@@ -43,16 +43,23 @@
             margin-top: auto; /* Push to bottom of flex container */
             width: calc(100% - 40px); /* Update width calculation */
             background-color: rgba(255, 255, 255, 0.85);
-            padding: 15px;
+            padding: 10px;/* Reduced from 15px */
             border-radius: 5px;
             font-family: 'Orator Std', 'Courier New', monospace;
             color: #445878; /* Slate blue */
-            font-size: 11px;
+            font-size: 10px; /* Reduced from 11px */
             pointer-events: none;
             z-index: 100;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            line-height: 1.4;
+            line-height: 1.3; /* Reduced from 1.4 */
             border: 1px solid rgba(68, 88, 120, 0.3);
+            max-height: 100px; /* Add max height */
+            overflow-y: auto; /* Add scrolling if content overflows */
+        }
+        /* This is the new section to add */
+        .info p {
+            margin-bottom: 5px; /* Reduced margin between paragraphs */
+            margin-top: 5px;
         }
         /* Footer with interactive tips - ADD THIS SECTION */
         .interaction-tips {
