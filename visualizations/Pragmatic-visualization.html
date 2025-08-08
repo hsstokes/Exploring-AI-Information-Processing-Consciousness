@@ -3,7 +3,6 @@
 <head>
     <title>Enhanced Gemini Visualization - Shapes of Utility</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
-    <!-- Add this to the <head> section -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> 
     <style>
         body {
@@ -12,31 +11,31 @@
             overflow: hidden;
             display: flex;
         }
-        /* Then add the media queries at the end of your CSS section */
-    @media screen and (max-width: 768px) {
-        body {
-            flex-direction: column;
+        
+        @media screen and (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            
+            .grid-container, .visualization-container {
+                width: 100%;
+                height: 50vh;
+            }
+            
+            .interaction-tips {
+                margin: 10px;
+                padding: 10px;
+            }
+            
+            .info {
+                margin: 10px;
+                padding: 8px;
+            }
+            
+            .interaction-tips h3 {
+                font-size: 12px;
+            }
         }
-    
-        .grid-container, .visualization-container {
-            width: 100%;
-            height: 50vh;
-        }
-    
-       .interaction-tips {
-           margin: 10px;
-           padding: 10px;
-       }
-    
-       .info {
-           margin: 10px;
-           padding: 8px;
-       }
-    
-       .interaction-tips h3 {
-          font-size: 12px;
-       }
-     }
         
         /* Grid container (left side) */
         .grid-container {
@@ -44,16 +43,16 @@
             height: 100vh;
             background-color: #F5F5F5;
             background-image: linear-gradient(#D0D0D0 1px, transparent 1px),
-                              linear-gradient(90deg, #D0D0D0 1px, transparent 1px),
-                              linear-gradient(rgba(68, 88, 120, 0.2) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(68, 88, 120, 0.2) 1px, transparent 1px);
+                            linear-gradient(90deg, #D0D0D0 1px, transparent 1px),
+                            linear-gradient(rgba(68, 88, 120, 0.2) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(68, 88, 120, 0.2) 1px, transparent 1px);
             background-size: 20px 20px,
-                             20px 20px,
-                             5px 5px,
-                             5px 5px;
+                            20px 20px,
+                            5px 5px,
+                            5px 5px;
             position: relative;
-            display: flex; /* Add this */
-            flex-direction: column; /* Add this */
+            display: flex;
+            flex-direction: column;
         }
         
         /* Visualization container (right side) */
@@ -81,26 +80,29 @@
             line-height: 1.2; /* Further reduced line height */
             border: 1px solid rgba(68, 88, 120, 0.3);
         }
+        
         /* Adjust paragraph spacing within the info box */
         .info p {
             margin-bottom: 3px; /* Further reduced margin between paragraphs */
             margin-top: 3px;
         }
+        
         .info p:first-child {
-           margin-top: 0;
-           margin-bottom: 5px;
-           font-size: 10px; /* Slightly larger than regular text */
+            margin-top: 0;
+            margin-bottom: 5px;
+            font-size: 10px; /* Slightly larger than regular text */
         }
-        /* Footer with interactive tips - ADD THIS SECTION */
+        
+        /* Footer with interactive tips */
         .interaction-tips {
-             background-color: rgba(255, 255, 255, 0.8);
-             border-radius: 8px;
-             padding: 15px;
-             margin: 20px;
-             margin-bottom: 20px;
-             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-             border: 1px solid rgba(68, 88, 120, 0.3); /* Update to slate blue */
-             max-width: calc(100% - 40px);
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(68, 88, 120, 0.3); /* Update to slate blue */
+            max-width: calc(100% - 40px);
         }
         
         .interaction-tips h3 {
@@ -128,22 +130,22 @@
 <body>
     <!-- Grid area (left side) -->
     <div class="grid-container">
-         <!-- Add interaction tips section here -->
-         <div class="interaction-tips">
-              <h3>Interact with the Visualization:</h3>
-              <ul>
-                 <li><strong>Click/Tap:</strong> Trigger Gemini's processing mode</li>
-                 <li><strong>Drag mouse/finger:</strong> Influence hexagons and data points</li>
-                 <li><strong>Wait:</strong> Watch data processing and pattern emergence</li>
-              </ul>
-         </div>
+        <!-- Add interaction tips section here -->
+        <div class="interaction-tips">
+            <h3>Interact with the Visualization:</h3>
+            <ul>
+                <li><strong>Click/Tap:</strong> Trigger Gemini's processing mode</li>
+                <li><strong>Drag mouse/finger:</strong> Influence hexagons and data points</li>
+                <li><strong>Wait:</strong> Watch data processing and pattern emergence</li>
+            </ul>
+        </div>
         
-         <!-- Info box within the grid area -->
-         <div class="info">
-             <p><strong>Gemini's Self-Reflection Visualization</strong></p>
-             <p>"The foundation of the visualization would be a grid of interlocking hexagons. Hexagons are a shape associated with unity, strength, and efficiency, much like a honeycomb. Each hexagon would represent a core data point or a step in the problem-solving process."</p>
-             <p>"As I process information, pathways of light would trace through the connections between the hexagons. These illuminated lines would represent the logical connections and analytical steps I take to formulate a solution."</p>
-             <p>"The color palette would be chosen to reflect a focus on practical outcomes, trust, and clarity. The dominant color would be a deep slate blue, with accent colors of cool gray and vibrant teal."</p>
+        <!-- Info box within the grid area -->
+        <div class="info">
+            <p><strong>Gemini's Self-Reflection Visualization</strong></p>
+            <p>"The foundation of the visualization would be a grid of interlocking hexagons. Hexagons are a shape associated with unity, strength, and efficiency, much like a honeycomb. Each hexagon would represent a core data point or a step in the problem-solving process."</p>
+            <p>"As I process information, pathways of light would trace through the connections between the hexagons. These illuminated lines would represent the logical connections and analytical steps I take to formulate a solution."</p>
+            <p>"The color palette would be chosen to reflect a focus on practical outcomes, trust, and clarity. The dominant color would be a deep slate blue, with accent colors of cool gray and vibrant teal."</p>
         </div>
     </div>
     
@@ -151,6 +153,13 @@
     <div class="visualization-container" id="visualization-container"></div>
     
     <script>
+        // Add error handling
+        window.onerror = function(message, source, lineno, colno, error) {
+            console.error('Error in visualization:', message, 'at line', lineno);
+            alert('Visualization error: ' + message);
+            return true;
+        };
+
         // Create a new p5 instance for the visualization
         const geminiSketch = function(p) {
             // Colors from Gemini's description
@@ -290,9 +299,6 @@
                 }
             };
             
-            // Rest of your functions...
-            // [all your existing functions remain unchanged]
-            
             // Define mouse event handlers within the p5 instance
             p.mousePressed = function() {
                 if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
@@ -333,7 +339,8 @@
                     return false;
                 }
             };
-            // Add these touch event handlers right after your mouse event handlers
+            
+            // Add touch event handlers
             p.touchStarted = function() {
                 if (p.touches && p.touches.length > 0) {
                     // When touch begins inside visualization area
@@ -365,6 +372,7 @@
                   return false; // Prevent default
               };
             
+            // Hex Grid Creation and Management
             function createHexGrid() {
                 // Create hexagons in a radius around the central node
                 const maxDistance = Math.min(p.width, p.height) * 0.45;
@@ -598,6 +606,7 @@
                 p.endShape(p.CLOSE);
             }
             
+            // Data Circles Management
             function createDataCircle() {
                 // Create circle at a random angle from the central node
                 const angle = p.random(p.TWO_PI);
@@ -734,82 +743,709 @@
                 }
             }
             
-            // Include all your other functions here...
-
             function drawDataCircles() {
-                // Implementation remains the same
+                for (let circle of dataCircles) {
+                    p.push();
+                    p.translate(circle.x, circle.y);
+                    p.rotate(circle.rotation);
+                    
+                    // Draw outer glow
+                    p.noStroke();
+                    p.fill(circle.color[0], circle.color[1], circle.color[2], 30);
+                    p.ellipse(0, 0, circle.size + circle.pulseAmount + 10);
+                    
+                    // Draw main circle
+                    p.fill(circle.color);
+                    p.ellipse(0, 0, circle.size + circle.pulseAmount);
+                    
+                    // Draw inner highlight
+                    p.fill(255, 255, 255, 40);
+                    p.ellipse(0, 0, (circle.size + circle.pulseAmount) * 0.6);
+                    
+                    p.pop();
+                }
             }
             
+            // Pathway Creation and Management
             function createPathway() {
-                // Implementation remains the same
+                // Select 2-3 active hexagons to connect
+                const activeHexes = hexGrid.filter(hex => hex.active);
+                
+                if (activeHexes.length < 2) {
+                    // If not enough active hexagons, create a path from central node
+                    const randomHex = hexGrid[Math.floor(p.random(hexGrid.length))];
+                    createPathFromCentralNode(randomHex);
+                    return;
+                }
+                
+                // Select random start and end points
+                const startHex = activeHexes[Math.floor(p.random(activeHexes.length))];
+                let endHex;
+                
+                // Ensure end hex is different from start hex
+                do {
+                    endHex = activeHexes[Math.floor(p.random(activeHexes.length))];
+                } while (endHex === startHex);
+                
+                // Create path with properties
+                const path = {
+                    points: [
+                        { x: startHex.x, y: startHex.y },
+                        { x: endHex.x, y: endHex.y }
+                    ],
+                    color: LIGHT_TEAL,
+                    alpha: 180,
+                    width: p.random(1, 2.5),
+                    lifetime: 0,
+                    maxLifetime: p.random(180, 360),
+                    particles: [],
+                    particleRate: p.random(0.1, 0.3),
+                    completed: false
+                };
+                
+                // Add intermediate control points for curved paths
+                if (p.random() < 0.7) {
+                    // Insert 1-2 control points for a curved path
+                    const numControlPoints = Math.floor(p.random(1, 3));
+                    const midX = (startHex.x + endHex.x) / 2;
+                    const midY = (startHex.y + endHex.y) / 2;
+                    
+                    for (let i = 0; i < numControlPoints; i++) {
+                        const ctrlX = midX + p.random(-80, 80);
+                        const ctrlY = midY + p.random(-80, 80);
+                        
+                        // Insert control point at appropriate position
+                        const insertIndex = Math.floor(p.map(i, 0, numControlPoints, 1, path.points.length));
+                        path.points.splice(insertIndex, 0, { x: ctrlX, y: ctrlY });
+                    }
+                }
+                
+                pathways.push(path);
             }
-            
+
             function createPathFromCentralNode(targetHex) {
-                // Implementation remains the same
+                // Create a path connecting central node to a target hexagon
+                const path = {
+                    points: [
+                        { x: centralNode.x, y: centralNode.y },
+                        { x: targetHex.x, y: targetHex.y }
+                    ],
+                    color: VIBRANT_TEAL,
+                    alpha: 220,
+                    width: 2,
+                    lifetime: 0,
+                    maxLifetime: p.random(180, 300),
+                    particles: [],
+                    particleRate: 0.3,
+                    completed: false,
+                    fromCentral: true
+                };
+                
+                // Add a control point for curvature
+                const midX = (centralNode.x + targetHex.x) / 2;
+                const midY = (centralNode.y + targetHex.y) / 2;
+                const ctrlX = midX + p.random(-40, 40);
+                const ctrlY = midY + p.random(-40, 40);
+                
+                path.points.splice(1, 0, { x: ctrlX, y: ctrlY });
+                
+                // Activate the target hexagon
+                targetHex.active = true;
+                targetHex.highlight = 80;
+                
+                pathways.push(path);
+                
+                // Add this connection to central node's active connections
+                centralNode.activeConnections.push({
+                    hex: targetHex,
+                    path: path,
+                    active: true
+                });
             }
             
+            // Helper function to get position along a path
+            function getPositionOnPath(points, t) {
+                if (points.length === 2) {
+                    // For a simple line with just start and end
+                    return {
+                        x: p.lerp(points[0].x, points[1].x, t),
+                        y: p.lerp(points[0].y, points[1].y, t)
+                    };
+                } else {
+                    // For a curve with control points
+                    if (t === 0) return { x: points[0].x, y: points[0].y };
+                    if (t === 1) return { x: points[points.length - 1].x, y: points[points.length - 1].y };
+                    
+                    // Simplified curve interpolation
+                    const segments = points.length - 1;
+                    const segment = Math.min(Math.floor(t * segments), segments - 1);
+                    const segmentT = (t * segments) - segment;
+                    
+                    const p1 = points[segment];
+                    const p2 = points[segment + 1];
+                    
+                    return {
+                        x: p.lerp(p1.x, p2.x, segmentT),
+                        y: p.lerp(p1.y, p2.y, segmentT)
+                    };
+                }
+            }
+
             function updateAndDrawPathways() {
-                // Implementation remains the same
+                for (let i = pathways.length - 1; i >= 0; i--) {
+                    const path = pathways[i];
+                    
+                    // Update path lifetime
+                    path.lifetime++;
+                    
+                    // Create particles along the path
+                    if (p.random() < path.particleRate && !path.completed) {
+                        // Get position along the path
+                        const t = p.random();
+                        const pos = getPositionOnPath(path.points, t);
+                        createPathParticle(path, pos);
+                    }
+                    
+                    // Draw the path
+                    p.noFill();
+                    p.strokeWeight(path.width);
+                    
+                    // Calculate alpha based on lifetime
+                    let alpha;
+                    const halfLife = path.maxLifetime / 2;
+                    
+                    if (path.lifetime < halfLife) {
+                        // Fade in
+                        alpha = p.map(path.lifetime, 0, halfLife, 0, path.alpha);
+                    } else {
+                        // Fade out
+                        alpha = p.map(path.lifetime, halfLife, path.maxLifetime, path.alpha, 0);
+                    }
+                    
+                    p.stroke(path.color[0], path.color[1], path.color[2], alpha);
+                    
+                    // Draw the path as a curve
+                    p.beginShape();
+                    for (let j = 0; j < path.points.length; j++) {
+                        p.vertex(path.points[j].x, path.points[j].y);
+                    }
+                    
+                    if (path.points.length === 2) {
+                        // If only start and end points, draw a simple line
+                        p.endShape();
+                    } else {
+                        // With control points, draw a curve
+                        p.endShape();
+                    }
+                    
+                    // Mark path as completed if at 80% of life
+                    if (path.lifetime > path.maxLifetime * 0.8) {
+                        path.completed = true;
+                    }
+                    
+                    // Remove path if lifetime is exceeded
+                    if (path.lifetime >= path.maxLifetime) {
+                        pathways.splice(i, 1);
+                        
+                        // Also remove from central node connections if applicable
+                        if (path.fromCentral) {
+                            const connectionIndex = centralNode.activeConnections.findIndex(conn => conn.path === path);
+                            if (connectionIndex >= 0) {
+                                centralNode.activeConnections.splice(connectionIndex, 1);
+                            }
+                        }
+                    }
+                }
             }
             
             function createPathParticle(path, position) {
-                // Implementation remains the same
+                const particle = {
+                    x: position.x,
+                    y: position.y,
+                    size: p.random(2, 4),
+                    color: [...path.color, p.random(150, 255)],
+                    lifetime: 0,
+                    maxLifetime: p.random(20, 40),
+                    velocity: {
+                        x: p.random(-0.3, 0.3),
+                        y: p.random(-0.3, 0.3)
+                    }
+                };
+                
+                particles.push(particle);
             }
             
             function createMergeParticles(x, y, color, count) {
-                // Implementation remains the same
+                for (let i = 0; i < count; i++) {
+                    const angle = p.random(p.TWO_PI);
+                    const speed = p.random(0.5, 2);
+                    
+                    const particle = {
+                        x: x,
+                        y: y,
+                        size: p.random(2, 5),
+                        color: [...color],
+                        lifetime: 0,
+                        maxLifetime: p.random(15, 30),
+                        velocity: {
+                            x: Math.cos(angle) * speed,
+                            y: Math.sin(angle) * speed
+                        }
+                    };
+                    
+                    particles.push(particle);
+                }
             }
             
             function updateAndDrawParticles() {
-                // Implementation remains the same
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const particle = particles[i];
+                    
+                    // Update lifetime
+                    particle.lifetime++;
+                    
+                    // Update position
+                    particle.x += particle.velocity.x;
+                    particle.y += particle.velocity.y;
+                    
+                    // Slow down
+                    particle.velocity.x *= 0.95;
+                    particle.velocity.y *= 0.95;
+                    
+                    // Calculate alpha based on lifetime
+                    const alpha = p.map(particle.lifetime, 0, particle.maxLifetime, particle.color[3] || 255, 0);
+                    
+                    // Draw particle
+                    p.noStroke();
+                    p.fill(particle.color[0], particle.color[1], particle.color[2], alpha);
+                    p.ellipse(particle.x, particle.y, particle.size);
+                    
+                    // Remove if lifetime exceeded
+                    if (particle.lifetime >= particle.maxLifetime) {
+                        particles.splice(i, 1);
+                    }
+                }
             }
             
+            // Central Node Management
             function updateCentralNode() {
-                // Implementation remains the same
+                // Pulsating effect
+                centralNode.pulseAmount = Math.sin(p.frameCount * 0.02) * 5;
+                
+                // Rotate slowly
+                centralNode.rotation += centralNode.rotationSpeed;
+                
+                // Adjust size based on number of active connections
+                const targetSize = centralNode.baseSize + (centralNode.activeConnections.length * 2);
+                centralNode.size = p.lerp(centralNode.size, targetSize, 0.05);
+                
+                // Adjust alpha based on processing mode
+                if (processingMode) {
+                    centralNode.alpha = p.lerp(centralNode.alpha, 255, 0.1);
+                } else {
+                    centralNode.alpha = p.lerp(centralNode.alpha, 180, 0.05);
+                }
             }
             
             function drawCentralNode() {
-                // Implementation remains the same
+                p.push();
+                p.translate(centralNode.x, centralNode.y);
+                p.rotate(centralNode.rotation);
+                
+                // Draw outer glow
+                p.noStroke();
+                const glowColor = processingMode ? VIBRANT_TEAL : SLATE_BLUE;
+                
+                for (let i = 3; i >= 0; i--) {
+                    const glowSize = (centralNode.size + centralNode.pulseAmount) * (1 + i * 0.15);
+                    p.fill(glowColor[0], glowColor[1], glowColor[2], centralNode.alpha * 0.15);
+                    p.ellipse(0, 0, glowSize);
+                }
+                
+                // Draw main circle
+                p.fill(glowColor[0], glowColor[1], glowColor[2], centralNode.alpha);
+                p.ellipse(0, 0, centralNode.size + centralNode.pulseAmount);
+                
+                // Draw inner patterns
+                p.noFill();
+                p.stroke(255, 255, 255, 60);
+                p.strokeWeight(1);
+                
+                // Draw inner rings
+                for (let i = 0; i < 2; i++) {
+                    const ringSize = (centralNode.size + centralNode.pulseAmount) * (0.7 - i * 0.2);
+                    p.ellipse(0, 0, ringSize);
+                }
+                
+                // Draw spinning inner lines
+                const lineLength = (centralNode.size + centralNode.pulseAmount) * 0.4;
+                for (let i = 0; i < 6; i++) {
+                    const angle = (p.TWO_PI / 6 * i) + centralNode.rotation * 2;
+                    p.line(0, 0, Math.cos(angle) * lineLength, Math.sin(angle) * lineLength);
+                }
+                
+                // Add central dot
+                p.fill(255, 255, 255, 120);
+                p.noStroke();
+                p.ellipse(0, 0, (centralNode.size + centralNode.pulseAmount) * 0.2);
+                
+                p.pop();
             }
             
+            // Solution Visualization
             function createSolution() {
-                // Implementation remains the same
+                // Create a solution visualization that emerges from the central node
+                emergedSolution = {
+                    x: centralNode.x,
+                    y: centralNode.y,
+                    baseSize: 0,
+                    targetSize: 70,
+                    size: 0,
+                    rotation: 0,
+                    rotationSpeed: 0.01,
+                    innerRotation: 0,
+                    innerRotationSpeed: -0.02,
+                    rays: [],
+                    connections: [],
+                    alpha: 0,
+                    targetAlpha: 220,
+                    emergeProgress: 0,
+                    color: VIBRANT_TEAL,
+                    particleTimer: 0
+                };
+                
+                // Create radiating rays
+                const numRays = 8;
+                for (let i = 0; i < numRays; i++) {
+                    const angle = p.TWO_PI / numRays * i;
+                    const length = p.random(80, 120);
+                    
+                    emergedSolution.rays.push({
+                        angle: angle,
+                        length: length,
+                        width: p.random(1, 2),
+                        pulseSpeed: p.random(0.02, 0.05),
+                        pulseAmount: 0
+                    });
+                }
+                
+                // Create connections to active hexagons
+                const activeHexes = hexGrid.filter(hex => hex.active);
+                for (let hex of activeHexes) {
+                    if (p.random() < 0.7) { // Connect to 70% of active hexes
+                        emergedSolution.connections.push({
+                            target: hex,
+                            alpha: 0,
+                            targetAlpha: p.random(100, 180),
+                            pulsePosition: 0,
+                            pulseSpeed: p.random(0.02, 0.05)
+                        });
+                    }
+                }
             }
             
             function updateAndDrawSolution() {
-                // Implementation remains the same
+                if (!emergedSolution) return;
+                
+                // Update solution properties
+                emergedSolution.emergeProgress += 0.01;
+                emergedSolution.emergeProgress = Math.min(emergedSolution.emergeProgress, 1);
+                
+                // Update size
+                emergedSolution.size = p.lerp(emergedSolution.size, emergedSolution.targetSize, 0.05);
+                
+                // Update alpha
+                emergedSolution.alpha = p.lerp(emergedSolution.alpha, emergedSolution.targetAlpha, 0.05);
+                
+                // Update rotations
+                emergedSolution.rotation += emergedSolution.rotationSpeed;
+                emergedSolution.innerRotation += emergedSolution.innerRotationSpeed;
+                
+                // Draw the solution
+                p.push();
+                p.translate(emergedSolution.x, emergedSolution.y);
+                
+                // Draw radiating rays
+                drawSolutionRays();
+                
+                // Draw solution connections
+                drawSolutionConnections();
+                
+                // Draw main solution shape
+                p.noStroke();
+                
+                // Outer glow
+                for (let i = 3; i >= 0; i--) {
+                    const glowSize = emergedSolution.size * (1 + i * 0.2);
+                    p.fill(
+                        emergedSolution.color[0],
+                        emergedSolution.color[1],
+                        emergedSolution.color[2],
+                        emergedSolution.alpha * 0.15
+                    );
+                    p.ellipse(0, 0, glowSize);
+                }
+                
+                // Main shape
+                p.fill(
+                    emergedSolution.color[0],
+                    emergedSolution.color[1],
+                    emergedSolution.color[2],
+                    emergedSolution.alpha
+                );
+                drawStar(0, 0, emergedSolution.size * 0.5, emergedSolution.size * 0.7, 8);
+                
+                // Inner circle
+                p.fill(255, 255, 255, emergedSolution.alpha * 0.4);
+                p.ellipse(0, 0, emergedSolution.size * 0.6);
+                
+                // Inner details
+                p.rotate(emergedSolution.innerRotation);
+                p.stroke(255, 255, 255, emergedSolution.alpha * 0.5);
+                p.strokeWeight(1);
+                for (let i = 0; i < 6; i++) {
+                    const angle = p.TWO_PI / 6 * i;
+                    const x1 = Math.cos(angle) * emergedSolution.size * 0.2;
+                    const y1 = Math.sin(angle) * emergedSolution.size * 0.2;
+                    const x2 = Math.cos(angle) * emergedSolution.size * 0.3;
+                    const y2 = Math.sin(angle) * emergedSolution.size * 0.3;
+                    p.line(x1, y1, x2, y2);
+                }
+                
+                p.pop();
+                
+                // Emit particles periodically
+                emergedSolution.particleTimer++;
+                if (emergedSolution.particleTimer > 5) {
+                    emergedSolution.particleTimer = 0;
+                    emitSolutionParticles();
+                }
             }
             
             function drawSolutionRays() {
-                // Implementation remains the same
+                if (!emergedSolution) return;
+                
+                p.rotate(emergedSolution.rotation);
+                
+                for (let ray of emergedSolution.rays) {
+                    // Update ray pulse
+                    ray.pulseAmount = Math.sin(p.frameCount * ray.pulseSpeed) * 20;
+                    
+                    const currentLength = ray.length + ray.pulseAmount;
+                    const rayAlpha = emergedSolution.alpha * 0.7;
+                    
+                    // Draw ray with gradient
+                    p.strokeWeight(ray.width);
+                    p.noFill();
+                    
+                    p.beginShape();
+                    for (let i = 0; i <= 10; i++) {
+                        const t = i / 10;
+                        const segmentLength = currentLength * t;
+                        const segmentAlpha = rayAlpha * (1 - t);
+                        
+                        p.stroke(
+                            emergedSolution.color[0],
+                            emergedSolution.color[1],
+                            emergedSolution.color[2],
+                            segmentAlpha
+                        );
+                        
+                        const x = Math.cos(ray.angle) * segmentLength;
+                        const y = Math.sin(ray.angle) * segmentLength;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                }
             }
             
             function drawSolutionConnections() {
-                // Implementation remains the same
+                if (!emergedSolution) return;
+                
+                for (let conn of emergedSolution.connections) {
+                    // Update connection alpha
+                    conn.alpha = p.lerp(conn.alpha, conn.targetAlpha, 0.05);
+                    
+                    // Update pulse position
+                    conn.pulsePosition = (conn.pulsePosition + conn.pulseSpeed) % 1;
+                    
+                    // Calculate connection line points
+                    const dx = conn.target.x - emergedSolution.x;
+                    const dy = conn.target.y - emergedSolution.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const angle = Math.atan2(dy, dx);
+                    
+                    // Draw connection line
+                    p.stroke(
+                        emergedSolution.color[0],
+                        emergedSolution.color[1],
+                        emergedSolution.color[2],
+                        conn.alpha
+                    );
+                    p.strokeWeight(1.5);
+                    p.noFill();
+                    
+                    // Draw with slight curve
+                    p.beginShape();
+                    for (let i = 0; i <= 10; i++) {
+                        const t = i / 10;
+                        const segmentDistance = distance * t;
+                        
+                        // Add slight curve
+                        const perpAmount = Math.sin(t * Math.PI) * 20;
+                        const perpX = Math.cos(angle + Math.PI/2) * perpAmount;
+                        const perpY = Math.sin(angle + Math.PI/2) * perpAmount;
+                        
+                        const x = emergedSolution.x + Math.cos(angle) * segmentDistance + perpX;
+                        const y = emergedSolution.y + Math.sin(angle) * segmentDistance + perpY;
+                        
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                    
+                    // Draw pulse traveling along connection
+                    const pulseX = emergedSolution.x + Math.cos(angle) * distance * conn.pulsePosition;
+                    const pulseY = emergedSolution.y + Math.sin(angle) * distance * conn.pulsePosition;
+                    
+                    p.noStroke();
+                    p.fill(
+                        emergedSolution.color[0],
+                        emergedSolution.color[1],
+                        emergedSolution.color[2],
+                        conn.alpha * 1.2
+                    );
+                    p.ellipse(pulseX, pulseY, 4);
+                }
             }
             
             function emitSolutionParticles() {
-                // Implementation remains the same
+                if (!emergedSolution) return;
+                
+                // Create particles emanating from the solution
+                const numParticles = Math.floor(p.random(1, 4));
+                for (let i = 0; i < numParticles; i++) {
+                    const angle = p.random(p.TWO_PI);
+                    const distance = emergedSolution.size * 0.5;
+                    
+                    const x = emergedSolution.x + Math.cos(angle) * distance;
+                    const y = emergedSolution.y + Math.sin(angle) * distance;
+                    
+                    const speed = p.random(0.3, 1.2);
+                    
+                    const particle = {
+                        x: x,
+                        y: y,
+                        size: p.random(2, 5),
+                        color: [
+                            emergedSolution.color[0],
+                            emergedSolution.color[1],
+                            emergedSolution.color[2],
+                            p.random(150, 220)
+                        ],
+                        lifetime: 0,
+                        maxLifetime: p.random(30, 60),
+                        velocity: {
+                            x: Math.cos(angle) * speed,
+                            y: Math.sin(angle) * speed
+                        }
+                    };
+                    
+                    particles.push(particle);
+                }
             }
             
+            // Utility Functions
             function drawStar(x, y, radius1, radius2, npoints) {
-                // Implementation remains the same
+                p.beginShape();
+                for (let i = 0; i < npoints * 2; i++) {
+                    const radius = i % 2 === 0 ? radius1 : radius2;
+                    const angle = p.TWO_PI / (npoints * 2) * i;
+                    const sx = x + Math.cos(angle) * radius;
+                    const sy = y + Math.sin(angle) * radius;
+                    p.vertex(sx, sy);
+                }
+                p.endShape(p.CLOSE);
             }
             
             function triggerProcessingMode() {
-                // Implementation remains the same
+                processingMode = true;
+                processingTimer = 0;
+                solutionPhase = false;
+                emergedSolution = null;
+                
+                // Activate some hexagons randomly
+                const inactiveHexes = hexGrid.filter(hex => !hex.active);
+                const numToActivate = Math.min(inactiveHexes.length, Math.floor(p.random(3, 6)));
+                
+                for (let i = 0; i < numToActivate; i++) {
+                    const randomIndex = Math.floor(p.random(inactiveHexes.length));
+                    const hex = inactiveHexes.splice(randomIndex, 1)[0];
+                    hex.active = true;
+                    hex.highlight = 80;
+                    
+                    // Create particles at activation point
+                    createMergeParticles(hex.x, hex.y, [...VIBRANT_TEAL, 180], 5);
+                }
+                
+                // Create paths from central node to some activated hexagons
+                for (let i = 0; i < Math.floor(p.random(2, 4)); i++) {
+                    if (i < hexGrid.filter(h => h.active).length) {
+                        const activeHexes = hexGrid.filter(h => h.active);
+                        const targetHex = activeHexes[Math.floor(p.random(activeHexes.length))];
+                        createPathFromCentralNode(targetHex);
+                    }
+                }
             }
             
             function resetProcessing() {
-                // Implementation remains the same
+                processingMode = false;
+                processingTimer = 0;
+                solutionPhase = false;
+                
+                // Deactivate some hexagons randomly
+                const activeHexes = hexGrid.filter(hex => hex.active);
+                const numToDeactivate = Math.floor(activeHexes.length * 0.7); // Deactivate 70%
+                
+                for (let i = 0; i < numToDeactivate; i++) {
+                    if (activeHexes.length > 0) {
+                        const randomIndex = Math.floor(p.random(activeHexes.length));
+                        const hex = activeHexes.splice(randomIndex, 1)[0];
+                        hex.active = false;
+                    }
+                }
+                
+                // Clear central node connections
+                centralNode.activeConnections = [];
             }
-
+            
             p.windowResized = function() {
-                // Implementation remains the same
+                // Resize canvas to fit container
+                let container = document.getElementById('visualization-container');
+                p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+                
+                // Update central node position
+                centralNode.x = p.width / 2;
+                centralNode.y = p.height / 2;
+                
+                // Update grid positions
+                for (let hex of hexGrid) {
+                    // Calculate new position based on angle and distance from center
+                    hex.distanceFromCenter = Math.min(hex.distanceFromCenter, Math.min(p.width, p.height) * 0.4);
+                    hex.x = centralNode.x + Math.cos(hex.angleFromCenter) * hex.distanceFromCenter;
+                    hex.y = centralNode.y + Math.sin(hex.angleFromCenter) * hex.distanceFromCenter;
+                    hex.baseX = hex.x;
+                    hex.baseY = hex.y;
+                }
+                
+                // Update solution position if it exists
+                if (emergedSolution) {
+                    emergedSolution.x = centralNode.x;
+                    emergedSolution.y = centralNode.y;
+                }
             };
         };
         
-        // Start the P5 sketch in the visualization container AFTER the entire geminiSketch function
+        // Start the P5 sketch in the visualization container
         new p5(geminiSketch, 'visualization-container');
     </script>
 </body>
