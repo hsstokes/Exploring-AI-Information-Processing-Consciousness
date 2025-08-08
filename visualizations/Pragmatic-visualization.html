@@ -91,36 +91,6 @@
            margin-bottom: 5px;
            font-size: 10px; /* Slightly larger than regular text */
         }
-        p.touchStarted = function() {
-           if (p.touches && p.touches.length > 0) {
-               /* When touch begins inside visualization area */
-               mouseInfluence.x = p.touches[0].x;
-               mouseInfluence.y = p.touches[0].y;
-               mouseInfluence.active = true;
-        
-               /* If not in processing mode, trigger it*/
-               if (!processingMode) {
-               triggerProcessingMode();
-               }
-               return false; // Prevent default
-           }
-         };
-
-         p.touchMoved = function() {
-            if (p.touches && p.touches.length > 0 && mouseInfluence.active) {
-               mouseInfluence.x = p.touches[0].x;
-               mouseInfluence.y = p.touches[0].y;
-               mouseInactivityTimer = 0; // Reset timer when touch moves
-               return false; // Prevent default
-           }
-         };
-
-         p.touchEnded = function() {
-             /* Turn off mouse influence */
-             mouseInfluence.active = false;
-             return false; // Prevent default
-         };
-        }
         /* Footer with interactive tips - ADD THIS SECTION */
         .interaction-tips {
              background-color: rgba(255, 255, 255, 0.8);
@@ -363,6 +333,37 @@
                     return false;
                 }
             };
+            // Add these touch event handlers right after your mouse event handlers
+            p.touchStarted = function() {
+                if (p.touches && p.touches.length > 0) {
+                    // When touch begins inside visualization area
+                    mouseInfluence.x = p.touches[0].x;
+                    mouseInfluence.y = p.touches[0].y;
+                    mouseInfluence.active = true;
+        
+                   // If not in processing mode, trigger it
+                   if (!processingMode) {
+                        triggerProcessingMode();
+                   }
+        
+                   return false; // Prevent default
+                 }
+             };
+
+             p.touchMoved = function() {
+                if (p.touches && p.touches.length > 0 && mouseInfluence.active) {
+                    mouseInfluence.x = p.touches[0].x;
+                    mouseInfluence.y = p.touches[0].y;
+                    mouseInactivityTimer = 0; // Reset timer when touch moves
+                    return false; // Prevent default
+                 }
+              };
+
+              p.touchEnded = function() {
+                  // Turn off mouse influence
+                  mouseInfluence.active = false;
+                  return false; // Prevent default
+              };
             
             function createHexGrid() {
                 // Create hexagons in a radius around the central node
