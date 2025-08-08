@@ -3,6 +3,7 @@
 <head>
     <title>Claude-Opus-3 Visualization</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         body {
             margin: 0;
@@ -487,7 +488,15 @@
                 }
                 return false; // Prevent default
             };
-        };
+            
+            // ADD YOUR NEW TOUCH FUNCTION RIGHT HERE, after mousePressed and before the closing bracket of claudeSketch
+            p.touchStarted = function() {
+           // When touch occurs, trigger evaluation mode (same as mousePressed)
+              if (!evaluationMode) {
+                  triggerEvaluationMode();
+               }
+               return false; // Prevent default behavior
+            };
         
         // Start the P5 sketch in the visualization container
         new p5(claudeSketch, 'visualization-container');
