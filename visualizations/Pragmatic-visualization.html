@@ -134,8 +134,8 @@
         <div class="interaction-tips">
             <h3>Interact with the Visualization:</h3>
             <ul>
-                <li><strong>Click/Tap:</strong> Trigger Gemini's processing mode</li>
-                <li><strong>Drag mouse/finger:</strong> Influence hexagons and data points</li>
+                <li><strong>Click:</strong> Trigger Gemini's processing mode</li>
+                <li><strong>Drag mouse:</strong> Influence hexagons and data points</li>
                 <li><strong>Wait:</strong> Watch data processing and pattern emergence</li>
             </ul>
         </div>
@@ -339,38 +339,6 @@
                     return false;
                 }
             };
-            
-            // Add touch event handlers
-            p.touchStarted = function() {
-                if (p.touches && p.touches.length > 0) {
-                    // When touch begins inside visualization area
-                    mouseInfluence.x = p.touches[0].x;
-                    mouseInfluence.y = p.touches[0].y;
-                    mouseInfluence.active = true;
-        
-                   // If not in processing mode, trigger it
-                   if (!processingMode) {
-                        triggerProcessingMode();
-                   }
-        
-                   return false; // Prevent default
-                 }
-             };
-
-             p.touchMoved = function() {
-                if (p.touches && p.touches.length > 0 && mouseInfluence.active) {
-                    mouseInfluence.x = p.touches[0].x;
-                    mouseInfluence.y = p.touches[0].y;
-                    mouseInactivityTimer = 0; // Reset timer when touch moves
-                    return false; // Prevent default
-                 }
-              };
-
-              p.touchEnded = function() {
-                  // Turn off mouse influence
-                  mouseInfluence.active = false;
-                  return false; // Prevent default
-              };
             
             // Hex Grid Creation and Management
             function createHexGrid() {
@@ -1447,6 +1415,13 @@
         
         // Start the P5 sketch in the visualization container
         new p5(geminiSketch, 'visualization-container');
+        
+        // Add console logging for debugging
+        console.log("Script loaded");
+        setTimeout(() => {
+            console.log("Checking if canvas was created:", 
+                document.querySelector("#visualization-container canvas") ? "Yes" : "No");
+        }, 1000);
     </script>
 </body>
 </html>
