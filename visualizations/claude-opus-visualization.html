@@ -489,12 +489,30 @@
                 return false; // Prevent default
             };
             
-            // Add this simple version that just calls the existing mousePressed function
+            // Replace your current touchStarted function with this expanded version
             p.touchStarted = function() {
-                // Simply call the existing mousePressed function's behavior
-                p.mousePressed();
-                return false; // Prevent default
-            };
+                console.log("Touch detected"); // Add this for debugging
+                // When touch occurs, trigger evaluation mode
+                if (!evaluationMode) {
+                    triggerEvaluationMode();
+                }
+               return false; // Prevent default behavior like scrolling
+           };
+
+           // Also add these additional touch handlers for more complete mobile support
+           p.touchMoved = function() {
+                // Prevent default touch behaviors like scrolling
+                return false;
+           };
+
+           p.touchEnded = function() {
+               // Another opportunity to detect touch
+               if (!evaluationMode) {
+                   triggerEvaluationMode();
+           }
+           return false;
+           };
+            
         };
         // Start the P5 sketch in the visualization container
         new p5(claudeSketch, 'visualization-container');
