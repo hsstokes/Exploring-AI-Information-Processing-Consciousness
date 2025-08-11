@@ -2,7 +2,8 @@
 <html>
 <head>
     <title>Claude-Opus-3 Visualization</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         body {
@@ -480,8 +481,19 @@
                     polygon.baseY = centralSphere.y + p.sin(polygon.orbitAngle) * polygon.orbitDistance;
                 }
             };
+            // Add this variable to the top of your geminiSketch function
+            let interactionSound;
+
+            p.preload = function() {
+                // Adjust the path as needed; this assumes your HTML is at the repo root
+                interactionSound = p.loadSound('../audio/self-aware-sound.wav');
+            };
             
             p.mousePressed = function() {
+                // Play sound on interaction
+                    if (interactionSound && !interactionSound.isPlaying()) {
+                    interactionSound.play();
+                    }
                 // When mouse is pressed, trigger evaluation mode
                 if (!evaluationMode) {
                     triggerEvaluationMode();
