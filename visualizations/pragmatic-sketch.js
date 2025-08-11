@@ -320,20 +320,484 @@ let pragmaticSketch = function(p) {
         }
     }
 
-    // The following are placeholders for all the "..." update/draw/create functions from your original code.
-    // For clarity in this starter, only the essentials are included.
-    // For a full match, move your detailed solution, particle, pathway, etc. logic into these functions.
+    // Implemented missing functions
+    function updateAndDrawPathways() {
+        // Update and draw all pathways
+        for (let i = pathways.length - 1; i >= 0; i--) {
+            const path = pathways[i];
+            
+            // Update path properties
+            path.lifetime++;
+            
+            // Draw the path
+            p.noFill();
+            p.stroke(path.color[0], path.color[1], path.color[2], path.alpha);
+            p.strokeWeight(path.width);
+            
+            p.beginShape();
+            for (let point of path.points) {
+                p.vertex(point.x, point.y);
+            }
+            p.endShape();
+            
+            // Create particles along the path
+            if (p.frameCount % 5 === 0 && path.lifetime < path.maxLifetime * 0.7) {
+                const progress = p.random(1);
+                const index = Math.floor(progress * (path.points.length - 1));
+                const pt1 = path.points[index];
+                const pt2 = path.points[index + 1];
+                
+                if (pt1 && pt2) {
+                    const particleX = p.lerp(pt1.x, pt2.x, progress % 1);
+                    const particleY = p.lerp(pt1.y, pt2.y, progress % 1);
+                    
+                    particles.push({
+                        x: particleX,
+                        y: particleY,
+                        vx: p.random(-0.5, 0.5),
+                        vy: p.random(-0.5, 0.5),
+                        size: p.random(2, 4),
+                        color: path.color,
+                        alpha: 150,
+                        life: 0,
+                        maxLife: p.random(20, 40)
+                    });
+                }
+            }
+            
+            // Remove old pathways
+            if (path.lifetime > path.maxLifetime) {
+                pathways.splice(i, 1);
+            }
+        }
+    }
 
-    function updateAndDrawPathways() {}
-    function createPathway() {}
-    function createSolution() {}
-    function updateAndDrawSolution() {}
-    function createMergeParticles(x, y, color, count) {}
-    function updateAndDrawParticles() {}
-    function updateCentralNode() {}
-    function drawCentralNode() {}
-    function triggerProcessingMode() { processingMode = true; processingTimer = 0; solutionPhase = false; }
-    function resetProcessing() { processingMode = false; processingTimer = 0; solutionPhase = false; emergedSolution = null; }
+    function createPathway() {
+        // Get active hexes
+        const activeHexes = hexGrid.filter(h => h.active);
+        
+        // If no active hexes, create path from central node to a random hex
+        if (activeHexes.length === 0) {
+            const randomHex = hexGrid[Math.floor(p.random(hexGrid.length))];
+            if (randomHex) {
+                createPathFromCentralNode(randomHex);
+            }
+            return;
+        }
+        
+        // Decide on path type
+        if (p.random() < 0.7 || activeHexes.length === 1) {
+            // Create path from central node to a random active hex
+            const sourceHex = activeHexes[Math.floor(p.random(activeHexes.length))];
+            
+            // Find inactive hexes that are not too far from active hexes
+            const potentialTargets = hexGrid.filter(h => !h.active);
+            if (potentialTargets.length > 0) {
+                // Sort by distance to source hex
+                potentialTargets.sort((a, b) => {
+                    const distA = p.dist(sourceHex.x, sourceHex.y, a.x, a.y);
+                    const distB = p.dist(sourceHex.x, sourceHex.y, b.x, b.y);
+                    return distA - distB;
+                });
+                
+                // Choose one of the closest
+                const targetIndex = Math.floor(p.random(Math.min(5, potentialTargets.length)));
+                const targetHex = potentialTargets[targetIndex];
+                
+                // Create the path
+                createPath(sourceHex, targetHex);
+            }
+        } else {
+            // Create path between two active hexes
+            if (activeHexes.length >= 2) {
+                const hex1 = activeHexes[Math.floor(p.random(activeHexes.length))];
+                let hex2;
+                do {
+                    hex2 = activeHexes[Math.floor(p.random(activeHexes.length))];
+                } while (hex1 === hex2);
+                
+                createPath(hex1, hex2);
+            }
+        }
+    }
+
+    function createPath(source, target) {
+        // Calculate control points for a curved path
+        const dx = target.x - source.x;
+        const dy = target.y - source.y;
+        const distance = p.dist(source.x, source.y, target.x, target.y);
+        
+        // Create control points perpendicular to the direct line
+        const perpX = -dy / distance * p.random(30, 80);
+        const perpY = dx / distance * p.random(30, 80);
+        
+        // Create the Bezier control points
+        const ctrl1X = source.x + dx * 0.3 + perpX;
+        const ctrl1Y = source.y + dy * 0.3 + perpY;
+        const ctrl2X = source.x + dx * 0.7 + perpX;
+        const ctrl2Y = source.y + dy * 0.7 + perpY;
+        
+        // Sample points along the Bezier curve
+        const points = [];
+        const steps = 15;
+        
+        for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            const x = p.bezierPoint(source.x, ctrl1X, ctrl2X, target.x, t);
+            const y = p.bezierPoint(source.y, ctrl1Y, ctrl2Y, target.y, t);
+            points.push({ x, y });
+        }
+        
+        // Create the path object
+        const path = {
+            points: points,
+            source: source,
+            target: target,
+            width: p.random(1, 2),
+            color: [LIGHT_TEAL[0], LIGHT_TEAL[1], LIGHT_TEAL[2]],
+            alpha: 150,
+            lifetime: 0,
+            maxLifetime: 300 + p.random(300)
+        };
+        
+        pathways.push(path);
+        
+        // Activate the target hex if it's not already active
+        if (!target.active) {
+            target.active = true;
+            target.highlight = 80;
+            createMergeParticles(target.x, target.y, LIGHT_TEAL, 8);
+        }
+    }
+
+    function createPathFromCentralNode(targetHex) {
+        // Create a path from central node to a target hex
+        const dx = targetHex.x - centralNode.x;
+        const dy = targetHex.y - centralNode.y;
+        
+        // Create control points for a curved path
+        const ctrl1X = centralNode.x + dx * 0.3 + p.random(-30, 30);
+        const ctrl1Y = centralNode.y + dy * 0.3 + p.random(-30, 30);
+        const ctrl2X = centralNode.x + dx * 0.7 + p.random(-30, 30);
+        const ctrl2Y = centralNode.y + dy * 0.7 + p.random(-30, 30);
+        
+        // Sample points along the Bezier curve
+        const points = [];
+        const steps = 15;
+        
+        for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            const x = p.bezierPoint(centralNode.x, ctrl1X, ctrl2X, targetHex.x, t);
+            const y = p.bezierPoint(centralNode.y, ctrl1Y, ctrl2Y, targetHex.y, t);
+            points.push({ x, y });
+        }
+        
+        // Create the path object
+        const path = {
+            points: points,
+            source: { x: centralNode.x, y: centralNode.y },
+            target: targetHex,
+            width: p.random(1, 2.5),
+            color: [LIGHT_TEAL[0], LIGHT_TEAL[1], LIGHT_TEAL[2]],
+            alpha: 180,
+            lifetime: 0,
+            maxLifetime: 300 + p.random(300)
+        };
+        
+        pathways.push(path);
+        
+        // Add to central node's active connections
+        centralNode.activeConnections.push({
+            target: targetHex,
+            alpha: 150,
+            width: path.width
+        });
+        
+        // Activate the target hex
+        targetHex.active = true;
+        targetHex.highlight = 80;
+        createMergeParticles(targetHex.x, targetHex.y, LIGHT_TEAL, 10);
+    }
+
+    function createSolution() {
+        // Create a solution node at the center that will move upward
+        emergedSolution = {
+            x: centralNode.x,
+            y: centralNode.y,
+            targetX: centralNode.x,
+            targetY: centralNode.y - 100,
+            size: 10,
+            targetSize: 50,
+            color: VIBRANT_TEAL,
+            alpha: 0,
+            rotation: 0,
+            rotationSpeed: 0.01,
+            particles: [],
+            connections: [],
+            pulseFactor: 0,
+            pulseDirection: 0.02,
+            activeHexes: hexGrid.filter(h => h.active)
+        };
+        
+        // Create connections to all active hexes
+        for (let hex of emergedSolution.activeHexes) {
+            emergedSolution.connections.push({
+                target: hex,
+                alpha: 0,
+                targetAlpha: 150,
+                width: p.random(1, 2)
+            });
+        }
+    }
+
+    function updateAndDrawSolution() {
+        if (!emergedSolution) return;
+        
+        // Update solution position and properties
+        emergedSolution.x = p.lerp(emergedSolution.x, emergedSolution.targetX, 0.03);
+        emergedSolution.y = p.lerp(emergedSolution.y, emergedSolution.targetY, 0.03);
+        emergedSolution.size = p.lerp(emergedSolution.size, emergedSolution.targetSize, 0.03);
+        emergedSolution.alpha = Math.min(255, emergedSolution.alpha + 5);
+        emergedSolution.rotation += emergedSolution.rotationSpeed;
+        emergedSolution.pulseFactor += emergedSolution.pulseDirection;
+        
+        if (emergedSolution.pulseFactor > 1 || emergedSolution.pulseFactor < 0) {
+            emergedSolution.pulseDirection *= -1;
+        }
+        
+        // Update and draw connections to active hexes
+        for (let conn of emergedSolution.connections) {
+            conn.alpha = p.lerp(conn.alpha, conn.targetAlpha, 0.05);
+            
+            p.stroke(emergedSolution.color[0], emergedSolution.color[1], emergedSolution.color[2], conn.alpha);
+            p.strokeWeight(conn.width);
+            p.line(emergedSolution.x, emergedSolution.y, conn.target.x, conn.target.y);
+            
+            // Add pulse along connection
+            if (p.frameCount % 10 === 0) {
+                particles.push({
+                    x: emergedSolution.x,
+                    y: emergedSolution.y,
+                    targetX: conn.target.x,
+                    targetY: conn.target.y,
+                    progress: 0,
+                    speed: p.random(0.01, 0.03),
+                    size: p.random(3, 6),
+                    color: emergedSolution.color,
+                    alpha: 200,
+                    life: 0,
+                    maxLife: 100
+                });
+            }
+        }
+        
+        // Draw the solution
+        p.push();
+        p.translate(emergedSolution.x, emergedSolution.y);
+        p.rotate(emergedSolution.rotation);
+        
+        // Draw outer glow
+        p.noStroke();
+        for (let i = 4; i > 0; i--) {
+            const glowSize = emergedSolution.size * (1 + i * 0.15);
+            p.fill(emergedSolution.color[0], emergedSolution.color[1], emergedSolution.color[2], 
+                   Math.max(0, emergedSolution.alpha * 0.2 - i * 10));
+            p.ellipse(0, 0, glowSize, glowSize);
+        }
+        
+        // Draw main shape - octagon
+        p.fill(emergedSolution.color[0], emergedSolution.color[1], emergedSolution.color[2], emergedSolution.alpha);
+        drawPolygon(0, 0, emergedSolution.size * (0.8 + emergedSolution.pulseFactor * 0.1), 8);
+        
+        // Draw inner shape - smaller octagon
+        p.fill(255, 255, 255, emergedSolution.alpha * 0.5);
+        drawPolygon(0, 0, emergedSolution.size * 0.5, 8);
+        
+        p.pop();
+        
+        // Occasionally emit particles
+        if (p.frameCount % 5 === 0) {
+            const angle = p.random(p.TWO_PI);
+            const radius = emergedSolution.size * 0.5;
+            const px = emergedSolution.x + p.cos(angle) * radius;
+            const py = emergedSolution.y + p.sin(angle) * radius;
+            
+            particles.push({
+                x: px,
+                y: py,
+                vx: p.cos(angle) * p.random(0.5, 2),
+                vy: p.sin(angle) * p.random(0.5, 2),
+                size: p.random(2, 5),
+                color: emergedSolution.color,
+                alpha: 200,
+                life: 0,
+                maxLife: p.random(20, 40)
+            });
+        }
+    }
+
+    function createMergeParticles(x, y, color, count) {
+        for (let i = 0; i < count; i++) {
+            const angle = p.random(p.TWO_PI);
+            const speed = p.random(0.5, 2.5);
+            
+            particles.push({
+                x: x,
+                y: y,
+                vx: p.cos(angle) * speed,
+                vy: p.sin(angle) * speed,
+                size: p.random(2, 6),
+                color: color,
+                alpha: 200,
+                life: 0,
+                maxLife: p.random(20, 40),
+                drag: p.random(0.92, 0.97)
+            });
+        }
+    }
+
+    function updateAndDrawParticles() {
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const particle = particles[i];
+            
+            // Different update logic depending on particle type
+            if (particle.hasOwnProperty('progress')) {
+                // Path-following particle
+                particle.progress += particle.speed;
+                particle.x = p.lerp(particle.x, particle.targetX, particle.progress);
+                particle.y = p.lerp(particle.y, particle.targetY, particle.progress);
+                particle.alpha = p.map(particle.life, 0, particle.maxLife, 200, 0);
+            } else {
+                // Regular particle with velocity
+                particle.x += particle.vx;
+                particle.y += particle.vy;
+                
+                // Apply drag if specified
+                if (particle.drag) {
+                    particle.vx *= particle.drag;
+                    particle.vy *= particle.drag;
+                } else {
+                    particle.vx *= 0.95;
+                    particle.vy *= 0.95;
+                }
+                
+                particle.size *= 0.97;
+                particle.alpha = p.map(particle.life, 0, particle.maxLife, 200, 0);
+            }
+            
+            // Increment life counter
+            particle.life++;
+            
+            // Draw the particle
+            p.noStroke();
+            p.fill(particle.color[0], particle.color[1], particle.color[2], particle.alpha);
+            p.ellipse(particle.x, particle.y, particle.size);
+            
+            // Remove if expired
+            if (particle.life >= particle.maxLife || particle.progress >= 1) {
+                particles.splice(i, 1);
+            }
+        }
+    }
+
+    function updateCentralNode() {
+        // Update central node properties
+        centralNode.pulseAmount = Math.sin(p.frameCount * 0.03) * 5;
+        centralNode.rotation += centralNode.rotationSpeed;
+        
+        // Update connections
+        for (let i = centralNode.activeConnections.length - 1; i >= 0; i--) {
+            const conn = centralNode.activeConnections[i];
+            
+            // If target is no longer active, fade out connection
+            if (!conn.target.active) {
+                conn.alpha -= 5;
+                if (conn.alpha <= 0) {
+                    centralNode.activeConnections.splice(i, 1);
+                }
+            }
+        }
+    }
+
+    function drawCentralNode() {
+        // Draw the central node
+        p.push();
+        p.translate(centralNode.x, centralNode.y);
+        p.rotate(centralNode.rotation);
+        
+        // Draw outer glow
+        p.noStroke();
+        for (let i = 3; i > 0; i--) {
+            const glowSize = centralNode.size * (1 + i * 0.2) + centralNode.pulseAmount;
+            p.fill(centralNode.color[0], centralNode.color[1], centralNode.color[2], 
+                  Math.max(0, centralNode.alpha * 0.3 - i * 20));
+            p.ellipse(0, 0, glowSize, glowSize);
+        }
+        
+        // Draw main circle
+        p.fill(centralNode.color[0], centralNode.color[1], centralNode.color[2], centralNode.alpha);
+        p.ellipse(0, 0, centralNode.size + centralNode.pulseAmount, centralNode.size + centralNode.pulseAmount);
+        
+        // Draw inner highlight for depth
+        p.fill(255, 255, 255, 60);
+        p.ellipse(0, 0, (centralNode.size + centralNode.pulseAmount) * 0.7, (centralNode.size + centralNode.pulseAmount) * 0.7);
+        
+        p.pop();
+        
+        // Draw active connections
+        for (let conn of centralNode.activeConnections) {
+            p.stroke(LIGHT_TEAL[0], LIGHT_TEAL[1], LIGHT_TEAL[2], conn.alpha);
+            p.strokeWeight(conn.width);
+            p.line(centralNode.x, centralNode.y, conn.target.x, conn.target.y);
+            
+            // Draw pulse along the connection
+            if (conn.target.active && p.frameCount % 20 === 0) {
+                particles.push({
+                    x: centralNode.x,
+                    y: centralNode.y,
+                    targetX: conn.target.x,
+                    targetY: conn.target.y,
+                    progress: 0,
+                    speed: 0.05,
+                    size: 4,
+                    color: LIGHT_TEAL,
+                    alpha: 200,
+                    life: 0,
+                    maxLife: 60
+                });
+            }
+        }
+    }
+
+    function triggerProcessingMode() { 
+        processingMode = true; 
+        processingTimer = 0; 
+        solutionPhase = false; 
+        
+        // Create initial pathways
+        for (let i = 0; i < 3; i++) {
+            createPathway();
+        }
+    }
+
+    function resetProcessing() { 
+        processingMode = false; 
+        processingTimer = 0; 
+        solutionPhase = false; 
+        emergedSolution = null;
+        
+        // Keep some active hexes, but reset most
+        const activeHexes = hexGrid.filter(h => h.active);
+        if (activeHexes.length > 5) {
+            // Deactivate some random hexes
+            for (let i = 0; i < activeHexes.length * 0.7; i++) {
+                const index = Math.floor(p.random(activeHexes.length));
+                if (index < activeHexes.length) {
+                    activeHexes[index].active = false;
+                }
+            }
+        }
+    }
 
     p.windowResized = function() {
         p.resizeCanvas(window.innerWidth, window.innerHeight);
