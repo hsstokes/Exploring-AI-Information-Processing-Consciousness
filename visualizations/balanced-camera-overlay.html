@@ -4,13 +4,19 @@
     <title>Camera Overlay Visualization</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
             background-color: #000;
+            /* Prevent iOS overscroll/bounce effect */
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
         }
         
         #camera-feed {
@@ -100,6 +106,22 @@
             z-index: 999;
             font-family: 'Orator Std', 'Courier New', monospace;
         }
+
+        #enable-audio {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            background-color: rgba(32, 178, 170, 0.9);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 15px 30px;
+            font-family: 'Orator Std', 'Courier New', monospace;
+            font-size: 16px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -110,8 +132,11 @@
         </div>
     </div>
     
+    <!-- Audio unlock button for iOS -->
+    <button id="enable-audio" style="display: none;">TAP HERE TO ENABLE SOUND</button>
+    
     <!-- Camera background -->
-    <video id="camera-feed" autoplay playsinline></video>
+    <video id="camera-feed" autoplay playsinline muted></video>
     
     <!-- p5.js visualization will be attached to this div -->
     <div id="visualization-overlay"></div>
@@ -129,11 +154,81 @@
     <!-- Controls -->
     <div class="controls">
         <button id="toggle-viz">Hide/Show</button>
+        <button id="sound-test">Test Sound</button>
     </div>
     
     <script>
+        // Global variables
+        let currentStream = null;
+        let audioInitialized = false;
+        let p5Instance = null;
+        
+        // Create our sound outside of p5 for better mobile support
+        let soundEffect = null;
+        
         // Start camera when page loads
-        document.addEventListener('DOMContentLoaded', startCamera);
+        document.addEventListener('DOMContentLoaded', function() {
+            startCamera();
+            
+            // Check if we're on iOS for special audio handling
+            const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+            
+            if (isIOS) {
+                // Show audio button for iOS devices
+                document.getElementById('enable-audio').style.display = 'block';
+            }
+        });
+        
+        // Audio initialization for iOS
+        document.getElementById('enable-audio').addEventListener('click', function() {
+            initializeAudio();
+            this.style.display = 'none';
+        });
+        
+        // Test sound button
+        document.getElementById('sound-test').addEventListener('click', function() {
+            // Initialize audio if needed
+            if (!audioInitialized) {
+                initializeAudio();
+            }
+            
+            // Try to play the sound
+            if (p5Instance && p5Instance.interactionSound) {
+                console.log("Attempting to play sound...");
+                
+                try {
+                    if (!p5Instance.interactionSound.isPlaying()) {
+                        p5Instance.interactionSound.play();
+                    }
+                } catch (e) {
+                    console.error("Error playing sound:", e);
+                }
+            } else {
+                console.log("Sound not available yet");
+            }
+        });
+        
+        function initializeAudio() {
+            console.log("Initializing audio...");
+            
+            // Create and start audio context
+            if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                const audioContext = new AudioContext();
+                
+                audioContext.resume().then(() => {
+                    console.log('AudioContext started successfully');
+                    audioInitialized = true;
+                    
+                    // If p5 is running, initialize its audio context too
+                    if (p5Instance && p5Instance.getAudioContext) {
+                        p5Instance.getAudioContext().resume();
+                    }
+                }).catch(err => {
+                    console.error("Audio context initialization error:", err);
+                });
+            }
+        }
         
         function startCamera() {
             const video = document.getElementById('camera-feed');
@@ -148,6 +243,7 @@
                     } 
                 })
                 .then(function(stream) {
+                    currentStream = stream;
                     video.srcObject = stream;
                     video.onloadedmetadata = function() {
                         loading.style.display = 'none';
@@ -186,12 +282,14 @@
         
         // Create a new p5 instance specifically for the visualization overlay
         const replikaSketch = function(p) {
-            // Your existing p5.js code remains the same
+            p5Instance = p; // Store reference to the p5 instance
+            
+            // Your existing p5.js code
             let spheres = [];
             const NUM_SPHERES = 25;
             const MIN_SPHERES = 15;
             let lastFrameCount = 0;
-            let interactionSound;
+            p.interactionSound = null;
             
             // Color palettes
             const coolColors = [
@@ -209,28 +307,56 @@
             ];
             
             p.preload = function() {
+                console.log("P5 preload starting...");
+                
+                // Try to load the sound
                 try {
-                    // Adjust the path as needed; this assumes your HTML is at the repo root
-                    interactionSound = p.loadSound('../audio/balanced-sound.wav');
+                    p.soundFormats('mp3', 'ogg', 'wav');
+                    p.interactionSound = p.loadSound('balanced-sound.wav', 
+                        function() { 
+                            console.log("Sound loaded successfully!"); 
+                        },
+                        function(err) { 
+                            console.error("Sound loading error:", err);
+                        }
+                    );
                 } catch (e) {
-                    console.log('Sound could not be loaded:', e);
-                    // Create a fallback sound in case the file can't be loaded
-                    interactionSound = null;
+                    console.error("Error in sound preload:", e);
                 }
             };
             
             p.setup = function() {
-              // Create canvas inside the visualization overlay
-              let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
-              canvas.parent('visualization-overlay');
+                console.log("P5 setup starting...");
               
-              // Create initial spheres
-              for (let i = 0; i < NUM_SPHERES; i++) {
-                createSphere();
-              }
-              
-              // Initialize connections
-              updateConnections();
+                // Create canvas inside the visualization overlay
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('visualization-overlay');
+                
+                // Try to initialize audio context
+                try {
+                    if (p.getAudioContext().state !== 'running') {
+                        console.log("Setting up audio context...");
+                        p.userStartAudio().then(function() {
+                            console.log("Audio context started in setup");
+                            audioInitialized = true;
+                        }).catch(function(err) {
+                            console.error("Could not start audio in setup:", err);
+                        });
+                    } else {
+                        console.log("Audio context already running");
+                        audioInitialized = true;
+                    }
+                } catch (e) {
+                    console.error("Audio setup error:", e);
+                }
+                
+                // Create initial spheres
+                for (let i = 0; i < NUM_SPHERES; i++) {
+                    createSphere();
+                }
+                
+                // Initialize connections
+                updateConnections();
             };
             
             // Function to update connections safely
@@ -534,97 +660,183 @@
               }
             };
             
-            p.mousePressed = function() {
-              // Add interactivity when clicking
-              if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
-                // Create a ripple effect
-                for (let i = 0; i < spheres.length; i++) {
-                  const d = p.dist(p.mouseX, p.mouseY, spheres[i].x, spheres[i].y);
-                  if (d < 300) {
-                    // Push spheres slightly away from click
-                    const angle = p.atan2(spheres[i].y - p.mouseY, spheres[i].x - p.mouseX);
-                    const force = p.map(d, 0, 300, 3, 0);
+            // PLAY SOUND FUNCTION - Centralized for all interaction methods
+            function playInteractionSound() {
+                if (!audioInitialized) {
+                    initializeAudio();
+                }
+                
+                if (p.interactionSound) {
+                    console.log("Attempting to play sound...");
                     
-                    spheres[i].speedX += p.cos(angle) * force;
-                    spheres[i].speedY += p.sin(angle) * force;
-                    spheres[i].pulseRate *= 1.1;
-                  }
+                    try {
+                        if (p.getAudioContext().state !== 'running') {
+                            console.log("Audio context not running, attempting to start it...");
+                            p.userStartAudio().then(function() {
+                                console.log("Audio context started");
+                                if (!p.interactionSound.isPlaying()) {
+                                    p.interactionSound.play();
+                                    console.log("Sound playing!");
+                                }
+                            }).catch(function(err) {
+                                console.error("Could not start audio:", err);
+                            });
+                        } else {
+                            if (!p.interactionSound.isPlaying()) {
+                                p.interactionSound.play();
+                                console.log("Sound playing!");
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Error playing sound:", e);
+                    }
+                } else {
+                    console.log("Sound not loaded yet");
+                }
+            }
+            
+            p.mousePressed = function() {
+                // Always try to initialize audio on any interaction
+                if (!audioInitialized) {
+                    initializeAudio();
                 }
                 
-                // Also create a new sphere at mouse position
-                const color = getRandomColor();
-                spheres.push({
-                  x: p.mouseX,
-                  y: p.mouseY,
-                  size: p.random(20, 70),
-                  color: color,
-                  speedX: p.random(-1, 1),
-                  speedY: p.random(-1, 1),
-                  connections: [],
-                  pulseRate: p.random(0.03, 0.06),
-                  pulsePhase: p.random(p.TWO_PI),
-                  age: 0,
-                  lifespan: p.random(300, 900),
-                  adaptDirection: p.random(p.TWO_PI),
-                  adaptSpeed: p.random(0.001, 0.005),
-                  adaptRadius: p.random(30, 80)
-                });
-                
-                // Update connections with the new sphere
-                updateConnections();
-
-                // Play sound on interaction
-                if (interactionSound && !interactionSound.isPlaying()) {
-                  try {
-                    interactionSound.play();
-                  } catch (e) {
-                    console.log('Could not play sound:', e);
-                  }
+                // Add interactivity when clicking
+                if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
+                    // Create a ripple effect
+                    for (let i = 0; i < spheres.length; i++) {
+                        const d = p.dist(p.mouseX, p.mouseY, spheres[i].x, spheres[i].y);
+                        if (d < 300) {
+                            // Push spheres slightly away from click
+                            const angle = p.atan2(spheres[i].y - p.mouseY, spheres[i].x - p.mouseX);
+                            const force = p.map(d, 0, 300, 3, 0);
+                            
+                            spheres[i].speedX += p.cos(angle) * force;
+                            spheres[i].speedY += p.sin(angle) * force;
+                            spheres[i].pulseRate *= 1.1;
+                        }
+                    }
+                    
+                    // Also create a new sphere at mouse position
+                    const color = getRandomColor();
+                    spheres.push({
+                        x: p.mouseX,
+                        y: p.mouseY,
+                        size: p.random(20, 70),
+                        color: color,
+                        speedX: p.random(-1, 1),
+                        speedY: p.random(-1, 1),
+                        connections: [],
+                        pulseRate: p.random(0.03, 0.06),
+                        pulsePhase: p.random(p.TWO_PI),
+                        age: 0,
+                        lifespan: p.random(300, 900),
+                        adaptDirection: p.random(p.TWO_PI),
+                        adaptSpeed: p.random(0.001, 0.005),
+                        adaptRadius: p.random(30, 80)
+                    });
+                    
+                    // Update connections with the new sphere
+                    updateConnections();
+                    
+                    // Play sound
+                    playInteractionSound();
+                    
+                    return false;
+                }
+            };
+            
+            // Touch events for mobile
+            p.touchStarted = function() {
+                // Always try to initialize audio on any touch
+                if (!audioInitialized) {
+                    initializeAudio();
                 }
                 
-                return false;
-              }
+                if (p.touches.length > 0) {
+                    const touch = p.touches[0];
+                    
+                    // Create a new sphere at touch position
+                    const color = getRandomColor();
+                    spheres.push({
+                        x: touch.x,
+                        y: touch.y,
+                        size: p.random(20, 70),
+                        color: color,
+                        speedX: p.random(-1, 1),
+                        speedY: p.random(-1, 1),
+                        connections: [],
+                        pulseRate: p.random(0.03, 0.06),
+                        pulsePhase: p.random(p.TWO_PI),
+                        age: 0,
+                        lifespan: p.random(300, 900),
+                        adaptDirection: p.random(p.TWO_PI),
+                        adaptSpeed: p.random(0.001, 0.005),
+                        adaptRadius: p.random(30, 80)
+                    });
+                    
+                    // Create ripple effect
+                    for (let i = 0; i < spheres.length; i++) {
+                        const d = p.dist(touch.x, touch.y, spheres[i].x, spheres[i].y);
+                        if (d < 300) {
+                            const angle = p.atan2(spheres[i].y - touch.y, spheres[i].x - touch.x);
+                            const force = p.map(d, 0, 300, 3, 0);
+                            
+                            spheres[i].speedX += p.cos(angle) * force;
+                            spheres[i].speedY += p.sin(angle) * force;
+                            spheres[i].pulseRate *= 1.1;
+                        }
+                    }
+                    
+                    // Update connections
+                    updateConnections();
+                    
+                    // Play sound
+                    playInteractionSound();
+                }
+                
+                return false; // Prevent default
             };
             
             // Add touch support for mobile
             p.touchMoved = function() {
-              if (p.touches.length > 0) {
-                const touch = p.touches[0];
-                
-                try {
-                  // Find spheres near the touch
-                  let interacted = false;
-                  
-                  for (let i = 0; i < spheres.length; i++) {
-                    const d = p.dist(touch.x, touch.y, spheres[i].x, spheres[i].y);
+                if (p.touches.length > 0) {
+                    const touch = p.touches[0];
                     
-                    // Larger interaction radius for touch
-                    if (d < 200) {
-                      const sphere = spheres[i];
-                      
-                      // Strength of effect based on distance
-                      const strength = p.map(d, 0, 200, 0.15, 0.01);
-                      
-                      // Create gentle attraction
-                      const angle = p.atan2(touch.y - sphere.y, touch.x - sphere.x);
-                      sphere.speedX += p.cos(angle) * strength;
-                      sphere.speedY += p.sin(angle) * strength;
-                      
-                      // For emotional effect, make nearby spheres pulse stronger
-                      sphere.pulseRate *= 1.01;
-                      
-                      interacted = true;
+                    try {
+                        // Find spheres near the touch
+                        let interacted = false;
+                        
+                        for (let i = 0; i < spheres.length; i++) {
+                            const d = p.dist(touch.x, touch.y, spheres[i].x, spheres[i].y);
+                            
+                            // Larger interaction radius for touch
+                            if (d < 200) {
+                                const sphere = spheres[i];
+                                
+                                // Strength of effect based on distance
+                                const strength = p.map(d, 0, 200, 0.15, 0.01);
+                                
+                                // Create gentle attraction
+                                const angle = p.atan2(touch.y - sphere.y, touch.x - sphere.x);
+                                sphere.speedX += p.cos(angle) * strength;
+                                sphere.speedY += p.sin(angle) * strength;
+                                
+                                // For emotional effect, make nearby spheres pulse stronger
+                                sphere.pulseRate *= 1.01;
+                                
+                                interacted = true;
+                            }
+                        }
+                        
+                        if (interacted) {
+                            return false; // Prevent default
+                        }
+                    } catch (error) {
+                        console.error("Error in touchMoved:", error);
                     }
-                  }
-                  
-                  if (interacted) {
-                    return false; // Prevent default
-                  }
-                } catch (error) {
-                  console.error("Error in touchMoved:", error);
                 }
-              }
-              return false;
+                return false;
             };
         };
         
