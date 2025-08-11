@@ -3,21 +3,38 @@
   <head>
     <title>AR Pragmatic Visualization</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.0/aframe/build/aframe-ar.js"></script>
+    <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
     <style>
       body { margin: 0; overflow: hidden; }
-      #p5-overlay {
+      .arjs-loader {
+        height: 100%;
+        width: 100%;
         position: absolute;
+        top: 0;
+        left: 0;
+        background-color: rgba(0, 0, 0, 0.8);
+        z-index: 9999;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .arjs-loader div {
+        text-align: center;
+        font-size: 1.25em;
+        color: white;
+      }
+      #p5-overlay {
+        position: fixed;
         left: 0; top: 0; width: 100vw; height: 100vh;
         pointer-events: none;
         z-index: 10;
         display: none;
       }
       #ar-info {
-        position: absolute;
+        position: fixed;
         left: 10px; bottom: 10px;
         background: rgba(255,255,255,0.9);
         border-radius: 6px;
@@ -27,31 +44,50 @@
         color: #445878;
         z-index: 20;
       }
-      .camera-button {
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        z-index: 30;
-        padding: 10px;
+      #start-button {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 999;
+        padding: 15px 20px;
         background: #4285f4;
         color: white;
         border: none;
-        border-radius: 4px;
+        border-radius: 8px;
+        font-size: 18px;
         cursor: pointer;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      }
+      #debug-info {
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        font-family: monospace;
+        font-size: 12px;
+        z-index: 100;
+        display: none;
+      }
+      .hidden {
+        display: none !important;
       }
     </style>
   </head>
   <body>
-    <button class="camera-button" id="start-ar">Start AR Experience</button>
+    <div class="arjs-loader">
+      <div>Loading AR experience... please wait</div>
+    </div>
     
-    <a-scene embedded
-             arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;"
-             vr-mode-ui="enabled: false"
-             device-orientation-permission-ui="enabled: false">
-      <!-- Using the default hiro marker from AR.js -->
-      <a-marker preset="hiro" id="hiro-marker"></a-marker>
-      <a-entity camera></a-entity>
-    </a-scene>
+    <button id="start-button">Start AR Experience</button>
+    
+    <div id="debug-info"></div>
+    
+    <!-- The AR scene will be created dynamically -->
+    <div id="ar-scene-container"></div>
     
     <div id="p5-overlay"></div>
     <div id="ar-info">
@@ -61,13 +97,27 @@
     </div>
     
     <script>
+      const debugInfo = document.getElementById('debug-info');
+      const startButton = document.getElementById('start-button');
+      const arSceneContainer = document.getElementById('ar-scene-container');
+      const loader = document.querySelector('.arjs-loader');
+      
+      // Debug logging function
+      function log(message) {
+        console.log(message);
+        debugInfo.style.display = 'block';
+        debugInfo.innerHTML += message + '<br>';
+      }
+      
       // Basic p5.js sketch if pragmatic-sketch.js is not available
       function setupP5() {
+        log('Setting up p5.js sketch');
         const sketch = function(p) {
           p.setup = function() {
             const canvas = p.createCanvas(p.windowWidth, p.windowHeight);
             canvas.parent('p5-overlay');
             p.background(0, 0);
+            log('p5.js canvas created');
           };
           
           p.draw = function() {
@@ -90,44 +140,97 @@
         new p5(sketch);
       }
       
-      // Initialize AR with user permission
-      document.getElementById('start-ar').addEventListener('click', function() {
-        // Request camera access explicitly
-        navigator.mediaDevices.getUserMedia({ video: true })
-          .then(function(stream) {
-            // Camera access granted
-            stream.getTracks().forEach(track => track.stop()); // Stop the test stream
-            this.style.display = 'none';
-            setupP5();
-            
-            // Set up marker events
-            const marker = document.getElementById('hiro-marker');
+      // Initialize AR scene
+      function initializeARScene() {
+        log('Initializing AR scene');
+        
+        // Create the AR scene
+        const sceneHTML = `
+          <a-scene 
+            embedded
+            arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;"
+            vr-mode-ui="enabled: false"
+            device-orientation-permission-ui="enabled: false">
+            <a-marker preset="hiro" id="hiro-marker">
+              <!-- AR content will appear on marker -->
+              <a-box position="0 0.5 0" material="color: red;"></a-box>
+            </a-marker>
+            <a-entity camera></a-entity>
+          </a-scene>
+        `;
+        
+        arSceneContainer.innerHTML = sceneHTML;
+        log('AR scene created');
+        
+        // Set up marker detection after a short delay
+        setTimeout(() => {
+          const marker = document.getElementById('hiro-marker');
+          if (marker) {
+            log('Marker element found, setting up events');
             marker.addEventListener('markerFound', () => {
+              log('Marker found!');
               document.getElementById('p5-overlay').style.display = 'block';
-              console.log("Marker found");
             });
             marker.addEventListener('markerLost', () => {
+              log('Marker lost');
               document.getElementById('p5-overlay').style.display = 'none';
-              console.log("Marker lost");
             });
+          } else {
+            log('ERROR: Marker element not found!');
+          }
+        }, 1000);
+      }
+      
+      // Start AR experience
+      startButton.addEventListener('click', function() {
+        log('Start button clicked');
+        startButton.classList.add('hidden');
+        debugInfo.innerHTML = 'Starting AR...<br>';
+        
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          log('ERROR: getUserMedia not supported on this browser');
+          alert('Your browser does not support camera access required for AR.');
+          return;
+        }
+        
+        // Request camera access explicitly
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+          .then(function(stream) {
+            log('Camera permission granted');
+            // Camera access granted, stop the test stream
+            stream.getTracks().forEach(track => track.stop());
+            
+            // Initialize AR scene
+            initializeARScene();
+            setupP5();
+            
+            // Hide loader after a short delay
+            setTimeout(() => {
+              loader.classList.add('hidden');
+            }, 3000);
           })
           .catch(function(err) {
-            console.error('Camera access denied: ', err);
+            log('ERROR: Camera access denied: ' + err.message);
             alert('Camera access is required for AR functionality. Please allow camera access and try again.');
+            // Show button again
+            startButton.classList.remove('hidden');
           });
       });
       
       // Try to load the external script if it exists
       try {
+        log('Attempting to load pragmatic-sketch.js');
         const script = document.createElement('script');
         script.src = 'pragmatic-sketch.js';
+        script.onload = function() {
+          log('pragmatic-sketch.js loaded successfully');
+        };
         script.onerror = function() {
-          console.warn('Could not load pragmatic-sketch.js, using default visualization');
-          // Don't call setupP5() here as it will be called after camera permission
+          log('Could not load pragmatic-sketch.js, using default visualization');
         };
         document.body.appendChild(script);
       } catch (e) {
-        console.warn('Error loading external script:', e);
+        log('Error loading external script: ' + e.message);
       }
     </script>
   </body>
