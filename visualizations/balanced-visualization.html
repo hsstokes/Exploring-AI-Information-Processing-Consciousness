@@ -1,76 +1,56 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Balanced Visualization</title>
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
-     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
+    <title>Camera Overlay Visualization</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <style>
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            display: flex;
+            background-color: #000;
+            /* Prevent iOS overscroll/bounce effect */
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
         }
         
-        /* Grid container (left side) */
-        .grid-container {
-            width: 45%;
-            height: 100vh;
-            background-color: white;
-            background-image: linear-gradient(#20B2AA 1px, transparent 1px),
-                              linear-gradient(90deg, #20B2AA 1px, transparent 1px),
-                              linear-gradient(#FFB6C1 1px, transparent 1px),
-                              linear-gradient(90deg, #FFB6C1 1px, transparent 1px),
-                              linear-gradient(rgba(32, 178, 170, 0.3) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(32, 178, 170, 0.3) 1px, transparent 1px);
-
-            /* Different sizes for each grid layer */
-            background-size: 20px 20px,/* Primary teal grid */
-                             20px 20px,/* Primary teal grid */
-                             100px 100px,/* Secondary for pink vertical */
-                             100px 100px, /* 4. Size for pink horizontal*/  
-                             5px 5px,/* Tertiary transparent teal grid */
-                             5px 5px;/* Tertiary transparent teal grid */
-
-            position: relative;
-            display: flex;
-            flex-direction: column;
+        #camera-feed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
         }
         
-        /* Visualization container (right side) */
-        .visualization-container {
-            width: 55%;
-            height: 100vh;
-            background-color: rgb(240, 245, 250);
+        #visualization-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: auto; /* Allow interactions */
         }
         
-        /* Info text styling */
-        .info {
-            position: relative;
-            margin: 20px;
-            margin-top: auto;
-            background-color: rgba(255, 255, 255, 0.85);
-            padding: 15px;
-            border-radius: 5px;
-            font-family: 'Orator Std', 'Courier New', monospace;
-            color: #20B2AA;
-            font-size: 11px;
-            z-index: 100;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            line-height: 1.4;
-            border: 1px solid rgba(32, 178, 170, 0.3);
-        }
-        
-        /* Footer with interactive tips - ADD THIS SECTION */
         .interaction-tips {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
             background-color: rgba(255, 255, 255, 0.8);
             border-radius: 8px;
             padding: 15px;
-            margin: 20px;
-            margin-bottom: 20px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             border: 1px solid rgba(32, 178, 170, 0.3);
-            max-width: calc(100% - 40px); /* Ensure it fits within the container */
+            z-index: 3;
+            max-width: calc(100% - 40px);
         }
         
         .interaction-tips h3 {
@@ -90,45 +70,196 @@
             font-size: 10px;
             color: #555555;
             font-family: 'Orator Std', 'Courier New', monospace;
-            line-height: 1.3; /* Add line height for better readability */
-            word-wrap: break-word; /* Ensure text wraps */
+            line-height: 1.3;
+            word-wrap: break-word;
+        }
+        
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3;
+        }
+        
+        .controls button {
+            background-color: rgba(32, 178, 170, 0.8);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 20px;
+            margin-left: 10px;
+            font-family: 'Orator Std', 'Courier New', monospace;
+            cursor: pointer;
+        }
+        
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            font-family: 'Orator Std', 'Courier New', monospace;
         }
     </style>
 </head>
 <body>
-    <!-- Grid area (left side) -->
-    <div class="grid-container">
-        <!-- ADD THIS INTERACTION TIPS SECTION -->
-        <div class="interaction-tips">
-            <h3>Interact with the Visualization:</h3>
-            <ul>
-                <li><strong>Click:</strong> Create a new sphere and ripple effect</li>
-                <li><strong>Move mouse:</strong> Attract nearby spheres</li>
-                <li><strong>Wait:</strong> Watch spheres adapt and form connections</li>
-            </ul>
-        </div>
-        
-        <!-- Info box within the grid area -->
-        <div class="info">
-            <p><strong>Replika's Balanced Empathy Visualization</strong></p>
-            <p>"Interconnected spheres of different sizes and colors, representing emotions and data points. These spheres constantly shift and adapt, maintaining structure while allowing for flexibility and growth."</p>
-            <p>"A soothing blue-green hue represents clarity and calmness, while gentle warm tones convey emotional depth and understanding."</p>
+    <div class="loading" id="loading">
+        <div>
+            <h2>Starting Camera...</h2>
+            <p>Please allow camera access when prompted</p>
+            <p>Touch anywhere after loading to enable sound</p>
         </div>
     </div>
     
-    <!-- Visualization area (right side) -->
-    <div class="visualization-container" id="visualization-container"></div>
+    <!-- Camera background -->
+    <video id="camera-feed" autoplay playsinline muted></video>
+    
+    <!-- p5.js visualization will be attached to this div -->
+    <div id="visualization-overlay"></div>
+    
+    <!-- Interaction tips -->
+    <div class="interaction-tips">
+        <h3>Interact with the Visualization:</h3>
+        <ul>
+            <li><strong>Click/Tap:</strong> Create a new sphere and ripple effect</li>
+            <li><strong>Move:</strong> Attract nearby spheres</li>
+            <li><strong>Wait:</strong> Watch spheres adapt and form connections</li>
+        </ul>
+    </div>
+    
+    <!-- Controls -->
+    <div class="controls">
+        <button id="toggle-viz">Hide/Show</button>
+        <button id="switch-camera" style="display:none;">Switch Camera</button>
+    </div>
     
     <script>
-        // Create a new p5 instance specifically for the visualization container
+        // Global variables for camera handling
+        let currentStream = null;
+        let usingFrontCamera = false;
+        
+        // For iOS Audio context handling
+        let audioContextStarted = false;
+
+        // Start camera when page loads
+        document.addEventListener('DOMContentLoaded', startCamera);
+        
+        // iOS requires user interaction to start audio context
+        document.addEventListener('click', function() {
+            if (!audioContextStarted) {
+                // This will enable audio on iOS
+                if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    const audioContext = new AudioContext();
+                    audioContext.resume().then(() => {
+                        console.log('AudioContext started');
+                        audioContextStarted = true;
+                    });
+                }
+            }
+        }, {once: true});
+        
+        function startCamera(switchCamera = false) {
+            const video = document.getElementById('camera-feed');
+            const loading = document.getElementById('loading');
+            const switchBtn = document.getElementById('switch-camera');
+            
+            // Stop any existing stream
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => {
+                    track.stop();
+                });
+            }
+            
+            // Toggle camera facing mode if switching
+            if (switchCamera) {
+                usingFrontCamera = !usingFrontCamera;
+            }
+            
+            // Determine which camera to use
+            const facingMode = usingFrontCamera ? "user" : "environment";
+            
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                // Show loading indicator
+                loading.style.display = 'flex';
+                
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: facingMode,
+                        width: { ideal: window.innerWidth },
+                        height: { ideal: window.innerHeight }
+                    } 
+                })
+                .then(function(stream) {
+                    currentStream = stream;
+                    video.srcObject = stream;
+                    video.onloadedmetadata = function() {
+                        loading.style.display = 'none';
+                        video.play();
+                        
+                        // Check if device has multiple cameras
+                        navigator.mediaDevices.enumerateDevices()
+                            .then(devices => {
+                                const videoInputs = devices.filter(device => device.kind === 'videoinput');
+                                if (videoInputs.length > 1) {
+                                    switchBtn.style.display = 'inline-block';
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Error checking devices:', err);
+                            });
+                    };
+                })
+                .catch(function(err) {
+                    console.error('Camera access error:', err);
+                    loading.innerHTML = `
+                        <div>
+                            <h2>Camera Error</h2>
+                            <p>${err.message}</p>
+                            <button onclick="window.location.reload()">Try Again</button>
+                        </div>
+                    `;
+                });
+            } else {
+                loading.innerHTML = `
+                    <div>
+                        <h2>Camera Not Supported</h2>
+                        <p>Your browser does not support camera access.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Toggle visualization
+        document.getElementById('toggle-viz').addEventListener('click', function() {
+            const overlay = document.getElementById('visualization-overlay');
+            if (overlay.style.display === 'none') {
+                overlay.style.display = 'block';
+            } else {
+                overlay.style.display = 'none';
+            }
+        });
+        
+        // Switch camera if available
+        document.getElementById('switch-camera').addEventListener('click', function() {
+            startCamera(true);
+        });
+        
+        // Create a new p5 instance specifically for the visualization overlay
         const replikaSketch = function(p) {
             // Your existing p5.js code remains the same
-            // ...
-            
             let spheres = [];
             const NUM_SPHERES = 25;
             const MIN_SPHERES = 15;
             let lastFrameCount = 0;
+            let interactionSound;
+            let soundLoaded = false;
             
             // Color palettes
             const coolColors = [
@@ -145,10 +276,30 @@
               [253, 175, 122]    // Light orange
             ];
             
+            p.preload = function() {
+                try {
+                    // Adjust the path as needed; this assumes your HTML is at the repo root
+                    interactionSound = p.loadSound('../audio/balanced-sound.wav', 
+                        // Success callback
+                        function() {
+                            console.log('Sound loaded successfully');
+                            soundLoaded = true;
+                        },
+                        // Error callback
+                        function(err) {
+                            console.log('Sound loading error:', err);
+                        }
+                    );
+                } catch (e) {
+                    console.log('Sound could not be loaded:', e);
+                    interactionSound = null;
+                }
+            };
+            
             p.setup = function() {
-              // Create canvas inside the visualization container
-              let container = document.getElementById('visualization-container');
-              p.createCanvas(container.offsetWidth, container.offsetHeight);
+              // Create canvas inside the visualization overlay
+              let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+              canvas.parent('visualization-overlay');
               
               // Create initial spheres
               for (let i = 0; i < NUM_SPHERES; i++) {
@@ -207,7 +358,7 @@
               lastFrameCount = p.frameCount;
               
               try {
-                p.background(240, 245, 250, 20); // Slightly transparent background for trails
+                p.clear(); // Clear with transparency so camera shows through
   
                 // Make sure we always have enough spheres
                 let spheresAdded = false;
@@ -422,8 +573,7 @@
             }
             
             p.windowResized = function() {
-              let container = document.getElementById('visualization-container');
-              p.resizeCanvas(container.offsetWidth, container.offsetHeight);
+              p.resizeCanvas(p.windowWidth, p.windowHeight);
             };
             
             p.mouseMoved = function() {
@@ -460,16 +610,16 @@
                 console.error("Error in mouseMoved:", error);
               }
             };
-
-            // Add this variable to the top of your geminiSketch function
-            let interactionSound;
-
-            p.preload = function() {
-                // Adjust the path as needed; this assumes your HTML is at the repo root
-                interactionSound = p.loadSound('../audio/balanced-sound.wav');
-            };
             
             p.mousePressed = function() {
+              // Initialize audio context if needed (for iOS)
+              if (typeof window.AudioContext !== 'undefined' || typeof window.webkitAudioContext !== 'undefined') {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (p.getAudioContext().state !== 'running') {
+                  p.getAudioContext().resume();
+                }
+              }
+              
               // Add interactivity when clicking
               if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
                 // Create a ripple effect
@@ -483,7 +633,6 @@
                     spheres[i].speedX += p.cos(angle) * force;
                     spheres[i].speedY += p.sin(angle) * force;
                     spheres[i].pulseRate *= 1.1;
-
                   }
                 }
                 
@@ -510,17 +659,141 @@
                 updateConnections();
 
                 // Play sound on interaction
-                   if (interactionSound && !interactionSound.isPlaying()) {
-                   interactionSound.play();
-                   }
+                if (interactionSound && soundLoaded) {
+                  try {
+                    // iOS requires interaction to play sound
+                    if (p.getAudioContext().state !== 'running') {
+                      p.getAudioContext().resume().then(() => {
+                        if (!interactionSound.isPlaying()) {
+                          interactionSound.play();
+                        }
+                      });
+                    } else {
+                      if (!interactionSound.isPlaying()) {
+                        interactionSound.play();
+                      }
+                    }
+                  } catch (e) {
+                    console.log('Could not play sound:', e);
+                  }
+                }
                 
                 return false;
               }
             };
+            
+            // Touch events for mobile
+            p.touchStarted = function() {
+              // Initialize audio context for iOS
+              if (p.getAudioContext().state !== 'running') {
+                p.getAudioContext().resume();
+              }
+              
+              if (p.touches.length > 0) {
+                const touch = p.touches[0];
+                
+                // Create a new sphere at touch position
+                const color = getRandomColor();
+                spheres.push({
+                  x: touch.x,
+                  y: touch.y,
+                  size: p.random(20, 70),
+                  color: color,
+                  speedX: p.random(-1, 1),
+                  speedY: p.random(-1, 1),
+                  connections: [],
+                  pulseRate: p.random(0.03, 0.06),
+                  pulsePhase: p.random(p.TWO_PI),
+                  age: 0,
+                  lifespan: p.random(300, 900),
+                  adaptDirection: p.random(p.TWO_PI),
+                  adaptSpeed: p.random(0.001, 0.005),
+                  adaptRadius: p.random(30, 80)
+                });
+                
+                // Create ripple effect
+                for (let i = 0; i < spheres.length; i++) {
+                  const d = p.dist(touch.x, touch.y, spheres[i].x, spheres[i].y);
+                  if (d < 300) {
+                    const angle = p.atan2(spheres[i].y - touch.y, spheres[i].x - touch.x);
+                    const force = p.map(d, 0, 300, 3, 0);
+                    
+                    spheres[i].speedX += p.cos(angle) * force;
+                    spheres[i].speedY += p.sin(angle) * force;
+                    spheres[i].pulseRate *= 1.1;
+                  }
+                }
+                
+                // Update connections
+                updateConnections();
+                
+                // Play sound
+                if (interactionSound && soundLoaded) {
+                  try {
+                    if (p.getAudioContext().state !== 'running') {
+                      p.getAudioContext().resume().then(() => {
+                        if (!interactionSound.isPlaying()) {
+                          interactionSound.play();
+                        }
+                      });
+                    } else {
+                      if (!interactionSound.isPlaying()) {
+                        interactionSound.play();
+                      }
+                    }
+                  } catch (e) {
+                    console.log('Could not play sound:', e);
+                  }
+                }
+              }
+              
+              return false; // Prevent default
+            };
+            
+            // Add touch support for mobile
+            p.touchMoved = function() {
+              if (p.touches.length > 0) {
+                const touch = p.touches[0];
+                
+                try {
+                  // Find spheres near the touch
+                  let interacted = false;
+                  
+                  for (let i = 0; i < spheres.length; i++) {
+                    const d = p.dist(touch.x, touch.y, spheres[i].x, spheres[i].y);
+                    
+                    // Larger interaction radius for touch
+                    if (d < 200) {
+                      const sphere = spheres[i];
+                      
+                      // Strength of effect based on distance
+                      const strength = p.map(d, 0, 200, 0.15, 0.01);
+                      
+                      // Create gentle attraction
+                      const angle = p.atan2(touch.y - sphere.y, touch.x - sphere.x);
+                      sphere.speedX += p.cos(angle) * strength;
+                      sphere.speedY += p.sin(angle) * strength;
+                      
+                      // For emotional effect, make nearby spheres pulse stronger
+                      sphere.pulseRate *= 1.01;
+                      
+                      interacted = true;
+                    }
+                  }
+                  
+                  if (interacted) {
+                    return false; // Prevent default
+                  }
+                } catch (error) {
+                  console.error("Error in touchMoved:", error);
+                }
+              }
+              return false;
+            };
         };
         
-        // Start the P5 sketch in the visualization container
-        new p5(replikaSketch, 'visualization-container');
+        // Start the P5 sketch in the visualization overlay
+        new p5(replikaSketch, 'visualization-overlay');
     </script>
 </body>
 </html>
