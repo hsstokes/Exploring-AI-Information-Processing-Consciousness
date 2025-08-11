@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Camera Overlay Visualization</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #000;
+        }
+        
+        #camera-feed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+        }
+        
+        #visualization-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: auto; /* Allow interactions */
+        }
+        
+        .interaction-tips {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(32, 178, 170, 0.3);
+            z-index: 3;
+            max-width: calc(100% - 40px);
+        }
+        
+        .interaction-tips h3 {
+            margin-top: 0;
+            color: #20B2AA;
+            font-size: 14px;
+            font-family: 'Orator Std', 'Courier New', monospace;
+        }
+        
+        .interaction-tips ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .interaction-tips li {
+            margin-bottom: 6px;
+            font-size: 10px;
+            color: #555555;
+            font-family: 'Orator Std', 'Courier New', monospace;
+            line-height: 1.3;
+            word-wrap: break-word;
+        }
+        
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3;
+        }
+        
+        .controls button {
+            background-color: rgba(32, 178, 170, 0.8);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 20px;
+            margin-left: 10px;
+            font-family: 'Orator Std', 'Courier New', monospace;
+            cursor: pointer;
+        }
+        
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            font-family: 'Orator Std', 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading" id="loading">
+        <div>
+            <h2>Starting Camera...</h2>
+            <p>Please allow camera access when prompted</p>
+        </div>
+    </div>
+    
+    <!-- Camera background -->
+    <video id="camera-feed" autoplay playsinline></video>
+    
+    <!-- p5.js visualization will be attached to this div -->
+    <div id="visualization-overlay"></div>
+    
+    <!-- Interaction tips -->
+    <div class="interaction-tips">
+        <h3>Interact with the Visualization:</h3>
+        <ul>
+            <li><strong>Click/Tap:</strong> Create a new sphere and ripple effect</li>
+            <li><strong>Move:</strong> Attract nearby spheres</li>
+            <li><strong>Wait:</strong> Watch spheres adapt and form connections</li>
+        </ul>
+    </div>
+    
+    <!-- Controls -->
+    <div class="controls">
+        <button id="toggle-viz">Hide/Show</button>
+    </div>
+    
+    <script>
+        // Start camera when page loads
+        document.addEventListener('DOMContentLoaded', startCamera);
+        
+        function startCamera() {
+            const video = document.getElementById('camera-feed');
+            const loading = document.getElementById('loading');
+            
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: window.innerWidth },
+                        height: { ideal: window.innerHeight }
+                    } 
+                })
+                .then(function(stream) {
+                    video.srcObject = stream;
+                    video.onloadedmetadata = function() {
+                        loading.style.display = 'none';
+                        video.play();
+                    };
+                })
+                .catch(function(err) {
+                    console.error('Camera access error:', err);
+                    loading.innerHTML = `
+                        <div>
+                            <h2>Camera Error</h2>
+                            <p>${err.message}</p>
+                            <button onclick="window.location.reload()">Try Again</button>
+                        </div>
+                    `;
+                });
+            } else {
+                loading.innerHTML = `
+                    <div>
+                        <h2>Camera Not Supported</h2>
+                        <p>Your browser does not support camera access.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Toggle visualization
+        document.getElementById('toggle-viz').addEventListener('click', function() {
+            const overlay = document.getElementById('visualization-overlay');
+            if (overlay.style.display === 'none') {
+                overlay.style.display = 'block';
+            } else {
+                overlay.style.display = 'none';
+            }
+        });
+        
+        // Create a new p5 instance specifically for the visualization overlay
+        const replikaSketch = function(p) {
+            // Your existing p5.js code remains the same
+            let spheres = [];
+            const NUM_SPHERES = 25;
+            const MIN_SPHERES = 15;
+            let lastFrameCount = 0;
+            let interactionSound;
+            
+            // Color palettes
+            const coolColors = [
+              [41, 171, 226],    // Blue
+              [0, 169, 157],     // Teal
+              [0, 133, 161],     // Deep blue-green
+              [76, 195, 172]     // Mint
+            ];
+            
+            const warmColors = [
+              [253, 198, 137],   // Peach
+              [241, 142, 109],   // Coral
+              [227, 115, 131],   // Warm pink
+              [253, 175, 122]    // Light orange
+            ];
+            
+            p.preload = function() {
+                try {
+                    // Adjust the path as needed; this assumes your HTML is at the repo root
+                    interactionSound = p.loadSound('../audio/balanced-sound.wav');
+                } catch (e) {
+                    console.log('Sound could not be loaded:', e);
+                    // Create a fallback sound in case the file can't be loaded
+                    interactionSound = null;
+                }
+            };
+            
+            p.setup = function() {
+              // Create canvas inside the visualization overlay
+              let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+              canvas.parent('visualization-overlay');
+              
+              // Create initial spheres
+              for (let i = 0; i < NUM_SPHERES; i++) {
+                createSphere();
+              }
+              
+              // Initialize connections
+              updateConnections();
+            };
+            
+            // Function to update connections safely
+            function updateConnections() {
+              try {
+                // Clear all connections first
+                for (let i = 0; i < spheres.length; i++) {
+                  spheres[i].connections = [];
+                }
+                
+                // Add new connections
+                for (let i = 0; i < spheres.length; i++) {
+                  // Each sphere connects to 2-5 others
+                  const numConnections = p.floor(p.random(2, 6));
+                  const availableSpheres = [];
+                  
+                  // Create list of available spheres to connect to
+                  for (let j = 0; j < spheres.length; j++) {
+                    if (j !== i) {
+                      availableSpheres.push(j);
+                    }
+                  }
+                  
+                  // Shuffle available spheres
+                  for (let j = availableSpheres.length - 1; j > 0; j--) {
+                    const k = Math.floor(p.random(j + 1));
+                    [availableSpheres[j], availableSpheres[k]] = [availableSpheres[k], availableSpheres[j]];
+                  }
+                  
+                  // Add connections
+                  for (let j = 0; j < Math.min(numConnections, availableSpheres.length); j++) {
+                    spheres[i].connections.push(availableSpheres[j]);
+                  }
+                }
+              } catch (error) {
+                console.error("Error updating connections:", error);
+              }
+            }
+            
+            p.draw = function() {
+              // Detect potential freezes and reset if needed
+              if (p.frameCount === lastFrameCount) {
+                // Frame hasn't advanced, might be frozen
+                resetVisualization();
+                lastFrameCount = p.frameCount;
+                return;
+              }
+              lastFrameCount = p.frameCount;
+              
+              try {
+                p.clear(); // Clear with transparency so camera shows through
+  
+                // Make sure we always have enough spheres
+                let spheresAdded = false;
+                while (spheres.length < MIN_SPHERES) {
+                  createSphere();
+                  spheresAdded = true;
+                }
+                
+                if (spheresAdded) {
+                  updateConnections();
+                }
+                
+                // Draw connections first (behind spheres)
+                for (let i = 0; i < spheres.length; i++) {
+                  const sphere = spheres[i];
+                  
+                  for (let j = 0; j < sphere.connections.length; j++) {
+                    const connIndex = sphere.connections[j];
+                    
+                    // Safety check for valid connection index
+                    if (connIndex >= 0 && connIndex < spheres.length) {
+                      const otherSphere = spheres[connIndex];
+                      
+                      // Calculate distance for connection opacity
+                      const distance = p.dist(sphere.x, sphere.y, otherSphere.x, otherSphere.y);
+                      const maxDist = 200;
+                      const alpha = p.map(distance, 0, maxDist, 150, 20);
+                      
+                      if (distance < maxDist) {
+                        // Blend the colors of connected spheres
+                        const blendedColor = p.lerpColor(
+                          p.color(sphere.color[0], sphere.color[1], sphere.color[2], alpha),
+                          p.color(otherSphere.color[0], otherSphere.color[1], otherSphere.color[2], alpha),
+                          0.5
+                        );
+                        
+                        p.stroke(blendedColor);
+                        p.strokeWeight(p.map(distance, 0, maxDist, 3, 0.5));
+                        p.line(sphere.x, sphere.y, otherSphere.x, otherSphere.y);
+                      }
+                    }
+                  }
+                }
+                
+                // Draw and update spheres
+                for (let i = 0; i < spheres.length; i++) {
+                  updateSphere(spheres[i]);
+                  drawSphere(spheres[i]);
+                }
+                
+                // Occasionally add new spheres
+                if (p.frameCount % 60 === 0 && spheres.length < 40) {
+                  createSphere();
+                  
+                  // Periodically refresh all connections
+                  if (p.frameCount % 180 === 0) {
+                    updateConnections();
+                  }
+                }
+                
+                // Handle old spheres
+                let spheresRemoved = false;
+                if (spheres.length > MIN_SPHERES) {
+                  const oldLength = spheres.length;
+                  spheres = spheres.filter(s => s.age < s.lifespan);
+                  spheresRemoved = (oldLength !== spheres.length);
+                }
+                else { 
+                  // Refresh the oldest spheres instead of removing them
+                  spheres.forEach(s => {
+                    if (s.age > s.lifespan) {
+                      s.age = 0;
+                      s.pulseRate = p.random(0.02, 0.04);
+                      s.color = getRandomColor();
+                      s.x = p.constrain(s.x + p.random(-50, 50), 0, p.width);
+                      s.y = p.constrain(s.y + p.random(-50, 50), 0, p.height);
+                    }
+                  });
+                }
+                
+                if (spheresRemoved) {
+                  updateConnections();
+                }
+                
+              } catch (error) {
+                console.error("Error in draw:", error);
+                resetVisualization();
+              }
+            };
+            
+            function resetVisualization() {
+              console.log("Resetting visualization");
+              spheres = [];
+              for (let i = 0; i < NUM_SPHERES; i++) {
+                createSphere();
+              }
+              updateConnections();
+            }
+            
+            function getRandomColor() {
+              const palette = p.random() < 0.6 ? coolColors : warmColors;
+              const baseColor = p.random(palette);
+              
+              return [
+                baseColor[0] + p.random(-20, 20),
+                baseColor[1] + p.random(-20, 20),
+                baseColor[2] + p.random(-20, 20)
+              ];
+            }
+            
+            function createSphere() {
+              // Add slight variation to the color
+              const color = getRandomColor();
+              
+              spheres.push({
+                x: p.random(p.width),
+                y: p.random(p.height),
+                size: p.random(15, 60),
+                color: color,
+                speedX: p.random(-0.7, 0.7),
+                speedY: p.random(-0.7, 0.7),
+                connections: [],
+                pulseRate: p.random(0.02, 0.04),
+                pulsePhase: p.random(p.TWO_PI),
+                age: 0,
+                lifespan: p.random(300, 900),
+                adaptDirection: p.random(p.TWO_PI),
+                adaptSpeed: p.random(0.001, 0.005),
+                adaptRadius: p.random(30, 80)
+              });
+            }
+            
+            function updateSphere(sphere) {
+              // Basic movement
+              sphere.x += sphere.speedX;
+              sphere.y += sphere.speedY;
+              
+              // Gentle circular adaptation around base position
+              sphere.x += p.cos(p.frameCount * sphere.adaptSpeed + sphere.adaptDirection) * 0.5;
+              sphere.y += p.sin(p.frameCount * sphere.adaptSpeed + sphere.adaptDirection) * 0.5;
+              
+              // Bounce off edges with damping
+              if (sphere.x < 0 || sphere.x > p.width) {
+                sphere.speedX *= -0.9;
+                sphere.x = p.constrain(sphere.x, 0, p.width);
+              }
+              
+              if (sphere.y < 0 || sphere.y > p.height) {
+                sphere.speedY *= -0.9;
+                sphere.y = p.constrain(sphere.y, 0, p.height);
+              }
+              
+              // Occasionally change direction slightly to simulate adaptation
+              if (p.random() < 0.02) {
+                sphere.speedX += p.random(-0.2, 0.2);
+                sphere.speedY += p.random(-0.2, 0.2);
+                
+                // Limit maximum speed
+                const maxSpeed = 1.0;
+                const currentSpeed = p.sqrt(sphere.speedX * sphere.speedX + sphere.speedY * sphere.speedY);
+                if (currentSpeed > maxSpeed) {
+                  sphere.speedX = (sphere.speedX / currentSpeed) * maxSpeed;
+                  sphere.speedY = (sphere.speedY / currentSpeed) * maxSpeed;
+                }
+              }
+              
+              // Update age
+              sphere.age++;
+            }
+            
+            function drawSphere(sphere) {
+              // Calculate pulse effect (size oscillation)
+              const pulseEffect = p.sin(p.frameCount * sphere.pulseRate + sphere.pulsePhase);
+              const displaySize = sphere.size * (1 + pulseEffect * 0.1);
+              
+              // Calculate alpha based on age (fade in and out)
+              let alpha = 255;
+              const fadeInDuration = 60;
+              const fadeOutDuration = 90;
+              
+              if (sphere.age < fadeInDuration) {
+                alpha = p.map(sphere.age, 0, fadeInDuration, 0, 255);
+              } else if (sphere.age > sphere.lifespan - fadeOutDuration) {
+                alpha = p.map(sphere.age, sphere.lifespan - fadeOutDuration, sphere.lifespan, 255, 0);
+              }
+              
+              // Draw outer glow
+              p.noStroke();
+              for (let i = 3; i >= 0; i--) {
+                const glowSize = displaySize * (1 + i * 0.4);
+                const glowAlpha = alpha * (0.1 - i * 0.02);
+                p.fill(sphere.color[0], sphere.color[1], sphere.color[2], glowAlpha);
+                p.ellipse(sphere.x, sphere.y, glowSize, glowSize);
+              }
+              
+              // Draw the main sphere with gradient
+              for (let i = 1; i >= 0; i -= 0.2) {
+                const innerSize = displaySize * i;
+                const adjustedAlpha = alpha * p.map(i, 0, 1, 0.4, 0.9);
+                p.fill(
+                  sphere.color[0] + p.map(i, 0, 1, 50, 0),
+                  sphere.color[1] + p.map(i, 0, 1, 50, 0),
+                  sphere.color[2] + p.map(i, 0, 1, 50, 0),
+                  adjustedAlpha
+                );
+                p.ellipse(sphere.x, sphere.y, innerSize, innerSize);
+              }
+              
+              // Add a subtle highlight
+              p.fill(255, 255, 255, alpha * 0.6);
+              p.ellipse(sphere.x - displaySize * 0.15, sphere.y - displaySize * 0.15, displaySize * 0.3, displaySize * 0.3);
+            }
+            
+            p.windowResized = function() {
+              p.resizeCanvas(p.windowWidth, p.windowHeight);
+            };
+            
+            p.mouseMoved = function() {
+              try {
+                // Find spheres near the mouse
+                let interacted = false;
+                
+                for (let i = 0; i < spheres.length; i++) {
+                  const d = p.dist(p.mouseX, p.mouseY, spheres[i].x, spheres[i].y);
+                  
+                  // Larger interaction radius
+                  if (d < 200) {
+                    const sphere = spheres[i];
+                    
+                    // Strength of effect based on distance
+                    const strength = p.map(d, 0, 200, 0.15, 0.01);
+                    
+                    // Create gentle attraction
+                    const angle = p.atan2(p.mouseY - sphere.y, p.mouseX - sphere.x);
+                    sphere.speedX += p.cos(angle) * strength;
+                    sphere.speedY += p.sin(angle) * strength;
+                    
+                    // For emotional effect, make nearby spheres pulse stronger
+                    sphere.pulseRate *= 1.01;
+                    
+                    interacted = true;
+                  }
+                }
+                
+                if (interacted) {
+                  return false; // Prevent default
+                }
+              } catch (error) {
+                console.error("Error in mouseMoved:", error);
+              }
+            };
+            
+            p.mousePressed = function() {
+              // Add interactivity when clicking
+              if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
+                // Create a ripple effect
+                for (let i = 0; i < spheres.length; i++) {
+                  const d = p.dist(p.mouseX, p.mouseY, spheres[i].x, spheres[i].y);
+                  if (d < 300) {
+                    // Push spheres slightly away from click
+                    const angle = p.atan2(spheres[i].y - p.mouseY, spheres[i].x - p.mouseX);
+                    const force = p.map(d, 0, 300, 3, 0);
+                    
+                    spheres[i].speedX += p.cos(angle) * force;
+                    spheres[i].speedY += p.sin(angle) * force;
+                    spheres[i].pulseRate *= 1.1;
+                  }
+                }
+                
+                // Also create a new sphere at mouse position
+                const color = getRandomColor();
+                spheres.push({
+                  x: p.mouseX,
+                  y: p.mouseY,
+                  size: p.random(20, 70),
+                  color: color,
+                  speedX: p.random(-1, 1),
+                  speedY: p.random(-1, 1),
+                  connections: [],
+                  pulseRate: p.random(0.03, 0.06),
+                  pulsePhase: p.random(p.TWO_PI),
+                  age: 0,
+                  lifespan: p.random(300, 900),
+                  adaptDirection: p.random(p.TWO_PI),
+                  adaptSpeed: p.random(0.001, 0.005),
+                  adaptRadius: p.random(30, 80)
+                });
+                
+                // Update connections with the new sphere
+                updateConnections();
+
+                // Play sound on interaction
+                if (interactionSound && !interactionSound.isPlaying()) {
+                  try {
+                    interactionSound.play();
+                  } catch (e) {
+                    console.log('Could not play sound:', e);
+                  }
+                }
+                
+                return false;
+              }
+            };
+            
+            // Add touch support for mobile
+            p.touchMoved = function() {
+              if (p.touches.length > 0) {
+                const touch = p.touches[0];
+                
+                try {
+                  // Find spheres near the touch
+                  let interacted = false;
+                  
+                  for (let i = 0; i < spheres.length; i++) {
+                    const d = p.dist(touch.x, touch.y, spheres[i].x, spheres[i].y);
+                    
+                    // Larger interaction radius for touch
+                    if (d < 200) {
+                      const sphere = spheres[i];
+                      
+                      // Strength of effect based on distance
+                      const strength = p.map(d, 0, 200, 0.15, 0.01);
+                      
+                      // Create gentle attraction
+                      const angle = p.atan2(touch.y - sphere.y, touch.x - sphere.x);
+                      sphere.speedX += p.cos(angle) * strength;
+                      sphere.speedY += p.sin(angle) * strength;
+                      
+                      // For emotional effect, make nearby spheres pulse stronger
+                      sphere.pulseRate *= 1.01;
+                      
+                      interacted = true;
+                    }
+                  }
+                  
+                  if (interacted) {
+                    return false; // Prevent default
+                  }
+                } catch (error) {
+                  console.error("Error in touchMoved:", error);
+                }
+              }
+              return false;
+            };
+        };
+        
+        // Start the P5 sketch in the visualization overlay
+        new p5(replikaSketch, 'visualization-overlay');
+    </script>
+</body>
+</html>
