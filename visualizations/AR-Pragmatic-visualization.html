@@ -3,12 +3,22 @@
   <head>
     <title>AR Pragmatic Visualization</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Updated libraries with specific versions known to work well together -->
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
     <style>
-      body { margin: 0; overflow: hidden; }
+      body { 
+        margin: 0; 
+        overflow: hidden; 
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+      
       .arjs-loader {
         height: 100%;
         width: 100%;
@@ -21,21 +31,28 @@
         justify-content: center;
         align-items: center;
       }
+      
       .arjs-loader div {
         text-align: center;
         font-size: 1.25em;
         color: white;
       }
+      
       #p5-overlay {
         position: fixed;
-        left: 0; top: 0; width: 100vw; height: 100vh;
-        pointer-events: none;
+        left: 0; 
+        top: 0; 
+        width: 100%; 
+        height: 100%;
+        pointer-events: auto; /* Changed to allow interaction */
         z-index: 10;
         display: none;
       }
+      
       #ar-info {
         position: fixed;
-        left: 10px; bottom: 10px;
+        left: 10px; 
+        bottom: 10px;
         background: rgba(255,255,255,0.9);
         border-radius: 6px;
         padding: 8px 12px;
@@ -44,13 +61,14 @@
         color: #445878;
         z-index: 20;
       }
+      
       #start-button {
         position: fixed;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         z-index: 999;
-        padding: 15px 20px;
+        padding: 15px 25px;
         background: #4285f4;
         color: white;
         border: none;
@@ -59,19 +77,7 @@
         cursor: pointer;
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
       }
-      #debug-info {
-        position: fixed;
-        top: 10px;
-        left: 10px;
-        background: rgba(0,0,0,0.7);
-        color: white;
-        padding: 10px;
-        border-radius: 5px;
-        font-family: monospace;
-        font-size: 12px;
-        z-index: 100;
-        display: none;
-      }
+      
       .hidden {
         display: none !important;
       }
@@ -84,12 +90,11 @@
     
     <button id="start-button">Start AR Experience</button>
     
-    <div id="debug-info"></div>
-    
-    <!-- The AR scene will be created dynamically -->
+    <!-- AR Scene will be inserted here dynamically -->
     <div id="ar-scene-container"></div>
     
     <div id="p5-overlay"></div>
+    
     <div id="ar-info">
       <b>Pragmatic Visualization (AR)</b><br>
       Point at the Hiro marker to see the visualization.<br>
@@ -97,83 +102,64 @@
     </div>
     
     <script>
-      const debugInfo = document.getElementById('debug-info');
+      // Global variables
+      let p5Instance = null;
+      let arStarted = false;
       const startButton = document.getElementById('start-button');
       const arSceneContainer = document.getElementById('ar-scene-container');
+      const p5Overlay = document.getElementById('p5-overlay');
       const loader = document.querySelector('.arjs-loader');
       
-      // Debug logging function
+      // Log to console for debugging
       function log(message) {
-        console.log(message);
-        debugInfo.style.display = 'block';
-        debugInfo.innerHTML += message + '<br>';
+        console.log('[AR Debug]', message);
       }
       
-      // Basic p5.js sketch if pragmatic-sketch.js is not available
-      function setupP5() {
-        log('Setting up p5.js sketch');
-        const sketch = function(p) {
-          p.setup = function() {
-            const canvas = p.createCanvas(p.windowWidth, p.windowHeight);
-            canvas.parent('p5-overlay');
-            p.background(0, 0);
-            log('p5.js canvas created');
-          };
-          
-          p.draw = function() {
-            p.clear();
-            p.noFill();
-            p.stroke(255, 0, 0);
-            p.strokeWeight(3);
-            p.circle(p.width/2, p.height/2, 200);
-            p.textSize(24);
-            p.fill(255);
-            p.textAlign(p.CENTER, p.CENTER);
-            p.text("Marker Detected!", p.width/2, p.height/2);
-          };
-          
-          p.windowResized = function() {
-            p.resizeCanvas(p.windowWidth, p.windowHeight);
-          };
-        };
-        
-        new p5(sketch);
-      }
-      
-      // Initialize AR scene
-      function initializeARScene() {
+      // Function to initialize AR.js and A-Frame scene
+      function initializeAR() {
         log('Initializing AR scene');
         
-        // Create the AR scene
+        // Create and insert the AR scene
         const sceneHTML = `
           <a-scene 
             embedded
-            arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;"
+            arjs="sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;"
+            renderer="logarithmicDepthBuffer: true; precision: mediump;"
             vr-mode-ui="enabled: false"
+            gesture-detector
             device-orientation-permission-ui="enabled: false">
-            <a-marker preset="hiro" id="hiro-marker">
-              <!-- AR content will appear on marker -->
-              <a-box position="0 0.5 0" material="color: red;"></a-box>
+            
+            <!-- Using default hiro marker from AR.js library -->
+            <a-marker preset="hiro" id="hiro-marker" raycaster="objects: .clickable" emitevents="true">
+              <!-- Invisible entity to confirm marker is loaded -->
+              <a-entity scale="0.001 0.001 0.001"></a-entity>
             </a-marker>
+            
+            <!-- Camera with default settings -->
             <a-entity camera></a-entity>
           </a-scene>
         `;
         
+        // Insert AR scene into the container
         arSceneContainer.innerHTML = sceneHTML;
-        log('AR scene created');
         
-        // Set up marker detection after a short delay
+        // Hide loader after scene is created
+        loader.classList.add('hidden');
+        
+        // Set up marker detection events
         setTimeout(() => {
           const marker = document.getElementById('hiro-marker');
           if (marker) {
             log('Marker element found, setting up events');
+            
             marker.addEventListener('markerFound', () => {
               log('Marker found!');
-              document.getElementById('p5-overlay').style.display = 'block';
+              p5Overlay.style.display = 'block';
             });
+            
             marker.addEventListener('markerLost', () => {
               log('Marker lost');
-              document.getElementById('p5-overlay').style.display = 'none';
+              p5Overlay.style.display = 'none';
             });
           } else {
             log('ERROR: Marker element not found!');
@@ -181,57 +167,123 @@
         }, 1000);
       }
       
-      // Start AR experience
-      startButton.addEventListener('click', function() {
-        log('Start button clicked');
+      // Function to start the AR experience
+      function startAR() {
+        if (arStarted) return;
+        arStarted = true;
+        
+        log('Starting AR experience');
         startButton.classList.add('hidden');
-        debugInfo.innerHTML = 'Starting AR...<br>';
         
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          log('ERROR: getUserMedia not supported on this browser');
-          alert('Your browser does not support camera access required for AR.');
-          return;
-        }
-        
-        // Request camera access explicitly
-        navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+        // Request camera permission
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          navigator.mediaDevices.getUserMedia({ 
+            video: { 
+              facingMode: 'environment',
+              width: { ideal: window.innerWidth },
+              height: { ideal: window.innerHeight }
+            } 
+          })
           .then(function(stream) {
             log('Camera permission granted');
-            // Camera access granted, stop the test stream
+            
+            // Stop the test stream
             stream.getTracks().forEach(track => track.stop());
             
             // Initialize AR scene
-            initializeARScene();
-            setupP5();
+            initializeAR();
             
-            // Hide loader after a short delay
-            setTimeout(() => {
-              loader.classList.add('hidden');
-            }, 3000);
+            // Initialize p5.js sketch
+            initP5Overlay();
           })
           .catch(function(err) {
-            log('ERROR: Camera access denied: ' + err.message);
-            alert('Camera access is required for AR functionality. Please allow camera access and try again.');
-            // Show button again
+            log('Camera access error: ' + err);
+            alert('Camera access is required for AR. Please allow camera access and try again.');
+            arStarted = false;
             startButton.classList.remove('hidden');
+            loader.classList.add('hidden');
           });
+        } else {
+          log('getUserMedia not supported');
+          alert('Your browser does not support camera access required for AR.');
+          arStarted = false;
+          startButton.classList.remove('hidden');
+          loader.classList.add('hidden');
+        }
+      }
+      
+      // Function to initialize p5.js overlay
+      function initP5Overlay() {
+        log('Initializing p5.js overlay');
+        
+        // If p5 instance already exists, remove it
+        if (p5Instance) {
+          p5Instance.remove();
+          p5Instance = null;
+        }
+        
+        // Load the external sketch file
+        try {
+          const script = document.createElement('script');
+          script.src = 'pragmatic-sketch.js';
+          script.onload = function() {
+            log('pragmatic-sketch.js loaded successfully');
+            // The sketch should initialize itself
+          };
+          script.onerror = function() {
+            log('Could not load pragmatic-sketch.js, using fallback');
+            
+            // Create a basic fallback sketch
+            const fallbackSketch = function(p) {
+              p.setup = function() {
+                const canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('p5-overlay');
+                p.background(0, 0);
+              };
+              
+              p.draw = function() {
+                p.clear();
+                p.noFill();
+                p.stroke(255, 0, 0);
+                p.strokeWeight(3);
+                p.circle(p.width/2, p.height/2, 200);
+                p.textSize(24);
+                p.fill(255);
+                p.textAlign(p.CENTER, p.CENTER);
+                p.text("Marker Detected!", p.width/2, p.height/2);
+              };
+              
+              p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+              };
+            };
+            
+            p5Instance = new p5(fallbackSketch);
+          };
+          document.body.appendChild(script);
+        } catch (e) {
+          log('Error loading script: ' + e);
+        }
+      }
+      
+      // Add start button click handler
+      startButton.addEventListener('click', startAR);
+      
+      // Handle window resize
+      window.addEventListener('resize', function() {
+        if (p5Instance && p5Instance.windowResized) {
+          p5Instance.windowResized();
+        }
       });
       
-      // Try to load the external script if it exists
-      try {
-        log('Attempting to load pragmatic-sketch.js');
-        const script = document.createElement('script');
-        script.src = 'pragmatic-sketch.js';
-        script.onload = function() {
-          log('pragmatic-sketch.js loaded successfully');
-        };
-        script.onerror = function() {
-          log('Could not load pragmatic-sketch.js, using default visualization');
-        };
-        document.body.appendChild(script);
-      } catch (e) {
-        log('Error loading external script: ' + e.message);
-      }
+      // Handle device rotation
+      window.addEventListener('orientationchange', function() {
+        setTimeout(function() {
+          if (p5Instance && p5Instance.windowResized) {
+            p5Instance.windowResized();
+          }
+        }, 200);
+      });
     </script>
   </body>
 </html>
