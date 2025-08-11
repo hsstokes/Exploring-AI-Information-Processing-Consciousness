@@ -3,6 +3,7 @@
   <head>
     <title>AR Pragmatic Visualization</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; ">
     <!-- Updated libraries with specific versions known to work well together -->
     <script src="https://aframe.io/releases/1.3.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.min.js"></script>
@@ -162,6 +163,54 @@
         animation: pulse 1.5s infinite;
         display: inline-block;
       }
+      
+      #fallback-button {
+        position: fixed;
+        top: 60%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 999;
+        padding: 12px 20px;
+        background: #f39c12;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        display: none;
+      }
+      
+      #debug-panel {
+        position: fixed;
+        bottom: 60px;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        color: #2ecc71;
+        font-family: monospace;
+        font-size: 10px;
+        padding: 5px;
+        border-radius: 5px;
+        max-width: 80%;
+        max-height: 100px;
+        overflow-y: auto;
+        z-index: 1000;
+        display: none;
+      }
+      
+      #ios-prompt {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        z-index: 10000;
+        max-width: 80%;
+        text-align: center;
+        display: none;
+      }
     </style>
   </head>
   <body>
@@ -173,6 +222,7 @@
     </div>
     
     <button id="start-button">Start AR Experience</button>
+    <button id="fallback-button">Continue Without AR</button>
     
     <div id="camera-fallback">
       <h2>Camera Access Required</h2>
@@ -192,23 +242,93 @@
     </div>
     
     <div class="status-indicator" id="status-indicator">Searching for marker</div>
+    <div id="debug-panel"></div>
+    <div id="ios-prompt">Tap anywhere to enable camera<br>(iOS may require additional permissions)</div>
     
     <script>
       // Global variables
       let p5Instance = null;
       let arStarted = false;
       let markerFound = false;
+      let debugMode = false; // Set to true to show additional debugging
       const startButton = document.getElementById('start-button');
+      const fallbackButton = document.getElementById('fallback-button');
       const retryButton = document.getElementById('retry-button');
       const arSceneContainer = document.getElementById('ar-scene-container');
       const p5Overlay = document.getElementById('p5-overlay');
       const loader = document.querySelector('.arjs-loader');
       const cameraFallback = document.getElementById('camera-fallback');
       const statusIndicator = document.getElementById('status-indicator');
+      const debugPanel = document.getElementById('debug-panel');
+      const iosPrompt = document.getElementById('ios-prompt');
       
-      // Log to console for debugging
-      function log(message) {
+      // Determine if this is iOS
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+      
+      // Add global error handler
+      window.onerror = function(message, source, lineno, colno, error) {
+        log('ERROR: ' + message, true);
+        document.querySelector('.arjs-loader div').innerHTML = 
+          'Error detected: ' + message + '<br><button id="reload-btn" style="margin-top:10px; padding:8px 16px;">Try Again</button>' +
+          '<button id="bypass-btn" style="margin-top:10px; margin-left:10px; padding:8px 16px;">Skip AR</button>';
+        
+        setTimeout(function() {
+          const reloadBtn = document.getElementById('reload-btn');
+          const bypassBtn = document.getElementById('bypass-btn');
+          
+          if (reloadBtn) {
+            reloadBtn.addEventListener('click', function() {
+              location.reload();
+            });
+          }
+          
+          if (bypassBtn) {
+            bypassBtn.addEventListener('click', function() {
+              skipToVisualization();
+            });
+          }
+        }, 100);
+        
+        return true;
+      };
+      
+      // Log to console and optionally to debug panel
+      function log(message, isError = false) {
         console.log('[AR Debug]', message);
+        
+        if (debugMode) {
+          debugPanel.style.display = 'block';
+          const entry = document.createElement('div');
+          entry.textContent = '> ' + message;
+          if (isError) entry.style.color = '#e74c3c';
+          debugPanel.appendChild(entry);
+          debugPanel.scrollTop = debugPanel.scrollHeight;
+        }
+      }
+      
+      // Skip AR and go directly to visualization
+      function skipToVisualization() {
+        log('Skipping AR, loading visualization directly');
+        document.querySelector('.arjs-loader').classList.add('hidden');
+        startButton.classList.add('hidden');
+        fallbackButton.classList.add('hidden');
+        
+        // Create a background container
+        const container = document.createElement('div');
+        container.style.position = 'fixed';
+        container.style.top = '0';
+        container.style.left = '0';
+        container.style.width = '100%';
+        container.style.height = '100%';
+        container.style.backgroundColor = '#1a1a1a';
+        container.style.zIndex = '5';
+        document.body.appendChild(container);
+        
+        // Show the p5 overlay
+        p5Overlay.style.display = 'block';
+        
+        // Load the p5 sketch directly
+        initP5Overlay();
       }
       
       // Function to initialize AR.js and A-Frame scene
@@ -274,9 +394,14 @@
               statusIndicator.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
             });
           } else {
-            log('ERROR: Marker element not found!');
+            log('ERROR: Marker element not found!', true);
             statusIndicator.textContent = 'Error: Marker not found';
             statusIndicator.style.backgroundColor = 'rgba(220, 53, 69, 0.7)';
+            
+            // Show fallback button after a short delay
+            setTimeout(() => {
+              fallbackButton.style.display = 'block';
+            }, 2000);
           }
         }, 1000);
       }
@@ -289,6 +414,21 @@
         log('Starting AR experience');
         startButton.classList.add('hidden');
         loader.classList.remove('hidden');
+        
+        // For iOS, show special prompt
+        if (isIOS) {
+          setTimeout(() => {
+            iosPrompt.style.display = 'block';
+            setTimeout(() => {
+              iosPrompt.style.display = 'none';
+            }, 5000);
+          }, 1000);
+        }
+        
+        // Show fallback button after a delay
+        setTimeout(() => {
+          fallbackButton.style.display = 'block';
+        }, 8000);
         
         // Request camera permission
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -312,17 +452,23 @@
             initP5Overlay();
           })
           .catch(function(err) {
-            log('Camera access error: ' + err);
+            log('Camera access error: ' + err, true);
             cameraFallback.style.display = 'flex';
             loader.classList.add('hidden');
             arStarted = false;
+            
+            // Show fallback option
+            fallbackButton.style.display = 'block';
           });
         } else {
-          log('getUserMedia not supported');
+          log('getUserMedia not supported', true);
           alert('Your browser does not support camera access required for AR.');
           arStarted = false;
           startButton.classList.remove('hidden');
           loader.classList.add('hidden');
+          
+          // Show fallback option
+          fallbackButton.style.display = 'block';
         }
       }
       
@@ -344,8 +490,9 @@
             log('pragmatic-sketch.js loaded successfully');
             // The sketch should initialize itself
           };
-          script.onerror = function() {
-            log('Could not load pragmatic-sketch.js, using fallback');
+          script.onerror = function(e) {
+            log('Could not load pragmatic-sketch.js: ' + e, true);
+            log('Using fallback visualization');
             
             // Create a basic fallback sketch
             const fallbackSketch = function(p) {
@@ -415,13 +562,22 @@
               p.windowResized = function() {
                 p.resizeCanvas(p.windowWidth, p.windowHeight);
               };
+              
+              // Add mouse interaction
+              p.mousePressed = function() {
+                // Simple interaction for fallback
+              };
+              
+              p.mouseDragged = function() {
+                // Simple interaction for fallback
+              };
             };
             
             p5Instance = new p5(fallbackSketch);
           };
           document.body.appendChild(script);
         } catch (e) {
-          log('Error loading script: ' + e);
+          log('Error creating script element: ' + e, true);
           statusIndicator.textContent = 'Error loading visualization';
           statusIndicator.style.backgroundColor = 'rgba(220, 53, 69, 0.7)';
         }
@@ -429,6 +585,9 @@
       
       // Add start button click handler
       startButton.addEventListener('click', startAR);
+      
+      // Add fallback button click handler
+      fallbackButton.addEventListener('click', skipToVisualization);
       
       // Add retry button click handler
       retryButton.addEventListener('click', function() {
@@ -452,19 +611,33 @@
         }, 200);
       });
       
-      // Check if the page is loaded in AR Quick Look on iOS
-      function isARQuickLook() {
-        return navigator.userAgent.includes('CriOS') && navigator.userAgent.includes('Mobile');
+      // For iOS, handle document clicks to help with camera initialization
+      if (isIOS) {
+        document.addEventListener('click', function() {
+          log('Document clicked, helping iOS camera init');
+          
+          if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia && !arStarted) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+              .then(function(stream) {
+                log('iOS camera test successful');
+                stream.getTracks().forEach(track => track.stop());
+              })
+              .catch(function(err) {
+                log('iOS camera test failed: ' + err, true);
+              });
+          }
+        }, { once: true });
       }
       
       // Add event for when page loses visibility (user switches apps)
       document.addEventListener('visibilitychange', function() {
         if (document.visibilityState === 'visible' && arStarted) {
-          log('Page became visible again, checking if AR needs to be restarted');
+          log('Page became visible again, checking AR status');
           
           // If AR was started but marker isn't being detected, try to reinitialize
           if (!markerFound && arStarted) {
-            // Optional: could add logic here to restart AR if needed
+            log('AR seems stalled, showing fallback option');
+            fallbackButton.style.display = 'block';
           }
         }
       });
@@ -475,17 +648,70 @@
       });
       
       window.addEventListener('camera-error', function() {
-        log('Camera error occurred in AR.js');
+        log('Camera error occurred in AR.js', true);
         cameraFallback.style.display = 'flex';
         loader.classList.add('hidden');
+        fallbackButton.style.display = 'block';
       });
       
-      // Add touchscreen warning if needed (optional)
-      if ('ontouchstart' in window) {
-        log('Touch device detected');
-      } else {
-        log('Non-touch device detected, AR interaction may be limited');
-      }
+      // Timeout handling - if loading takes too long
+      setTimeout(function() {
+        if (loader && !loader.classList.contains('hidden')) {
+          log('Loading timeout - AR initialization taking too long', true);
+          document.querySelector('.arjs-loader div').innerHTML = 
+            'Loading taking longer than expected.<br><br>Issues detected:<ul style="text-align:left;margin:10px 30px;">' +
+            '<li>Camera may not be initializing correctly</li>' +
+            '<li>Device may not fully support WebAR</li>' +
+            '<li>Browser may be blocking camera access</li></ul>' +
+            '<button id="manual-start" style="margin-top:15px; padding:10px 20px; background:#3498db; border:none; border-radius:5px; color:white;">Force Start AR</button>' +
+            '<button id="skip-ar" style="margin-top:15px; margin-left:10px; padding:10px 20px; background:#e74c3c; border:none; border-radius:5px; color:white;">Skip AR</button>';
+          
+          document.getElementById('manual-start').addEventListener('click', function() {
+            loader.classList.add('hidden');
+            // Attempt to continue anyway
+            initializeAR();
+          });
+          
+          document.getElementById('skip-ar').addEventListener('click', function() {
+            skipToVisualization();
+          });
+        }
+      }, 15000); // 15 second timeout
+      
+      // Device capability detection
+      const deviceInfo = {
+        isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+        isIOS: isIOS,
+        isAndroid: /Android/i.test(navigator.userAgent),
+        isSafari: /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+      };
+      
+      log('Device info: ' + JSON.stringify(deviceInfo));
+      
+      // Debug mode toggle - double tap in bottom right corner
+      let tapCount = 0;
+      let tapTimer = null;
+      
+      document.addEventListener('click', function(e) {
+        // Check if click is in bottom right corner
+        if (e.clientX > window.innerWidth * 0.8 && e.clientY > window.innerHeight * 0.8) {
+          tapCount++;
+          
+          if (tapCount === 1) {
+            tapTimer = setTimeout(function() {
+              tapCount = 0;
+            }, 500);
+          } else if (tapCount === 2) {
+            clearTimeout(tapTimer);
+            tapCount = 0;
+            
+            // Toggle debug mode
+            debugMode = !debugMode;
+            debugPanel.style.display = debugMode ? 'block' : 'none';
+            log('Debug mode: ' + (debugMode ? 'ON' : 'OFF'));
+          }
+        }
+      });
     </script>
   </body>
 </html>
