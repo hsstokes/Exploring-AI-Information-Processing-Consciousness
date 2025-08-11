@@ -27,31 +27,108 @@
         color: #445878;
         z-index: 20;
       }
+      .camera-button {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 30;
+        padding: 10px;
+        background: #4285f4;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
+    <button class="camera-button" id="start-ar">Start AR Experience</button>
+    
     <a-scene embedded
              arjs="sourceType: webcam; trackingMethod: best; debugUIEnabled: false;"
              vr-mode-ui="enabled: false"
              device-orientation-permission-ui="enabled: false">
-      <a-marker type="pattern" url="hiro-marker.patt" id="hiro-marker"></a-marker>
+      <!-- Using the default hiro marker from AR.js -->
+      <a-marker preset="hiro" id="hiro-marker"></a-marker>
       <a-entity camera></a-entity>
     </a-scene>
+    
     <div id="p5-overlay"></div>
     <div id="ar-info">
       <b>Pragmatic Visualization (AR)</b><br>
       Point at the Hiro marker to see the visualization.<br>
       <b>Interact:</b> Tap/click and drag on the overlay!
     </div>
-    <script src="pragmatic-sketch.js"></script>
+    
     <script>
-      const marker = document.getElementById('hiro-marker');
-      marker.addEventListener('markerFound', () => {
-        document.getElementById('p5-overlay').style.display = 'block';
+      // Basic p5.js sketch if pragmatic-sketch.js is not available
+      function setupP5() {
+        const sketch = function(p) {
+          p.setup = function() {
+            const canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+            canvas.parent('p5-overlay');
+            p.background(0, 0);
+          };
+          
+          p.draw = function() {
+            p.clear();
+            p.noFill();
+            p.stroke(255, 0, 0);
+            p.strokeWeight(3);
+            p.circle(p.width/2, p.height/2, 200);
+            p.textSize(24);
+            p.fill(255);
+            p.textAlign(p.CENTER, p.CENTER);
+            p.text("Marker Detected!", p.width/2, p.height/2);
+          };
+          
+          p.windowResized = function() {
+            p.resizeCanvas(p.windowWidth, p.windowHeight);
+          };
+        };
+        
+        new p5(sketch);
+      }
+      
+      // Initialize AR with user permission
+      document.getElementById('start-ar').addEventListener('click', function() {
+        // Request camera access explicitly
+        navigator.mediaDevices.getUserMedia({ video: true })
+          .then(function(stream) {
+            // Camera access granted
+            stream.getTracks().forEach(track => track.stop()); // Stop the test stream
+            this.style.display = 'none';
+            setupP5();
+            
+            // Set up marker events
+            const marker = document.getElementById('hiro-marker');
+            marker.addEventListener('markerFound', () => {
+              document.getElementById('p5-overlay').style.display = 'block';
+              console.log("Marker found");
+            });
+            marker.addEventListener('markerLost', () => {
+              document.getElementById('p5-overlay').style.display = 'none';
+              console.log("Marker lost");
+            });
+          })
+          .catch(function(err) {
+            console.error('Camera access denied: ', err);
+            alert('Camera access is required for AR functionality. Please allow camera access and try again.');
+          });
       });
-      marker.addEventListener('markerLost', () => {
-        document.getElementById('p5-overlay').style.display = 'none';
-      });
+      
+      // Try to load the external script if it exists
+      try {
+        const script = document.createElement('script');
+        script.src = 'pragmatic-sketch.js';
+        script.onerror = function() {
+          console.warn('Could not load pragmatic-sketch.js, using default visualization');
+          // Don't call setupP5() here as it will be called after camera permission
+        };
+        document.body.appendChild(script);
+      } catch (e) {
+        console.warn('Error loading external script:', e);
+      }
     </script>
   </body>
 </html>
