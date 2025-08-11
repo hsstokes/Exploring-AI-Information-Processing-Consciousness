@@ -3,6 +3,7 @@
 <head>
     <title>Enhanced Gemini Visualization - Shapes of Utility</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
     <style>
         body {
             margin: 0;
@@ -264,16 +265,24 @@
                 }
             };
             
-            // Rest of your functions...
-            // [all your existing functions remain unchanged]
-            
-            // Define mouse event handlers within the p5 instance
+            // Add this variable to the top of your geminiSketch function
+            let interactionSound;
+
+            p.preload = function() {
+                // Adjust the path as needed; this assumes your HTML is at the repo root
+                interactionSound = p.loadSound('audio/pragmatic-sound.wav');
+            };
             p.mousePressed = function() {
                 if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
                     // When mouse is pressed inside visualization area
                     mouseInfluence.x = p.mouseX;
                     mouseInfluence.y = p.mouseY;
                     mouseInfluence.active = true;
+
+                    // Play sound on interaction
+                    if (interactionSound && !interactionSound.isPlaying()) {
+                    interactionSound.play();
+                    }
                     
                     // If not in processing mode, trigger it
                     if (!processingMode) {
