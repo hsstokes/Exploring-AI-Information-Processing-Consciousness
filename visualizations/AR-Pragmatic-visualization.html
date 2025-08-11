@@ -17,6 +17,9 @@
         left: 0;
         width: 100%;
         height: 100%;
+        background-color: #000;
+        color: #fff;
+        font-family: 'Courier New', monospace;
       }
       
       .arjs-loader {
@@ -36,6 +39,10 @@
         text-align: center;
         font-size: 1.25em;
         color: white;
+        max-width: 80%;
+        padding: 20px;
+        border-radius: 10px;
+        background-color: rgba(40, 40, 40, 0.7);
       }
       
       #p5-overlay {
@@ -60,6 +67,8 @@
         font-family: 'Courier New', monospace;
         color: #445878;
         z-index: 20;
+        max-width: calc(100% - 20px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
       }
       
       #start-button {
@@ -76,19 +85,100 @@
         font-size: 18px;
         cursor: pointer;
         box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        transition: background-color 0.3s, transform 0.2s;
+      }
+      
+      #start-button:hover {
+        background: #3b78e7;
+        transform: translate(-50%, -50%) scale(1.05);
+      }
+      
+      #start-button:active {
+        transform: translate(-50%, -50%) scale(0.98);
+      }
+      
+      #camera-fallback {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #1a1a1a;
+        display: none;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        z-index: 9998;
+        padding: 20px;
+      }
+      
+      #camera-fallback h2 {
+        color: #fff;
+        margin-bottom: 20px;
+      }
+      
+      #camera-fallback p {
+        color: #ddd;
+        margin-bottom: 30px;
+        max-width: 600px;
+      }
+      
+      #retry-button {
+        padding: 12px 24px;
+        background: #4285f4;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+      
+      .status-indicator {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: white;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-size: 12px;
+        z-index: 100;
+        display: none;
       }
       
       .hidden {
         display: none !important;
       }
+      
+      /* Animation for the loader */
+      @keyframes pulse {
+        0% { opacity: 0.4; }
+        50% { opacity: 1; }
+        100% { opacity: 0.4; }
+      }
+      
+      .loading-dots {
+        animation: pulse 1.5s infinite;
+        display: inline-block;
+      }
     </style>
   </head>
   <body>
     <div class="arjs-loader">
-      <div>Loading AR experience... please wait</div>
+      <div>
+        Loading AR experience<span class="loading-dots">...</span><br>
+        <small>Please wait while resources are initialized</small>
+      </div>
     </div>
     
     <button id="start-button">Start AR Experience</button>
+    
+    <div id="camera-fallback">
+      <h2>Camera Access Required</h2>
+      <p>To use this AR visualization, camera access is required. Please allow camera access in your browser settings and try again.</p>
+      <button id="retry-button">Try Again</button>
+    </div>
     
     <!-- AR Scene will be inserted here dynamically -->
     <div id="ar-scene-container"></div>
@@ -101,14 +191,20 @@
       <b>Interact:</b> Tap/click and drag on the overlay!
     </div>
     
+    <div class="status-indicator" id="status-indicator">Searching for marker</div>
+    
     <script>
       // Global variables
       let p5Instance = null;
       let arStarted = false;
+      let markerFound = false;
       const startButton = document.getElementById('start-button');
+      const retryButton = document.getElementById('retry-button');
       const arSceneContainer = document.getElementById('ar-scene-container');
       const p5Overlay = document.getElementById('p5-overlay');
       const loader = document.querySelector('.arjs-loader');
+      const cameraFallback = document.getElementById('camera-fallback');
+      const statusIndicator = document.getElementById('status-indicator');
       
       // Log to console for debugging
       function log(message) {
@@ -124,7 +220,7 @@
           <a-scene 
             embedded
             arjs="sourceType: webcam; detectionMode: mono_and_matrix; matrixCodeType: 3x3; debugUIEnabled: false;"
-            renderer="logarithmicDepthBuffer: true; precision: mediump;"
+            renderer="logarithmicDepthBuffer: true; precision: mediump; antialias: true;"
             vr-mode-ui="enabled: false"
             gesture-detector
             device-orientation-permission-ui="enabled: false">
@@ -146,6 +242,10 @@
         // Hide loader after scene is created
         loader.classList.add('hidden');
         
+        // Show status indicator
+        statusIndicator.style.display = 'block';
+        statusIndicator.textContent = 'Searching for marker';
+        
         // Set up marker detection events
         setTimeout(() => {
           const marker = document.getElementById('hiro-marker');
@@ -154,15 +254,29 @@
             
             marker.addEventListener('markerFound', () => {
               log('Marker found!');
+              markerFound = true;
               p5Overlay.style.display = 'block';
+              statusIndicator.textContent = 'Marker detected';
+              statusIndicator.style.backgroundColor = 'rgba(40, 167, 69, 0.7)';
+              
+              // Hide status indicator after 3 seconds
+              setTimeout(() => {
+                statusIndicator.style.display = 'none';
+              }, 3000);
             });
             
             marker.addEventListener('markerLost', () => {
               log('Marker lost');
+              markerFound = false;
               p5Overlay.style.display = 'none';
+              statusIndicator.style.display = 'block';
+              statusIndicator.textContent = 'Marker lost - searching again';
+              statusIndicator.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
             });
           } else {
             log('ERROR: Marker element not found!');
+            statusIndicator.textContent = 'Error: Marker not found';
+            statusIndicator.style.backgroundColor = 'rgba(220, 53, 69, 0.7)';
           }
         }, 1000);
       }
@@ -174,6 +288,7 @@
         
         log('Starting AR experience');
         startButton.classList.add('hidden');
+        loader.classList.remove('hidden');
         
         // Request camera permission
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -198,10 +313,9 @@
           })
           .catch(function(err) {
             log('Camera access error: ' + err);
-            alert('Camera access is required for AR. Please allow camera access and try again.');
-            arStarted = false;
-            startButton.classList.remove('hidden');
+            cameraFallback.style.display = 'flex';
             loader.classList.add('hidden');
+            arStarted = false;
           });
         } else {
           log('getUserMedia not supported');
@@ -243,14 +357,59 @@
               
               p.draw = function() {
                 p.clear();
-                p.noFill();
-                p.stroke(255, 0, 0);
-                p.strokeWeight(3);
-                p.circle(p.width/2, p.height/2, 200);
+                
+                // Draw a hexagonal grid as fallback
+                p.push();
+                p.translate(p.width/2, p.height/2);
+                
+                // Draw central node
+                p.noStroke();
+                p.fill(68, 88, 120, 200);
+                p.ellipse(0, 0, 60, 60);
+                p.fill(255, 255, 255, 100);
+                p.ellipse(0, 0, 40, 40);
+                
+                // Draw hexagons
+                const time = p.millis() * 0.001;
+                const hexSize = 30;
+                
+                for (let i = 0; i < 8; i++) {
+                  const angle = i * (p.TWO_PI / 8);
+                  const radius = 150 + Math.sin(time + i * 0.5) * 20;
+                  const x = Math.cos(angle) * radius;
+                  const y = Math.sin(angle) * radius;
+                  
+                  p.push();
+                  p.translate(x, y);
+                  p.rotate(time * 0.2 + i * 0.2);
+                  
+                  p.fill(68, 88, 120, 150);
+                  p.beginShape();
+                  for (let j = 0; j < 6; j++) {
+                    const hAngle = j * (p.TWO_PI / 6);
+                    const hx = Math.cos(hAngle) * hexSize;
+                    const hy = Math.sin(hAngle) * hexSize;
+                    p.vertex(hx, hy);
+                  }
+                  p.endShape(p.CLOSE);
+                  
+                  // Draw connecting line
+                  p.stroke(40, 180, 170, 100);
+                  p.strokeWeight(1.5);
+                  p.line(0, 0, -x, -y);
+                  
+                  p.pop();
+                }
+                
+                p.pop();
+                
+                // Draw text
                 p.textSize(24);
                 p.fill(255);
                 p.textAlign(p.CENTER, p.CENTER);
-                p.text("Marker Detected!", p.width/2, p.height/2);
+                p.text("Marker Detected!", p.width/2, p.height/2 - 120);
+                p.textSize(16);
+                p.text("(Fallback Visualization)", p.width/2, p.height/2 - 90);
               };
               
               p.windowResized = function() {
@@ -263,11 +422,19 @@
           document.body.appendChild(script);
         } catch (e) {
           log('Error loading script: ' + e);
+          statusIndicator.textContent = 'Error loading visualization';
+          statusIndicator.style.backgroundColor = 'rgba(220, 53, 69, 0.7)';
         }
       }
       
       // Add start button click handler
       startButton.addEventListener('click', startAR);
+      
+      // Add retry button click handler
+      retryButton.addEventListener('click', function() {
+        cameraFallback.style.display = 'none';
+        startButton.classList.remove('hidden');
+      });
       
       // Handle window resize
       window.addEventListener('resize', function() {
@@ -284,6 +451,41 @@
           }
         }, 200);
       });
+      
+      // Check if the page is loaded in AR Quick Look on iOS
+      function isARQuickLook() {
+        return navigator.userAgent.includes('CriOS') && navigator.userAgent.includes('Mobile');
+      }
+      
+      // Add event for when page loses visibility (user switches apps)
+      document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible' && arStarted) {
+          log('Page became visible again, checking if AR needs to be restarted');
+          
+          // If AR was started but marker isn't being detected, try to reinitialize
+          if (!markerFound && arStarted) {
+            // Optional: could add logic here to restart AR if needed
+          }
+        }
+      });
+      
+      // Add better error handling for AR.js initialization
+      window.addEventListener('artoolkit-loaded', function() {
+        log('AR.js toolkit loaded successfully');
+      });
+      
+      window.addEventListener('camera-error', function() {
+        log('Camera error occurred in AR.js');
+        cameraFallback.style.display = 'flex';
+        loader.classList.add('hidden');
+      });
+      
+      // Add touchscreen warning if needed (optional)
+      if ('ontouchstart' in window) {
+        log('Touch device detected');
+      } else {
+        log('Non-touch device detected, AR interaction may be limited');
+      }
     </script>
   </body>
 </html>
