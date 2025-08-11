@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>AR Pragmatic Visualization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- A-Frame and AR.js -->
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ar.js@3.3.2/aframe/build/aframe-ar.js"></script>
+    <!-- p5.js and p5.sound -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
+    <style>
+      body { margin: 0; overflow: hidden; }
+      #p5-overlay {
+        position: absolute;
+        left: 0; top: 0; width: 100vw; height: 100vh;
+        pointer-events: none;
+        z-index: 10;
+        display: none; /* hide unless marker found */
+      }
+      #ar-info {
+        position: absolute;
+        left: 10px; bottom: 10px;
+        background: rgba(255,255,255,0.9);
+        border-radius: 6px;
+        padding: 8px 12px;
+        font-size: 12px;
+        font-family: 'Courier New', monospace;
+        color: #445878;
+        z-index: 20;
+      }
+    </style>
+  </head>
+  <body>
+    <a-scene embedded arjs="sourceType: webcam;">
+      <a-marker type="pattern" url="hiro-marker.patt" id="hiro-marker"></a-marker>
+      <a-entity camera></a-entity>
+    </a-scene>
+    <div id="p5-overlay"></div>
+    <div id="ar-info">
+      <b>Pragmatic Visualization (AR)</b><br>
+      Point at the Hiro marker to see the visualization.<br>
+      <b>Interact:</b> Tap/click and drag on the overlay!
+    </div>
+    <script src="pragmatic-sketch.js"></script>
+    <script>
+      // Show/hide p5 canvas overlay based on marker detection
+      const marker = document.getElementById('hiro-marker');
+      marker.addEventListener('markerFound', () => {
+        document.getElementById('p5-overlay').style.display = 'block';
+      });
+      marker.addEventListener('markerLost', () => {
+        document.getElementById('p5-overlay').style.display = 'none';
+      });
+    </script>
+  </body>
+</html>
