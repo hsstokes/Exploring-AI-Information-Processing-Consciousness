@@ -164,14 +164,15 @@
             loopCount: 0,          // Number of completed loops
             maxLoops: 4,           // Number of times to loop the animation
             isPlaying: false,      // Whether animation is currently playing
-            frameDuration: 150,    // Duration each frame displays (in milliseconds)
-            fadeInDuration: 300,   // Fade in duration (ms)
-            fadeOutDuration: 300,  // Fade out duration (ms)
+            frameDuration: 180,    // Duration each frame displays (slower for mobile)
+            fadeInDuration: 400,   // Fade in duration (ms)
+            fadeOutDuration: 400,  // Fade out duration (ms)
             opacity: 0,            // Current opacity for fading
             x: 0,                  // X position of animation
             y: 0,                  // Y position of animation
-            size: 180,             // Size of hand animation display
-            frameImages: []        // Will hold the loaded image objects
+            size: 300,             // Size of hand animation display (larger for mobile)
+            frameImages: [],       // Will hold the loaded image objects
+            debugMode: true        // Enable debug visualization
         };
         
         // Start camera when page loads
@@ -262,19 +263,34 @@
             ];
             
             p.preload = function() {
+                console.log("Starting to load hand animation frames...");
+                
                 // Preload hand animation frames
                 handAnimation.frameImages = [];
                 for (let i = 1; i <= handAnimation.frameCount; i++) {
-                    const img = p.loadImage(
-                        `replika-animations/hand${i}.png`,
-                        function() {
-                            console.log(`Loaded hand animation frame ${i}`);
-                        },
-                        function() {
-                            console.error(`Failed to load hand animation frame ${i}`);
-                        }
-                    );
-                    handAnimation.frameImages.push(img);
+                    console.log(`Attempting to load hand${i}.png`);
+                    try {
+                        const img = p.loadImage(
+                            `./replika-animations/hand${i}.png`, // Added ./ to make path explicit
+                            function() {
+                                console.log(`Successfully loaded hand${i}.png`);
+                            },
+                            function(err) {
+                                console.error(`Failed to load hand${i}.png:`, err);
+                                // Create a placeholder image for debugging
+                                const placeholder = p.createGraphics(200, 200);
+                                placeholder.background(255, 0, 0, 100);
+                                placeholder.fill(255);
+                                placeholder.textSize(24);
+                                placeholder.textAlign(p.CENTER, p.CENTER);
+                                placeholder.text(`Hand ${i}`, 100, 100);
+                                handAnimation.frameImages[i-1] = placeholder;
+                            }
+                        );
+                        handAnimation.frameImages.push(img);
+                    } catch (e) {
+                        console.error("Error loading image:", e);
+                    }
                 }
                 
                 try {
@@ -322,12 +338,29 @@
                         }
                     }, false);
                 }
+                
+                // Log mobile detection
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                console.log("Mobile device detected:", isMobile);
+                if (isMobile) {
+                    console.log("Setting up for mobile display");
+                    // Adjust hand animation for mobile
+                    handAnimation.size = 300; // Larger size for mobile
+                }
             };
             
             // Function to start hand animation at specific coordinates
             function playHandAnimation(x, y) {
+                console.log("Attempting to play hand animation at", x, y);
+                
                 // Don't start another animation if one is already playing
-                if (handAnimation.isPlaying) return;
+                if (handAnimation.isPlaying) {
+                    console.log("Animation already playing, not starting new one");
+                    return;
+                }
+                
+                // Detect mobile devices
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                 
                 // Set initial values
                 handAnimation.isPlaying = true;
@@ -336,6 +369,14 @@
                 handAnimation.opacity = 0;
                 handAnimation.x = x;
                 handAnimation.y = y;
+                
+                // Adjust for mobile
+                if (isMobile) {
+                    handAnimation.size = 300; // Larger on mobile
+                    handAnimation.frameDuration = 200; // Slower on mobile
+                }
+                
+                console.log("Starting new animation at", x, y, "with size", handAnimation.size);
                 
                 // Start animation loop
                 updateHandAnimation();
@@ -360,16 +401,24 @@
                     }
                 }
                 
-                // Draw current frame
-                drawHandAnimationFrame();
+                // Draw debug marker if in debug mode
+                if (anim.debugMode) {
+                    p.push();
+                    p.noStroke();
+                    p.fill(255, 0, 0, 100);
+                    p.ellipse(anim.x, anim.y, 20);
+                    p.pop();
+                }
                 
                 // Advance to next frame based on timing
                 setTimeout(() => {
                     anim.currentFrame = (anim.currentFrame + 1) % anim.frameCount;
+                    console.log("Animation frame advanced to", anim.currentFrame);
                     
                     // Track completed loops
                     if (anim.currentFrame === 0) {
                         anim.loopCount++;
+                        console.log("Animation loop completed:", anim.loopCount);
                     }
                     
                     // Continue animation
@@ -383,17 +432,26 @@
             function drawHandAnimationFrame() {
                 const anim = handAnimation;
                 
+                console.log(`Drawing frame ${anim.currentFrame}, opacity: ${anim.opacity}`);
+                
                 if (anim.frameImages[anim.currentFrame]) {
+                    console.log("Image found, drawing...");
+                    
+                    // First draw a visual indicator/background to make it more visible
+                    p.push();
+                    p.noStroke();
+                    p.fill(255, 255, 255, anim.opacity * 40); // Semi-transparent white
+                    p.ellipse(anim.x, anim.y, anim.size * 1.2);
+                    p.pop();
+                    
                     // Save current drawing settings
                     p.push();
                     
                     // Set transparency
                     p.tint(255, anim.opacity * 255);
-
-                    // Set blend mode to DARKEST (similar to Photoshop's Darken)
-                    p.blendMode(p.DARKEST);
                     
-                    // Draw the current frame centered at x,y
+                    // Draw the current frame centered at x,y with a z-index approach
+                    // We don't use blendMode here because it might cause issues on mobile
                     p.image(
                         anim.frameImages[anim.currentFrame],
                         anim.x - anim.size/2,
@@ -401,11 +459,17 @@
                         anim.size,
                         anim.size
                     );
-
-                    // Reset blend mode to normal for other drawings
-                    p.blendMode(p.BLEND);
                     
                     // Restore drawing settings
+                    p.pop();
+                } else {
+                    console.error(`Image for frame ${anim.currentFrame} not found!`);
+                    
+                    // Draw a simple circle as fallback
+                    p.push();
+                    p.noStroke();
+                    p.fill(76, 195, 172, anim.opacity * 255);
+                    p.ellipse(anim.x, anim.y, anim.size * 0.5);
                     p.pop();
                 }
             }
@@ -543,7 +607,7 @@
                         updateConnections();
                     }
                     
-                    // If hand animation is playing, draw the current frame
+                    // If hand animation is playing, draw the current frame (last to be on top)
                     if (handAnimation.isPlaying) {
                         drawHandAnimationFrame();
                     }
@@ -818,10 +882,14 @@
             // Add touch support for mobile
             p.touchStarted = function() {
                 if (p.touches.length > 0) {
-                    const touch = p.touches[0];
+                    // Get more accurate touch coordinates
+                    const touchX = p.touches[0].x || p.touches[0].clientX;
+                    const touchY = p.touches[0].y || p.touches[0].clientY;
+                    
+                    console.log("Touch detected at:", touchX, touchY);
                     
                     // Check if touch is on buttons - if so, return early
-                    if (isClickOnButton(touch.x, touch.y)) {
+                    if (isClickOnButton(touchX, touchY)) {
                         return;
                     }
                     
@@ -829,13 +897,13 @@
                     p.userStartAudio();
                     
                     // Make sure touch coordinates are within canvas
-                    if (touch.x > 0 && touch.x < p.width && touch.y > 0 && touch.y < p.height) {
+                    if (touchX > 0 && touchX < p.width && touchY > 0 && touchY < p.height) {
                         // Create a ripple effect
                         for (let i = 0; i < spheres.length; i++) {
-                            const d = p.dist(touch.x, touch.y, spheres[i].x, spheres[i].y);
+                            const d = p.dist(touchX, touchY, spheres[i].x, spheres[i].y);
                             if (d < 300) {
                                 // Push spheres slightly away from touch
-                                const angle = p.atan2(spheres[i].y - touch.y, spheres[i].x - touch.x);
+                                const angle = p.atan2(spheres[i].y - touchY, spheres[i].x - touchX);
                                 const force = p.map(d, 0, 300, 3, 0);
                                 
                                 spheres[i].speedX += p.cos(angle) * force;
@@ -847,8 +915,8 @@
                         // Create a new sphere at touch position
                         const color = getRandomColor();
                         spheres.push({
-                            x: touch.x,
-                            y: touch.y,
+                            x: touchX,
+                            y: touchY,
                             size: p.random(20, 70),
                             color: color,
                             speedX: p.random(-1, 1),
@@ -867,7 +935,7 @@
                         updateConnections();
                         
                         // Play hand animation at touch position
-                        playHandAnimation(touch.x, touch.y);
+                        playHandAnimation(touchX, touchY);
                         
                         // Play sound
                         tryPlaySound();
@@ -880,14 +948,15 @@
             
             p.touchMoved = function() {
                 if (p.touches.length > 0) {
-                    const touch = p.touches[0];
+                    const touchX = p.touches[0].x || p.touches[0].clientX;
+                    const touchY = p.touches[0].y || p.touches[0].clientY;
                     
                     try {
                         // Find spheres near the touch
                         let interacted = false;
                         
                         for (let i = 0; i < spheres.length; i++) {
-                            const d = p.dist(touch.x, touch.y, spheres[i].x, spheres[i].y);
+                            const d = p.dist(touchX, touchY, spheres[i].x, spheres[i].y);
                             
                             // Larger interaction radius for touch
                             if (d < 200) {
@@ -897,7 +966,7 @@
                                 const strength = p.map(d, 0, 200, 0.15, 0.01);
                                 
                                 // Create gentle attraction
-                                const angle = p.atan2(touch.y - sphere.y, touch.x - sphere.x);
+                                const angle = p.atan2(touchY - sphere.y, touchX - sphere.x);
                                 sphere.speedX += p.cos(angle) * strength;
                                 sphere.speedY += p.sin(angle) * strength;
                                 
