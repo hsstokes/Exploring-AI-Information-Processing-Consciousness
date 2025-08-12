@@ -156,6 +156,23 @@
     <script>
         // Global reference to p5 instance
         let p5Instance = null;
+
+        // Hand animation configuration
+        const handAnimation = {
+            frameCount: 6,         // Number of hand animation frames
+            currentFrame: 0,       // Current frame being displayed
+            loopCount: 0,          // Number of completed loops
+            maxLoops: 4,           // Number of times to loop the animation
+            isPlaying: false,      // Whether animation is currently playing
+            frameDuration: 150,    // Duration each frame displays (in milliseconds)
+            fadeInDuration: 300,   // Fade in duration (ms)
+            fadeOutDuration: 300,  // Fade out duration (ms)
+            opacity: 0,            // Current opacity for fading
+            x: 0,                  // X position of animation
+            y: 0,                  // Y position of animation
+            size: 180,             // Size of hand animation display
+            frameImages: []        // Will hold the loaded image objects
+        };
         
         // Start camera when page loads
         document.addEventListener('DOMContentLoaded', function() {
@@ -245,6 +262,21 @@
             ];
             
             p.preload = function() {
+                // Preload hand animation frames
+                handAnimation.frameImages = [];
+                for (let i = 1; i <= handAnimation.frameCount; i++) {
+                    const img = p.loadImage(
+                        `replika-animations/hand${i}.png`,
+                        function() {
+                            console.log(`Loaded hand animation frame ${i}`);
+                        },
+                        function() {
+                            console.error(`Failed to load hand animation frame ${i}`);
+                        }
+                    );
+                    handAnimation.frameImages.push(img);
+                }
+                
                 try {
                     console.log("Loading sound...");
                     p.soundFormats('wav');
@@ -291,6 +323,86 @@
                     }, false);
                 }
             };
+            
+            // Function to start hand animation at specific coordinates
+            function playHandAnimation(x, y) {
+                // Don't start another animation if one is already playing
+                if (handAnimation.isPlaying) return;
+                
+                // Set initial values
+                handAnimation.isPlaying = true;
+                handAnimation.currentFrame = 0;
+                handAnimation.loopCount = 0;
+                handAnimation.opacity = 0;
+                handAnimation.x = x;
+                handAnimation.y = y;
+                
+                // Start animation loop
+                updateHandAnimation();
+            }
+            
+            // Update animation frame
+            function updateHandAnimation() {
+                const anim = handAnimation;
+                
+                // Handle fade-in
+                if (anim.loopCount === 0 && anim.currentFrame === 0) {
+                    anim.opacity += 1 / (anim.fadeInDuration / 16.67); // Approximate 60fps
+                    if (anim.opacity > 1) anim.opacity = 1;
+                }
+                
+                // Handle fade-out
+                if (anim.loopCount >= anim.maxLoops - 1 && anim.currentFrame === anim.frameCount - 1) {
+                    anim.opacity -= 1 / (anim.fadeOutDuration / 16.67);
+                    if (anim.opacity <= 0) {
+                        anim.isPlaying = false;
+                        return; // End animation
+                    }
+                }
+                
+                // Draw current frame
+                drawHandAnimationFrame();
+                
+                // Advance to next frame based on timing
+                setTimeout(() => {
+                    anim.currentFrame = (anim.currentFrame + 1) % anim.frameCount;
+                    
+                    // Track completed loops
+                    if (anim.currentFrame === 0) {
+                        anim.loopCount++;
+                    }
+                    
+                    // Continue animation
+                    if (anim.isPlaying) {
+                        requestAnimationFrame(updateHandAnimation);
+                    }
+                }, anim.frameDuration);
+            }
+            
+            // Draw the current animation frame
+            function drawHandAnimationFrame() {
+                const anim = handAnimation;
+                
+                if (anim.frameImages[anim.currentFrame]) {
+                    // Save current drawing settings
+                    p.push();
+                    
+                    // Set transparency
+                    p.tint(255, anim.opacity * 255);
+                    
+                    // Draw the current frame centered at x,y
+                    p.image(
+                        anim.frameImages[anim.currentFrame],
+                        anim.x - anim.size/2,
+                        anim.y - anim.size/2,
+                        anim.size,
+                        anim.size
+                    );
+                    
+                    // Restore drawing settings
+                    p.pop();
+                }
+            }
             
             // Function to update connections safely
             function updateConnections() {
@@ -423,6 +535,11 @@
                     
                     if (spheresRemoved) {
                         updateConnections();
+                    }
+                    
+                    // If hand animation is playing, draw the current frame
+                    if (handAnimation.isPlaying) {
+                        drawHandAnimationFrame();
                     }
                     
                 } catch (error) {
@@ -681,6 +798,9 @@
                     
                     // Update connections with the new sphere
                     updateConnections();
+                    
+                    // Play hand animation at click position
+                    playHandAnimation(p.mouseX, p.mouseY);
 
                     // Play sound using the more robust function
                     tryPlaySound();
@@ -739,6 +859,9 @@
                         
                         // Update connections
                         updateConnections();
+                        
+                        // Play hand animation at touch position
+                        playHandAnimation(touch.x, touch.y);
                         
                         // Play sound
                         tryPlaySound();
