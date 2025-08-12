@@ -271,7 +271,7 @@
                     console.log(`Attempting to load hand${i}.png`);
                     try {
                         const img = p.loadImage(
-                            `./replika-animations/hand${i}.png`, // Added ./ to make path explicit
+                            `../replika-animations/hand${i}.png`, // Changed to go up one directory
                             function() {
                                 console.log(`Successfully loaded hand${i}.png`);
                             },
