@@ -101,18 +101,23 @@
             font-family: 'Orator Std', 'Courier New', monospace;
         }
         
-        #sound-button {
+        .sound-note {
             position: fixed;
             top: 20px;
             left: 20px;
-            background-color: rgba(32, 178, 170, 0.8);
             color: white;
-            border: none;
-            border-radius: 30px;
+            background-color: rgba(32, 178, 170, 0.8);
             padding: 10px 20px;
+            border-radius: 30px;
             font-family: 'Orator Std', 'Courier New', monospace;
-            cursor: pointer;
+            font-size: 12px;
             z-index: 4;
+            opacity: 1;
+            transition: opacity 2s ease-in-out;
+        }
+        
+        .sound-note.fade {
+            opacity: 0;
         }
     </style>
 </head>
@@ -124,8 +129,8 @@
         </div>
     </div>
     
-    <!-- Sound enable button specifically for mobile -->
-    <button id="sound-button">Enable Sound</button>
+    <!-- Sound note that fades away -->
+    <div class="sound-note" id="sound-note">Sound available with headphones</div>
     
     <!-- Camera background -->
     <video id="camera-feed" autoplay playsinline></video>
@@ -156,28 +161,12 @@
         document.addEventListener('DOMContentLoaded', function() {
             startCamera();
             
-            // Fix: Add button handlers directly to ensure they work
-            document.getElementById('sound-button').addEventListener('click', function() {
-                console.log("Sound button clicked");
-                if (p5Instance) {
-                    p5Instance.userStartAudio().then(() => {
-                        console.log("Audio enabled");
-                        this.textContent = 'Sound Enabled';
-                        
-                        // Try to play the sound
-                        if (p5Instance.interactionSound) {
-                            try {
-                                p5Instance.interactionSound.play();
-                            } catch(e) {
-                                console.error("Sound play error:", e);
-                            }
-                        }
-                    }).catch(e => {
-                        console.error("Audio start error:", e);
-                    });
-                }
-            });
+            // Fade out sound note after 5 seconds
+            setTimeout(function() {
+                document.getElementById('sound-note').classList.add('fade');
+            }, 5000);
             
+            // Fix: Add toggle visualization button handler
             document.getElementById('toggle-viz').addEventListener('click', function() {
                 console.log("Toggle visualization button clicked");
                 const overlay = document.getElementById('visualization-overlay');
@@ -287,6 +276,9 @@
                 
                 // Initialize connections
                 updateConnections();
+                
+                // Auto-initialize audio
+                p.userStartAudio();
                 
                 // Special handling for iOS devices
                 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -602,11 +594,10 @@
             
             // Avoid triggering p5 events when clicking buttons
             function isClickOnButton(x, y) {
-                const soundBtn = document.getElementById('sound-button');
                 const toggleBtn = document.getElementById('toggle-viz');
                 
                 const elem = document.elementFromPoint(x, y);
-                return elem === soundBtn || elem === toggleBtn || elem.closest('.controls') !== null;
+                return elem === toggleBtn || elem.closest('.controls') !== null;
             }
             
             p.mouseMoved = function() {
