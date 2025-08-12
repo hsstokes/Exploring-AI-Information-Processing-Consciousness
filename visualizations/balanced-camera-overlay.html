@@ -30,7 +30,7 @@
             width: 100%;
             height: 100%;
             z-index: 2;
-            pointer-events: auto;
+            pointer-events: auto; /* Allow interactions */
         }
         
         .interaction-tips {
@@ -149,18 +149,22 @@
     </div>
     
     <script>
+        // Global reference to p5 instance
+        let p5Instance = null;
+        
         // Start camera when page loads
         document.addEventListener('DOMContentLoaded', function() {
             startCamera();
             
-            // Add sound button handler
+            // Fix: Add button handlers directly to ensure they work
             document.getElementById('sound-button').addEventListener('click', function() {
+                console.log("Sound button clicked");
                 if (p5Instance) {
                     p5Instance.userStartAudio().then(() => {
-                        console.log("Audio enabled via button");
+                        console.log("Audio enabled");
                         this.textContent = 'Sound Enabled';
                         
-                        // Try to play a test sound
+                        // Try to play the sound
                         if (p5Instance.interactionSound) {
                             try {
                                 p5Instance.interactionSound.play();
@@ -168,13 +172,22 @@
                                 console.error("Sound play error:", e);
                             }
                         }
+                    }).catch(e => {
+                        console.error("Audio start error:", e);
                     });
                 }
             });
+            
+            document.getElementById('toggle-viz').addEventListener('click', function() {
+                console.log("Toggle visualization button clicked");
+                const overlay = document.getElementById('visualization-overlay');
+                if (overlay.style.display === 'none') {
+                    overlay.style.display = 'block';
+                } else {
+                    overlay.style.display = 'none';
+                }
+            });
         });
-        
-        // Reference to p5 instance
-        let p5Instance = null;
         
         function startCamera() {
             const video = document.getElementById('camera-feed');
@@ -216,16 +229,6 @@
             }
         }
         
-        // Toggle visualization
-        document.getElementById('toggle-viz').addEventListener('click', function() {
-            const overlay = document.getElementById('visualization-overlay');
-            if (overlay.style.display === 'none') {
-                overlay.style.display = 'block';
-            } else {
-                overlay.style.display = 'none';
-            }
-        });
-        
         // Create a new p5 instance specifically for the visualization overlay
         const replikaSketch = function(p) {
             // Store a reference to p5 instance
@@ -258,8 +261,6 @@
                     p.soundFormats('wav');
                     
                     // Use the exact path based on your repository structure
-                    // Since we're in visualizations/balanced-camera-overlay.html
-                    // We need to go up one level to access the audio folder
                     p.interactionSound = p.loadSound('../audio/balanced-sound.wav', 
                         function() {
                             console.log("Sound loaded successfully!");
@@ -297,9 +298,6 @@
                         }
                     }, false);
                 }
-                
-                // Log whether sound loaded
-                console.log("Sound loaded status:", p.interactionSound ? "Yes" : "No");
             };
             
             // Function to update connections safely
@@ -602,6 +600,15 @@
                 }
             }
             
+            // Avoid triggering p5 events when clicking buttons
+            function isClickOnButton(x, y) {
+                const soundBtn = document.getElementById('sound-button');
+                const toggleBtn = document.getElementById('toggle-viz');
+                
+                const elem = document.elementFromPoint(x, y);
+                return elem === soundBtn || elem === toggleBtn || elem.closest('.controls') !== null;
+            }
+            
             p.mouseMoved = function() {
                 try {
                     // Find spheres near the mouse
@@ -638,6 +645,11 @@
             };
             
             p.mousePressed = function() {
+                // Check if click is on buttons - if so, return early
+                if (isClickOnButton(p.mouseX, p.mouseY)) {
+                    return;
+                }
+                
                 // First ensure audio is initialized on interaction
                 p.userStartAudio();
                 
@@ -688,11 +700,16 @@
             
             // Add touch support for mobile
             p.touchStarted = function() {
-                // First ensure audio is initialized on touch
-                p.userStartAudio();
-                
                 if (p.touches.length > 0) {
                     const touch = p.touches[0];
+                    
+                    // Check if touch is on buttons - if so, return early
+                    if (isClickOnButton(touch.x, touch.y)) {
+                        return;
+                    }
+                    
+                    // First ensure audio is initialized on touch
+                    p.userStartAudio();
                     
                     // Make sure touch coordinates are within canvas
                     if (touch.x > 0 && touch.x < p.width && touch.y > 0 && touch.y < p.height) {
@@ -737,7 +754,7 @@
                     }
                 }
                 
-                // Prevent default touch behavior on mobile
+                // Always return false to prevent default behavior
                 return false;
             };
             
