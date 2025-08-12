@@ -389,6 +389,9 @@
                     
                     // Set transparency
                     p.tint(255, anim.opacity * 255);
+
+                    // Set blend mode to DARKEST (similar to Photoshop's Darken)
+                    p.blendMode(p.DARKEST);
                     
                     // Draw the current frame centered at x,y
                     p.image(
@@ -398,6 +401,9 @@
                         anim.size,
                         anim.size
                     );
+
+                    // Reset blend mode to normal for other drawings
+                    p.blendMode(p.BLEND);
                     
                     // Restore drawing settings
                     p.pop();
