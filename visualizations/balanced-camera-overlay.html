@@ -86,6 +86,20 @@
             cursor: pointer;
         }
         
+        #sound-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(32, 178, 170, 0.8);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 20px;
+            font-family: 'Orator Std', 'Courier New', monospace;
+            cursor: pointer;
+            z-index: 10;
+        }
+        
         .loading {
             position: fixed;
             top: 0;
@@ -100,20 +114,6 @@
             z-index: 999;
             font-family: 'Orator Std', 'Courier New', monospace;
         }
-        
-        #sound-button {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background-color: rgba(32, 178, 170, 0.8);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            padding: 10px 20px;
-            font-family: 'Orator Std', 'Courier New', monospace;
-            cursor: pointer;
-            z-index: 4;
-        }
     </style>
 </head>
 <body>
@@ -124,7 +124,7 @@
         </div>
     </div>
     
-    <!-- Sound enable button specifically for mobile -->
+    <!-- Add a dedicated sound button -->
     <button id="sound-button">Enable Sound</button>
     
     <!-- Camera background -->
@@ -149,44 +149,40 @@
     </div>
     
     <script>
-        // Detect if running on iOS specifically
+        // Detect iOS
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        console.log("iOS device detected:", isIOS);
+        
+        // Special handling for iOS audio
         if (isIOS) {
-            console.log("iOS device detected - using special audio handling");
-            
-            // For iOS, we need an additional workaround for sound
             document.addEventListener('touchend', function() {
                 // This empty handler helps with iOS audio initialization
+                console.log("iOS touch event registered");
             }, false);
         }
         
         // Start camera when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            startCamera();
-            
-            // Add sound button handler for mobile
-            document.getElementById('sound-button').addEventListener('click', function() {
-                // This will be handled by p5 instance once it's created
-                this.textContent = 'Starting Sound...';
-            });
-        });
+        document.addEventListener('DOMContentLoaded', startCamera);
+        
+        // Reference to the p5 instance
+        let p5Instance = null;
+        
+        // Global audio context to ensure we can access it from any scope
+        let globalAudioContext = null;
         
         function startCamera() {
             const video = document.getElementById('camera-feed');
             const loading = document.getElementById('loading');
             
-            // Mobile-specific camera settings
-            const cameraOptions = { 
-                video: { 
-                    facingMode: 'environment',
-                    width: { ideal: window.innerWidth },
-                    height: { ideal: window.innerHeight }
-                },
-                audio: false // Explicitly disable audio track for camera to avoid conflicts
-            };
-            
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia(cameraOptions)
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: window.innerWidth },
+                        height: { ideal: window.innerHeight }
+                    },
+                    audio: false // Explicitly disable audio for camera to avoid conflicts
+                })
                 .then(function(stream) {
                     video.srcObject = stream;
                     video.onloadedmetadata = function() {
@@ -224,15 +220,63 @@
             }
         });
         
+        // Add sound button functionality
+        document.getElementById('sound-button').addEventListener('click', function() {
+            if (!p5Instance) return;
+            
+            const audioContext = p5Instance.getAudioContext();
+            console.log("Audio context state:", audioContext.state);
+            
+            if (audioContext.state !== 'running') {
+                p5Instance.userStartAudio()
+                .then(() => {
+                    console.log("Audio context started successfully!");
+                    this.textContent = 'Sound Enabled';
+                    
+                    // Play a silent sound to fully initialize audio on mobile
+                    if (p5Instance.interactionSound) {
+                        try {
+                            console.log("Playing test sound...");
+                            p5Instance.interactionSound.setVolume(0.1);
+                            p5Instance.interactionSound.play();
+                            console.log("Test sound played");
+                        } catch (e) {
+                            console.error("Test sound failed:", e);
+                        }
+                    } else {
+                        console.log("No sound available to test");
+                    }
+                })
+                .catch(e => {
+                    console.error("Could not start audio context:", e);
+                    this.textContent = 'Sound Failed';
+                });
+            } else {
+                console.log("Audio context already running");
+                this.textContent = 'Sound Enabled';
+                
+                // Try playing a sound directly
+                if (p5Instance.interactionSound) {
+                    try {
+                        console.log("Playing sound directly...");
+                        p5Instance.interactionSound.play();
+                    } catch (e) {
+                        console.error("Direct play failed:", e);
+                    }
+                }
+            }
+        });
+        
         // Create a new p5 instance specifically for the visualization overlay
         const replikaSketch = function(p) {
-            // Your existing p5.js code remains the same
+            // Store the p5 instance globally so we can access it
+            p5Instance = p;
+            
             let spheres = [];
             const NUM_SPHERES = 25;
             const MIN_SPHERES = 15;
             let lastFrameCount = 0;
-            let interactionSound;
-            let soundEnabled = false;
+            p.interactionSound = null;
             
             // Color palettes
             const coolColors = [
@@ -250,55 +294,49 @@
             ];
             
             p.preload = function() {
-                console.log("Mobile device: Attempting to load sound file");
+                console.log("Attempting to load sound file");
                 
                 try {
-                    // Try the most likely paths for mobile
+                    // Create audio context early
+                    if (!globalAudioContext) {
+                        globalAudioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        console.log("Created global audio context, state:", globalAudioContext.state);
+                    }
+                    
+                    // Set sound formats
                     p.soundFormats('wav');
                     
-                    // Try with direct path first
-                    interactionSound = p.loadSound('./audio/balanced-sound.wav', 
-                        function() {
-                            console.log("Sound loaded successfully from ./audio path");
-                        },
-                        function(err) {
-                            console.log("Direct path failed, trying alternative...", err);
+                    // Try loading with absolute URL based on window location
+                    const baseUrl = window.location.href.split('/').slice(0, -1).join('/');
+                    console.log("Base URL:", baseUrl);
+                    
+                    // Load from absolute paths
+                    p.interactionSound = p.loadSound(
+                        baseUrl + '/audio/balanced-sound.wav',
+                        () => console.log("Sound loaded from absolute path"),
+                        (err) => {
+                            console.log("Absolute path failed:", err);
                             
-                            // Try with parent directory reference
-                            try {
-                                interactionSound = p.loadSound('../audio/balanced-sound.wav',
-                                    function() {
-                                        console.log("Sound loaded successfully from ../audio path");
-                                    },
-                                    function(err) {
-                                        console.log("Parent path failed, trying absolute path...", err);
-                                        
-                                        // Try absolute path from repository root
-                                        try {
-                                            interactionSound = p.loadSound('/audio/balanced-sound.wav',
-                                                function() {
-                                                    console.log("Sound loaded successfully from /audio path");
-                                                },
-                                                function(err) {
-                                                    console.error("All sound paths failed:", err);
-                                                    interactionSound = null;
-                                                }
-                                            );
-                                        } catch(e) {
-                                            console.error("Error with absolute path:", e);
-                                            interactionSound = null;
-                                        }
-                                    }
-                                );
-                            } catch(e) {
-                                console.error("Error with parent path:", e);
-                                interactionSound = null;
-                            }
+                            // Try relative path
+                            p.interactionSound = p.loadSound(
+                                './audio/balanced-sound.wav',
+                                () => console.log("Sound loaded from relative path"),
+                                (err) => {
+                                    console.log("Relative path failed:", err);
+                                    
+                                    // Try alternate path
+                                    p.interactionSound = p.loadSound(
+                                        '../audio/balanced-sound.wav',
+                                        () => console.log("Sound loaded from parent path"),
+                                        (err) => console.log("All paths failed:", err)
+                                    );
+                                }
+                            );
                         }
                     );
                 } catch (e) {
-                    console.error('Sound could not be loaded:', e);
-                    interactionSound = null;
+                    console.error('Sound loading exception:', e);
+                    p.interactionSound = null;
                 }
             };
             
@@ -315,52 +353,22 @@
                 // Initialize connections
                 updateConnections();
                 
-                // Mobile-specific setup for audio
-                if (p.getAudioContext()) {
-                    console.log("Mobile audio context state:", p.getAudioContext().state);
-                }
+                // Check audio context
+                console.log("p5.js audio context state:", p.getAudioContext().state);
                 
-                // Set up the sound button handler
-                const soundButton = document.getElementById('sound-button');
-                soundButton.addEventListener('click', function() {
-                    // Enable audio on mobile
-                    if (p.getAudioContext().state !== 'running') {
-                        p.userStartAudio().then(function() {
-                            console.log("Mobile audio context started successfully");
-                            soundButton.textContent = 'Sound Enabled';
-                            soundEnabled = true;
-                            
-                            // Play a short silent sound to fully initialize audio on mobile
-                            if (interactionSound) {
-                                try {
-                                    interactionSound.setVolume(0.01);
-                                    interactionSound.play();
-                                    interactionSound.stop(0.1);
-                                    interactionSound.setVolume(1.0);
-                                    console.log("Silent sound played to initialize audio");
-                                } catch (e) {
-                                    console.error("Test sound failed:", e);
-                                }
-                            }
-                            
-                            // Hide button after a delay
-                            setTimeout(function() {
-                                soundButton.style.display = 'none';
-                            }, 2000);
-                        }).catch(function(e) {
-                            console.error("Failed to enable audio:", e);
-                            soundButton.textContent = 'Sound Failed';
-                        });
-                    } else {
-                        soundButton.textContent = 'Sound Already Enabled';
-                        soundEnabled = true;
-                        
-                        // Hide button after a delay
-                        setTimeout(function() {
-                            soundButton.style.display = 'none';
-                        }, 2000);
-                    }
-                });
+                // Report if sound was loaded
+                console.log("Sound loaded status:", p.interactionSound ? "yes" : "no");
+                
+                // For iOS, we might need to resume the audio context on user interaction
+                if (isIOS) {
+                    document.addEventListener('touchstart', function() {
+                        if (p.getAudioContext().state !== 'running') {
+                            p.getAudioContext().resume().then(() => {
+                                console.log("Audio context resumed by touch");
+                            });
+                        }
+                    }, false);
+                }
             };
             
             // Function to update connections safely
@@ -412,7 +420,7 @@
                 
                 try {
                     p.clear(); // Clear with transparency so camera shows through
-                    
+  
                     // Make sure we always have enough spheres
                     let spheresAdded = false;
                     while (spheres.length < MIN_SPHERES) {
@@ -629,33 +637,36 @@
                 p.resizeCanvas(p.windowWidth, p.windowHeight);
             };
             
-            // Play sound function with mobile safety checks
-            function playInteractionSound() {
-                if (!soundEnabled) {
-                    // Try to enable sound
-                    p.userStartAudio().then(function() {
-                        soundEnabled = true;
-                        console.log("Sound enabled through interaction");
+            // Play sound with better mobile handling
+            function tryPlaySound() {
+                if (!p.interactionSound) {
+                    console.log("No sound available to play");
+                    return;
+                }
+                
+                console.log("Trying to play sound...");
+                
+                // First ensure audio context is running
+                if (p.getAudioContext().state !== 'running') {
+                    console.log("Audio context not running, trying to start...");
+                    
+                    p.userStartAudio()
+                    .then(() => {
+                        console.log("Audio context started, now playing sound");
                         
-                        // Now try to play the sound
-                        if (interactionSound && !interactionSound.isPlaying()) {
-                            try {
-                                interactionSound.play();
-                            } catch (e) {
-                                console.log('Could not play sound:', e);
-                            }
+                        if (!p.interactionSound.isPlaying()) {
+                            p.interactionSound.play();
                         }
-                    }).catch(function(e) {
-                        console.error("Could not enable audio through interaction:", e);
+                    })
+                    .catch(e => {
+                        console.error("Could not start audio context:", e);
                     });
                 } else {
-                    // Sound is already enabled, try to play
-                    if (interactionSound && !interactionSound.isPlaying()) {
-                        try {
-                            interactionSound.play();
-                        } catch (e) {
-                            console.log('Could not play sound:', e);
-                        }
+                    // Audio context is running, play directly
+                    console.log("Audio context already running, playing sound directly");
+                    
+                    if (!p.interactionSound.isPlaying()) {
+                        p.interactionSound.play();
                     }
                 }
             }
@@ -696,16 +707,17 @@
             };
             
             p.mousePressed = function() {
-                // For iOS/mobile, ensure audio is enabled
+                console.log("Mouse pressed, attempting to enable audio");
+                
+                // For iOS/mobile, ensure audio is enabled on interaction
                 if (p.getAudioContext().state !== 'running') {
-                    p.userStartAudio().then(function() {
-                        soundEnabled = true;
-                        console.log("Audio enabled via mouse press");
-                    }).catch(function(e) {
+                    p.userStartAudio()
+                    .then(() => {
+                        console.log("Audio context started via mouse press");
+                    })
+                    .catch(e => {
                         console.error("Could not start audio via mouse press:", e);
                     });
-                } else {
-                    soundEnabled = true;
                 }
                 
                 // Add interactivity when clicking
@@ -745,9 +757,9 @@
                     
                     // Update connections with the new sphere
                     updateConnections();
-                    
-                    // Play sound on interaction
-                    playInteractionSound();
+
+                    // Try to play sound on interaction
+                    tryPlaySound();
                     
                     return false;
                 }
@@ -755,16 +767,18 @@
             
             // Add touch support for mobile
             p.touchStarted = function() {
+                console.log("Touch started, handling mobile interaction");
+                
                 // For iOS/mobile, ensure audio is enabled
                 if (p.getAudioContext().state !== 'running') {
-                    p.userStartAudio().then(function() {
-                        soundEnabled = true;
+                    console.log("Audio context not running, starting via touch");
+                    p.userStartAudio()
+                    .then(() => {
                         console.log("Audio enabled via touch");
-                    }).catch(function(e) {
+                    })
+                    .catch(e => {
                         console.error("Could not start audio via touch:", e);
                     });
-                } else {
-                    soundEnabled = true;
                 }
                 
                 if (p.touches.length > 0) {
@@ -808,12 +822,13 @@
                         // Update connections
                         updateConnections();
                         
-                        // Play sound
-                        playInteractionSound();
+                        // Try to play sound
+                        tryPlaySound();
                     }
                 }
                 
-                return false; // Prevent default
+                // Always return false to prevent default behavior on mobile
+                return false;
             };
             
             p.touchMoved = function() {
