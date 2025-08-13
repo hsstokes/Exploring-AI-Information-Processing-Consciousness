@@ -449,8 +449,13 @@
                     
                     // Set transparency
                     p.tint(0, 0, 0, Math.min(255, anim.opacity * 800)); // Use BLACK tint with very high opacity
-        
 
+                    // Add a stronger glow effect
+                    p.drawingContext.shadowColor = 'rgba(0, 0, 0, 0.9)';  // Black shadow
+                    p.drawingContext.shadowBlur = 15;  // Increased blur
+                    p.drawingContext.shadowOffsetX = 0;
+                    p.drawingContext.shadowOffsetY = 0;
+        
                     // Get the current frame image
                     const img = anim.frameImages[anim.currentFrame];
         
@@ -467,6 +472,19 @@
                         anim.size,
                         drawHeight
                     );
+
+                    // Draw a second time with different color to create contrast
+                    p.tint(255, 255, 255, Math.min(255, anim.opacity * 400)); // Add white overlay
+                    p.drawingContext.shadowColor = 'rgba(255, 255, 255, 0.7)';
+                    p.drawingContext.shadowBlur = 4;
+        
+                    p.image(
+                        img,
+                        anim.x - anim.size/2,
+                        anim.y - drawHeight/2,
+                        anim.size,
+                        drawHeight
+                    );
                     
                     // Restore drawing settings
                     p.pop();
@@ -476,7 +494,7 @@
                     // Draw a simple circle as fallback
                     p.push();
                     p.noStroke();
-                    p.fill(76, 195, 172, anim.opacity * 255);
+                    p.fill(0, 0, 0, anim.opacity * 255); // Black fallback
                     p.ellipse(anim.x, anim.y, anim.size * 0.5);
                     p.pop();
                 }
