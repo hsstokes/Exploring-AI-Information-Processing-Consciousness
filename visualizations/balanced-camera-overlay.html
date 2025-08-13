@@ -170,7 +170,7 @@
             opacity: 0,            // Current opacity for fading
             x: 0,                  // X position of animation
             y: 0,                  // Y position of animation
-            size: 300,             // Size of hand animation display (larger for mobile)
+            size: 400,             // Size of hand animation display (larger for mobile)
             frameImages: [],       // Will hold the loaded image objects
             debugMode: true        // Enable debug visualization
         };
@@ -271,7 +271,7 @@
                     console.log(`Attempting to load hand${i}.png`);
                     try {
                         const img = p.loadImage(
-                            `../replika-animations/hand${i}.png`, // Changed to go up one directory
+                            `hand${i}.png`, // Simple filename in same directory
                             function() {
                                 console.log(`Successfully loaded hand${i}.png`);
                             },
@@ -449,15 +449,22 @@
                     
                     // Set transparency
                     p.tint(255, anim.opacity * 255);
+
+                    // Get the current frame image
+                    const img = anim.frameImages[anim.currentFrame];
+        
+                    // Calculate height while preserving aspect ratio
+                    // Your images are 1829 × 1859 pixels, so aspect ratio is roughly 1.016
+                    const aspectRatio = img.height / img.width;
+                    const drawHeight = anim.size * aspectRatio;
                     
-                    // Draw the current frame centered at x,y with a z-index approach
-                    // We don't use blendMode here because it might cause issues on mobile
+                    // Draw the current frame centered at x,y 
                     p.image(
-                        anim.frameImages[anim.currentFrame],
+                        img,
                         anim.x - anim.size/2,
-                        anim.y - anim.size/2,
+                        anim.y - anim.size/2,// Adjust y position based on calculated height
                         anim.size,
-                        anim.size
+                        drawHeight
                     );
                     
                     // Restore drawing settings
