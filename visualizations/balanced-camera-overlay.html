@@ -165,8 +165,8 @@
             maxLoops: 4,           // Number of times to loop the animation
             isPlaying: false,      // Whether animation is currently playing
             frameDuration: 180,    // Duration each frame displays (slower for mobile)
-            fadeInDuration: 400,   // Fade in duration (ms)
-            fadeOutDuration: 400,  // Fade out duration (ms)
+            fadeInDuration: 200,   // Fade in duration (ms)
+            fadeOutDuration: 200,  // Fade out duration (ms)
             opacity: 0,            // Current opacity for fading
             x: 0,                  // X position of animation
             y: 0,                  // Y position of animation
@@ -388,7 +388,7 @@
                 
                 // Handle fade-in
                 if (anim.loopCount === 0 && anim.currentFrame === 0) {
-                    anim.opacity += 1 / (anim.fadeInDuration / 16.67); // Approximate 60fps
+                    anim.opacity += 1 / (anim.fadeInDuration / 16.67)* 1.5; // Increased speed by 50%
                     if (anim.opacity > 1) anim.opacity = 1;
                 }
                 
@@ -405,7 +405,7 @@
                 if (anim.debugMode) {
                     p.push();
                     p.noStroke();
-                    p.fill(255, 0, 0, 100);
+                    p.fill(255, 255, 255, anim.opacity * 70); // Increased from 40 to 70
                     p.ellipse(anim.x, anim.y, 20);
                     p.pop();
                 }
