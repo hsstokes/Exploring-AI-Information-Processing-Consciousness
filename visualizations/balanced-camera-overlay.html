@@ -388,13 +388,13 @@
                 
                 // Handle fade-in
                 if (anim.loopCount === 0 && anim.currentFrame === 0) {
-                    anim.opacity += 1 / (anim.fadeInDuration / 16.67)* 1.5; // Increased speed by 50%
+                    anim.opacity += 1 / (anim.fadeInDuration / 16.67) * 5.0; // 5x faster fade-in
                     if (anim.opacity > 1) anim.opacity = 1;
                 }
                 
                 // Handle fade-out
                 if (anim.loopCount >= anim.maxLoops - 1 && anim.currentFrame === anim.frameCount - 1) {
-                    anim.opacity -= 1 / (anim.fadeOutDuration / 16.67);
+                    anim.opacity -= 1 / (anim.fadeOutDuration / 16.67) * 3.0; // 3x faster fade-out
                     if (anim.opacity <= 0) {
                         anim.isPlaying = false;
                         return; // End animation
