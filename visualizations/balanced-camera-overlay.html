@@ -455,19 +455,25 @@
                     // First draw a visual indicator/background to make it more visible
                     p.push();
                     p.noStroke();
-                    p.fill(255, 255, 255, anim.opacity * 150);
-                    p.ellipse(anim.x, anim.y, anim.size * 1.05);
+
+                    // Create a blurred background using multiple overlapping circles with decreasing opacity
+                    for (let i = 0; i < 3; i++) {
+                        const blurOpacity = anim.opacity * (80 - i * 20); // Reduce from 150 to 80 base opacity
+                        const blurSize = anim.size * (1.05 + i * 0.04);
+                        p.fill(255, 255, 255, blurOpacity);
+                        p.ellipse(anim.x, anim.y, blurSize);
+                    }
                     p.pop();
                     
                     // Save current drawing settings
                     p.push();
                     
                     // Set transparency
-                    p.tint(0, 0, 0, Math.min(255, anim.opacity * 900)); // Increased from 800 to 900
+                    p.tint(0, 0, 0, Math.min(255, anim.opacity * 950)); // Increased from 800 to 900
 
                     // Add a stronger glow effect
                     p.drawingContext.shadowColor = 'rgba(0, 0, 0, 0.9)';  // Black shadow
-                    p.drawingContext.shadowBlur = 20; // Increased from 15 to 20
+                    p.drawingContext.shadowBlur = 40; // Increased from 20 to 40
                     p.drawingContext.shadowOffsetX = 0;
                     p.drawingContext.shadowOffsetY = 0;
         
