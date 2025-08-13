@@ -1,18 +1,148 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Camera Overlay Visualization</title>
+    <title>Replica - Pattern Recognition</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500&display=swap');
+        
         body {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-color: #000;
+            background-color: #f5f5f7;
+            font-family: 'Roboto Mono', monospace;
+            -webkit-text-size-adjust: 100%;
         }
         
+        /* Landing page overlay */
+        #landing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(245, 245, 247, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+        
+        .grid-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(rgba(200, 200, 200, 0.1) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(200, 200, 200, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            z-index: -1;
+        }
+        
+        .content {
+            max-width: 500px;
+            padding: 25px;
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        
+        .title {
+            font-size: 18px;
+            margin: 0 0 15px 0;
+            color: #333;
+            letter-spacing: 1px;
+        }
+        
+        .description {
+            font-size: 13px;
+            line-height: 1.4;
+            margin-bottom: 20px;
+            color: #555;
+        }
+        
+        .button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
+            touch-action: manipulation;
+            margin: 15px 0 5px 0;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .button:hover {
+            background-color: #004c99;
+            transform: translateY(-2px);
+        }
+        
+        .button:active {
+            transform: scale(0.98);
+        }
+        
+        .gesture-container {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .gesture-outline {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #0066cc;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0.8;
+        }
+        
+        /* Abstract representation of a hand gesture using simple lines */
+        .gesture-icon {
+            width: 50px;
+            height: 50px;
+            position: relative;
+        }
+        
+        .gesture-icon::before,
+        .gesture-icon::after {
+            content: "";
+            position: absolute;
+            background-color: #0066cc;
+        }
+        
+        .gesture-icon::before {
+            width: 2px;
+            height: 30px;
+            top: 10px;
+            left: 24px;
+        }
+        
+        .gesture-icon::after {
+            width: 30px;
+            height: 2px;
+            top: 24px;
+            left: 10px;
+        }
+        
+        /* Main visualization styles */
         #camera-feed {
             position: fixed;
             top: 0;
@@ -21,6 +151,7 @@
             height: 100%;
             object-fit: cover;
             z-index: 1;
+            display: none; /* Hidden until landing page dismissed */
         }
         
         #visualization-overlay {
@@ -30,7 +161,8 @@
             width: 100%;
             height: 100%;
             z-index: 2;
-            pointer-events: auto; /* Allow interactions */
+            pointer-events: auto;
+            display: none; /* Hidden until landing page dismissed */
         }
         
         .interaction-tips {
@@ -45,6 +177,7 @@
             border: 1px solid rgba(32, 178, 170, 0.3);
             z-index: 3;
             max-width: calc(100% - 40px);
+            display: none; /* Hidden until landing page dismissed */
         }
         
         .interaction-tips h3 {
@@ -73,6 +206,7 @@
             top: 20px;
             right: 20px;
             z-index: 3;
+            display: none; /* Hidden until landing page dismissed */
         }
         
         .controls button {
@@ -99,6 +233,7 @@
             align-items: center;
             z-index: 999;
             font-family: 'Orator Std', 'Courier New', monospace;
+            display: none; /* Hidden until landing page dismissed */
         }
         
         .sound-note {
@@ -114,6 +249,7 @@
             z-index: 4;
             opacity: 1;
             transition: opacity 2s ease-in-out;
+            display: none; /* Hidden until landing page dismissed */
         }
         
         .sound-note.fade {
@@ -122,6 +258,36 @@
     </style>
 </head>
 <body>
+    <!-- Landing page -->
+    <div id="landing-overlay">
+        <div class="grid-background"></div>
+        
+        <div class="content">
+            <div class="gesture-container">
+                <div class="gesture-outline">
+                    <div class="gesture-icon"></div>
+                </div>
+            </div>
+            
+            <div class="title">Replica: Pattern Recognition</div>
+            
+            <div class="description">
+                Experience how Replica processes information by identifying and analyzing patterns. This visualization reveals the unique information architecture of an AI system designed to recognize and interpret recurring structures in data.
+            </div>
+            
+            <div class="description">
+                Through this interactive audio-visual experience, you'll witness the distinct way Replica organizes and processes information—creating a digital interpretation that highlights the contrasts between artificial and human cognition.
+            </div>
+            
+            <div class="description">
+                <em>Tap the button below to activate your camera and explore the visualization.</em>
+            </div>
+            
+            <button id="start-button" class="button">BEGIN INTERACTION</button>
+        </div>
+    </div>
+    
+    <!-- Loading screen (shown after landing page) -->
     <div class="loading" id="loading">
         <div>
             <h2>Starting Camera...</h2>
@@ -164,9 +330,9 @@
             loopCount: 0,          // Number of completed loops
             maxLoops: 3,           // Number of times to loop the animation
             isPlaying: false,      // Whether animation is currently playing
-            frameDuration: 70,    // Duration each frame displays (slower for mobile)
-            fadeInDuration: 20,   // Fade in duration (ms)
-            fadeOutDuration: 40,  // Fade out duration (ms)
+            frameDuration: 70,     // Duration each frame displays (slower for mobile)
+            fadeInDuration: 20,    // Fade in duration (ms)
+            fadeOutDuration: 40,   // Fade out duration (ms)
             opacity: 0,            // Current opacity for fading
             x: 0,                  // X position of animation
             y: 0,                  // Y position of animation
@@ -175,16 +341,16 @@
             debugMode: true        // Enable debug visualization
         };
         
-        // Start camera when page loads
+        // Start the entire experience
         document.addEventListener('DOMContentLoaded', function() {
-            startCamera();
+            // Set up the landing page button
+            document.getElementById('start-button').addEventListener('click', startExperience);
+            document.getElementById('start-button').addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                startExperience();
+            });
             
-            // Fade out sound note after 5 seconds
-            setTimeout(function() {
-                document.getElementById('sound-note').classList.add('fade');
-            }, 5000);
-            
-            // Fix: Add toggle visualization button handler
+            // Set up toggle visualization button handler
             document.getElementById('toggle-viz').addEventListener('click', function() {
                 console.log("Toggle visualization button clicked");
                 const overlay = document.getElementById('visualization-overlay');
@@ -194,7 +360,31 @@
                     overlay.style.display = 'none';
                 }
             });
+            
+            // Preload p5 assets in the background
+            new p5(replikaSketch, 'visualization-overlay');
         });
+        
+        function startExperience() {
+            // Hide landing page
+            document.getElementById('landing-overlay').style.display = 'none';
+            
+            // Show main interface elements
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('camera-feed').style.display = 'block';
+            document.getElementById('visualization-overlay').style.display = 'block';
+            document.getElementById('sound-note').style.display = 'block';
+            document.querySelector('.interaction-tips').style.display = 'block';
+            document.querySelector('.controls').style.display = 'block';
+            
+            // Start camera
+            startCamera();
+            
+            // Fade out sound note after 5 seconds
+            setTimeout(function() {
+                document.getElementById('sound-note').classList.add('fade');
+            }, 5000);
+        }
         
         function startCamera() {
             const video = document.getElementById('camera-feed');
@@ -1034,9 +1224,6 @@
                 return false; // Always prevent default on mobile
             };
         };
-        
-        // Start the P5 sketch in the visualization overlay
-        new p5(replikaSketch, 'visualization-overlay');
     </script>
 </body>
 </html>
