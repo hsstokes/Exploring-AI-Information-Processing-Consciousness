@@ -440,15 +440,15 @@
                     // First draw a visual indicator/background to make it more visible
                     p.push();
                     p.noStroke();
-                    p.fill(255, 255, 255, anim.opacity * 220); // Significantly increased background opacity
-                    p.ellipse(anim.x, anim.y, anim.size * 1.3);
+                    p.fill(255, 255, 255, anim.opacity * 150);
+                    p.ellipse(anim.x, anim.y, anim.size * 1.05);
                     p.pop();
                     
                     // Save current drawing settings
                     p.push();
                     
                     // Set transparency
-                    p.tint(0, 0, 0, Math.min(255, anim.opacity * 800)); // Use BLACK tint with very high opacity
+                    p.tint(0, 0, 0, Math.min(255, anim.opacity * 900)); // Increased from 800 to 900
 
                     // Add a stronger glow effect
                     p.drawingContext.shadowColor = 'rgba(0, 0, 0, 0.9)';  // Black shadow
