@@ -405,7 +405,7 @@
                 if (anim.debugMode) {
                     p.push();
                     p.noStroke();
-                    p.fill(255, 255, 255, anim.opacity * 70); // Increased from 40 to 70
+                    p.fill(255, 0, 0, 100); // Semi-transparent red
                     p.ellipse(anim.x, anim.y, 20);
                     p.pop();
                 }
@@ -440,7 +440,7 @@
                     // First draw a visual indicator/background to make it more visible
                     p.push();
                     p.noStroke();
-                    p.fill(255, 255, 255, anim.opacity * 40); // Semi-transparent white
+                    p.fill(255, 255, 255, anim.opacity * 120); // Increased from 40 to 120
                     p.ellipse(anim.x, anim.y, anim.size * 1.2);
                     p.pop();
                     
@@ -448,7 +448,7 @@
                     p.push();
                     
                     // Set transparency
-                    p.tint(255, anim.opacity * 255);
+                    p.tint(255, Math.min(255, anim.opacity * 600)); // Dramatically increased opacity
 
                     // Get the current frame image
                     const img = anim.frameImages[anim.currentFrame];
@@ -462,7 +462,7 @@
                     p.image(
                         img,
                         anim.x - anim.size/2,
-                        anim.y - anim.size/2,// Adjust y position based on calculated height
+                        anim.y - anim.size/2,// // Properly center vertically
                         anim.size,
                         drawHeight
                     );
