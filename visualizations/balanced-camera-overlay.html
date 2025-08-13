@@ -162,7 +162,7 @@
             frameCount: 6,         // Number of hand animation frames
             currentFrame: 0,       // Current frame being displayed
             loopCount: 0,          // Number of completed loops
-            maxLoops: 4,           // Number of times to loop the animation
+            maxLoops: 2,           // Number of times to loop the animation
             isPlaying: false,      // Whether animation is currently playing
             frameDuration: 70,    // Duration each frame displays (slower for mobile)
             fadeInDuration: 20,   // Fade in duration (ms)
@@ -440,8 +440,8 @@
                     // First draw a visual indicator/background to make it more visible
                     p.push();
                     p.noStroke();
-                    p.fill(255, 255, 255, anim.opacity * 180); // Significantly increased background opacity
-                    p.ellipse(anim.x, anim.y, anim.size * 1.2);
+                    p.fill(255, 255, 255, anim.opacity * 220); // Significantly increased background opacity
+                    p.ellipse(anim.x, anim.y, anim.size * 1.3);
                     p.pop();
                     
                     // Save current drawing settings
@@ -452,7 +452,7 @@
 
                     // Add a stronger glow effect
                     p.drawingContext.shadowColor = 'rgba(0, 0, 0, 0.9)';  // Black shadow
-                    p.drawingContext.shadowBlur = 15;  // Increased blur
+                    p.drawingContext.shadowBlur = 20; // Increased from 15 to 20
                     p.drawingContext.shadowOffsetX = 0;
                     p.drawingContext.shadowOffsetY = 0;
         
@@ -468,7 +468,7 @@
                     p.image(
                         img,
                         anim.x - anim.size/2,
-                        anim.y - anim.size/2,// // Properly center vertically
+                        anim.y - drawHeight/2, // Correct vertical centering
                         anim.size,
                         drawHeight
                     );
