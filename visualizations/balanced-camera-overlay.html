@@ -379,10 +379,10 @@
                 // Make sure nearby bubbles respond to the hand position
                 for (let i = 0; i < spheres.length; i++) {
                     const d = p.dist(x, y, spheres[i].x, spheres[i].y);
-                    if (d < anim.size * 0.6) { // Only affect spheres within the hand area
+                    if (d < handAnimation.size * 0.6) { // Only affect spheres within the hand area
                        // Gently push spheres toward the hand center
                        const angle = p.atan2(spheres[i].y - y, spheres[i].x - x);
-                       const force = p.map(d, 0, anim.size * 0.6, 0.5, 0.1);
+                       const force = p.map(d, 0, handAnimation.size * 0.6, 0.5, 0.1);
             
                        // Add a subtle movement effect
                        spheres[i].speedX += p.cos(angle) * force * -0.5; // Pull toward hand
