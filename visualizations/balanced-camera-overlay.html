@@ -366,14 +366,14 @@
                 handAnimation.isPlaying = true;
                 handAnimation.currentFrame = 0;
                 handAnimation.loopCount = 0;
-                handAnimation.opacity = 0;
+                handAnimation.opacity = 0.5; // Start at 50% opacity for faster visibility
                 handAnimation.x = x;
                 handAnimation.y = y;
                 
                 // Adjust for mobile
                 if (isMobile) {
-                    handAnimation.size = 300; // Larger on mobile
-                    handAnimation.frameDuration = 200; // Slower on mobile
+                    handAnimation.size = 300; 
+                    handAnimation.frameDuration = 70; //  Keep mobile fast too
                 }
                 
                 console.log("Starting new animation at", x, y, "with size", handAnimation.size);
