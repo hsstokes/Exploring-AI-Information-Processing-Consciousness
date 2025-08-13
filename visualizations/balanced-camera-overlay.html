@@ -164,9 +164,9 @@
             loopCount: 0,          // Number of completed loops
             maxLoops: 4,           // Number of times to loop the animation
             isPlaying: false,      // Whether animation is currently playing
-            frameDuration: 180,    // Duration each frame displays (slower for mobile)
-            fadeInDuration: 200,   // Fade in duration (ms)
-            fadeOutDuration: 200,  // Fade out duration (ms)
+            frameDuration: 70,    // Duration each frame displays (slower for mobile)
+            fadeInDuration: 20,   // Fade in duration (ms)
+            fadeOutDuration: 40,  // Fade out duration (ms)
             opacity: 0,            // Current opacity for fading
             x: 0,                  // X position of animation
             y: 0,                  // Y position of animation
@@ -440,7 +440,7 @@
                     // First draw a visual indicator/background to make it more visible
                     p.push();
                     p.noStroke();
-                    p.fill(255, 255, 255, anim.opacity * 120); // Increased from 40 to 120
+                    p.fill(255, 255, 255, anim.opacity * 180); // Significantly increased background opacity
                     p.ellipse(anim.x, anim.y, anim.size * 1.2);
                     p.pop();
                     
@@ -448,7 +448,8 @@
                     p.push();
                     
                     // Set transparency
-                    p.tint(255, Math.min(255, anim.opacity * 600)); // Dramatically increased opacity
+                    p.tint(0, 0, 0, Math.min(255, anim.opacity * 800)); // Use BLACK tint with very high opacity
+        
 
                     // Get the current frame image
                     const img = anim.frameImages[anim.currentFrame];
