@@ -281,59 +281,6 @@
         .sound-note.fade {
             opacity: 0;
         }
-
-        .sound-controls {
-           position: fixed;
-           top: 70px;
-           right: 20px;
-           z-index: 4;
-           display: none;
-           background-color: rgba(32, 178, 170, 0.7);
-           border-radius: 20px;
-           padding: 10px 15px;
-        }
-
-        .sound-button {
-           background-color: white;
-           color: #20B2AA;
-           border: none;
-           border-radius: 15px;
-           padding: 5px 10px;
-           font-family: 'Orator Std', 'Courier New', monospace;
-           cursor: pointer;
-           font-size: 11px;
-           margin-bottom: 8px;
-           width: 100%;
-        }
-
-       .volume-control {
-           display: flex;
-           align-items: center;
-        }
-
-       .volume-control label {
-          color: white;
-          font-size: 11px;
-          font-family: 'Orator Std', 'Courier New', monospace;
-          margin-right: 8px;
-        }
-
-       .volume-control input[type="range"] {
-          width: 80px;
-          -webkit-appearance: none;
-          background: rgba(255, 255, 255, 0.3);
-          height: 5px;
-          border-radius: 5px;
-        }
-
-       .volume-control input[type="range"]::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          width: 15px;
-          height: 15px;
-          border-radius: 50%;
-          background: white;
-          cursor: pointer;
-        }
     </style>
 </head>
 <body>
@@ -403,15 +350,6 @@
     <div class="controls">
         <button id="toggle-viz">Camera Mode</button>
     </div>
-
-    <!-- Sound controls - ADD HERE -->
-    <div class="sound-controls">
-        <button id="play-sound" class="sound-button">Play Sound</button>
-        <div class="volume-control">
-            <label for="volume-slider">Volume:</label>
-            <input type="range" id="volume-slider" min="0" max="100" value="30">
-        </div>
-    </div>
     
     <script>
         // Global reference to p5 instance
@@ -450,35 +388,6 @@
             
             // Set up toggle visualization button handler
             document.getElementById('toggle-viz').addEventListener('click', toggleVisualizationMode);
-
-            
-            // Sound control setup - ADD THIS NEW CODE HERE
-            const playButton = document.getElementById('play-sound');
-            const volumeSlider = document.getElementById('volume-slider');
-    
-            playButton.addEventListener('click', function() {
-                console.log("Manual sound play requested");
-                if (p5Instance) {
-                    p5Instance.userStartAudio().then(() => {
-                        console.log("Audio context started by button");
-                        if (p5Instance.interactionSound && !p5Instance.interactionSound.isPlaying()) {
-                            p5Instance.interactionSound.play();
-                            console.log("Sound playing initiated by button");
-                        }
-                    }).catch(e => {
-                       console.error("Could not start audio from button:", e);
-                    });
-                 }
-            });
-    
-            volumeSlider.addEventListener('input', function() {
-                if (p5Instance && p5Instance.interactionSound) {
-                    const volume = this.value / 100;
-                    p5Instance.interactionSound.setVolume(volume);
-                    console.log("Volume set to:", volume);
-                }
-            });
-    
             
             // Preload p5 assets in the background
             new p5(replikaSketch, 'visualization-overlay');
@@ -489,18 +398,13 @@
             document.getElementById('landing-overlay').style.display = 'none';
             
             // Show main interface elements
-            // Hide landing page
-           document.getElementById('landing-overlay').style.display = 'none';
-    
-           // Show main interface elements
-           document.getElementById('loading').style.display = 'flex';
-           document.getElementById('camera-feed').style.display = 'block';
-           document.getElementById('visualization-overlay').style.display = 'block';
-           document.getElementById('sound-note').style.display = 'block';
-           document.getElementById('mode-indicator').style.display = 'block'; // Show the mode indicator
-           document.querySelector('.interaction-tips').style.display = 'block';
-           document.querySelector('.controls').style.display = 'block';
-           document.querySelector('.sound-controls').style.display = 'block'; // Show sound controls
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('camera-feed').style.display = 'block';
+            document.getElementById('visualization-overlay').style.display = 'block';
+            document.getElementById('sound-note').style.display = 'block';
+            document.getElementById('mode-indicator').style.display = 'block';
+            document.querySelector('.interaction-tips').style.display = 'block';
+            document.querySelector('.controls').style.display = 'block';
             
             // Start camera
             startCamera();
@@ -1152,38 +1056,30 @@
                 
                 console.log("Trying to play sound...");
                 
-                // Get current volume setting
-                const volumeSlider = document.getElementById('volume-slider');
-                const volume = volumeSlider ? volumeSlider.value / 100 : 0.3;
-    
                 // First ensure audio context is running
                 if (p.getAudioContext().state !== 'running') {
                     console.log("Audio context not running, trying to start...");
-        
+                    
                     p.userStartAudio()
                     .then(() => {
                         console.log("Audio context started, now playing sound");
-            
+                        
                         if (!p.interactionSound.isPlaying()) {
-                            p.interactionSound.setVolume(volume);
                             p.interactionSound.play();
-                            console.log("Sound playing with volume:", volume);
                         }
-                     })
-                     .catch(e => {
-                         console.error("Could not start audio context:", e);
-                     });
-                 } else {
-                     // Audio context is running, play directly
-                     console.log("Audio context already running, playing sound directly");
-        
-                     if (!p.interactionSound.isPlaying()) {
-                         p.interactionSound.setVolume(volume);
-                         p.interactionSound.play();
-                         console.log("Sound playing with volume:", volume);
-                     }
-                  }
-               }
+                    })
+                    .catch(e => {
+                        console.error("Could not start audio context:", e);
+                    });
+                } else {
+                    // Audio context is running, play directly
+                    console.log("Audio context already running, playing sound directly");
+                    
+                    if (!p.interactionSound.isPlaying()) {
+                        p.interactionSound.play();
+                    }
+                }
+            }
             
             // Avoid triggering p5 events when clicking buttons
             function isClickOnButton(x, y) {
