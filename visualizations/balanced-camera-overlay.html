@@ -460,13 +460,18 @@
             document.getElementById('landing-overlay').style.display = 'none';
             
             // Show main interface elements
-            document.getElementById('loading').style.display = 'flex';
-            document.getElementById('camera-feed').style.display = 'block';
-            document.getElementById('visualization-overlay').style.display = 'block';
-            document.getElementById('sound-note').style.display = 'block';
-            document.getElementById('mode-indicator').style.display = 'block';
-            document.querySelector('.interaction-tips').style.display = 'block';
-            document.querySelector('.controls').style.display = 'block';
+            // Hide landing page
+           document.getElementById('landing-overlay').style.display = 'none';
+    
+           // Show main interface elements
+           document.getElementById('loading').style.display = 'flex';
+           document.getElementById('camera-feed').style.display = 'block';
+           document.getElementById('visualization-overlay').style.display = 'block';
+           document.getElementById('sound-note').style.display = 'block';
+           document.getElementById('mode-indicator').style.display = 'block'; // Show the mode indicator
+           document.querySelector('.interaction-tips').style.display = 'block';
+           document.querySelector('.controls').style.display = 'block';
+           document.querySelector('.sound-controls').style.display = 'block'; // Show sound controls
             
             // Start camera
             startCamera();
