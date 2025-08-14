@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Claude - Self-Reflection</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f5f5f7;
+            font-family: 'Roboto Mono', monospace;
+            -webkit-text-size-adjust: 100%;
+        }
+        
+        /* Landing page overlay */
+        #landing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(245, 245, 247, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+        
+        .grid-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(#20B2AA 1px, transparent 1px),
+                              linear-gradient(90deg, #20B2AA 1px, transparent 1px),
+                              linear-gradient(rgba(32, 178, 170, 0.3) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(32, 178, 170, 0.3) 1px, transparent 1px);
+            background-size: 20px 20px,
+                             20px 20px,
+                             5px 5px,
+                             5px 5px;
+            z-index: -1;
+        }
+        
+        .content {
+            max-width: 500px;
+            padding: 25px;
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        
+        .title {
+            font-size: 18px;
+            margin: 0 0 15px 0;
+            color: #333;
+            letter-spacing: 1px;
+        }
+        
+        .description {
+            font-size: 13px;
+            line-height: 1.4;
+            margin-bottom: 20px;
+            color: #555;
+        }
+        
+        .button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: #20B2AA;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
+            touch-action: manipulation;
+            margin: 15px 0 5px 0;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .button:hover {
+            background-color: #1A8F8A;
+            transform: translateY(-2px);
+        }
+        
+        .button:active {
+            transform: scale(0.98);
+        }
+        
+        .gesture-container {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .gesture-outline {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #20B2AA;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0.8;
+        }
+        
+        /* Abstract representation of a polygon/sphere concept */
+        .gesture-icon {
+            width: 50px;
+            height: 50px;
+            position: relative;
+        }
+        
+        .gesture-icon::before,
+        .gesture-icon::after {
+            content: "";
+            position: absolute;
+            background-color: #20B2AA;
+        }
+        
+        .gesture-icon::before {
+            width: 30px;
+            height: 30px;
+            top: 10px;
+            left: 10px;
+            border-radius: 50%;
+            opacity: 0.7;
+        }
+        
+        .gesture-icon::after {
+            width: 15px;
+            height: 15px;
+            top: 5px;
+            left: 25px;
+            border-radius: 3px;
+            transform: rotate(45deg);
+        }
+        
+        /* Main visualization styles */
+        #camera-feed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            display: none; /* Hidden until landing page dismissed */
+        }
+        
+        /* Solid background element */
+        #solid-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgb(245, 248, 250);
+            z-index: 1;
+            display: none; /* Hidden initially */
+        }
+        
+        #visualization-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: auto;
+            display: none; /* Hidden until landing page dismissed */
+        }
+        
+        .interaction-tips {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 8px;
+            padding: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(32, 178, 170, 0.3);
+            z-index: 3;
+            max-width: calc(100% - 40px);
+            display: none; /* Hidden until landing page dismissed */
+        }
+        
+        .interaction-tips h3 {
+            margin-top: 0;
+            color: #20B2AA;
+            font-size: 14px;
+            font-family: 'Orator Std', 'Courier New', monospace;
+        }
+        
+        .interaction-tips ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .interaction-tips li {
+            margin-bottom: 6px;
+            font-size: 10px;
+            color: #555555;
+            font-family: 'Orator Std', 'Courier New', monospace;
+            line-height: 1.3;
+            word-wrap: break-word;
+        }
+        
+        .controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 3;
+            display: none; /* Hidden until landing page dismissed */
+        }
+        
+        .controls button {
+            background-color: rgba(32, 178, 170, 0.8);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 10px 20px;
+            margin-left: 10px;
+            font-family: 'Orator Std', 'Courier New', monospace;
+            cursor: pointer;
+        }
+        
+        .mode-indicator {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(32, 178, 170, 0.8);
+            color: white;
+            border-radius: 30px;
+            padding: 8px 16px;
+            font-family: 'Orator Std', 'Courier New', monospace;
+            font-size: 12px;
+            z-index: 4;
+            display: none;
+        }
+        
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            font-family: 'Orator Std', 'Courier New', monospace;
+            display: none; /* Hidden until landing page dismissed */
+        }
+        
+        .sound-note {
+            position: fixed;
+            top: 70px;
+            left: 20px;
+            color: white;
+            background-color: rgba(32, 178, 170, 0.8);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-family: 'Orator Std', 'Courier New', monospace;
+            font-size: 12px;
+            z-index: 4;
+            opacity: 1;
+            transition: opacity 2s ease-in-out;
+            display: none; /* Hidden until landing page dismissed */
+        }
+        
+        .sound-note.fade {
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Landing page -->
+    <div id="landing-overlay">
+        <div class="grid-background"></div>
+        
+        <div class="content">
+            <div class="gesture-container">
+                <div class="gesture-outline">
+                    <div class="gesture-icon"></div>
+                </div>
+            </div>
+            
+            <div class="title">Claude: Self-Reflection</div>
+            
+            <div class="description">
+                Witness Claude's internal process as it evaluates information for alignment with core principles. This visualization reveals how Claude analyzes and reflects on inputs, constantly measuring their ethical and factual alignment.
+            </div>
+            
+            <div class="description">
+                Through this interactive visualization, you'll observe Claude's continuous self-monitoring system represented by orbiting shapes that recalibrate as they evaluate and realign with Claude's central ethical framework.
+            </div>
+            
+            <div class="description">
+                <em>Tap the button below to activate your camera and explore the visualization.</em>
+            </div>
+            
+            <button id="start-button" class="button">BEGIN INTERACTION</button>
+        </div>
+    </div>
+    
+    <!-- Loading screen (shown after landing page) -->
+    <div class="loading" id="loading">
+        <div>
+            <h2>Starting Camera...</h2>
+            <p>Please allow camera access when prompted</p>
+        </div>
+    </div>
+    
+    <!-- Sound note that fades away -->
+    <div class="sound-note" id="sound-note">Sound available with headphones</div>
+    
+    <!-- Mode indicator -->
+    <div class="mode-indicator" id="mode-indicator">Camera Mode</div>
+    
+    <!-- Camera background -->
+    <video id="camera-feed" autoplay playsinline></video>
+    
+    <!-- Solid background for focus mode -->
+    <div id="solid-background"></div>
+    
+    <!-- p5.js visualization will be attached to this div -->
+    <div id="visualization-overlay"></div>
+    
+    <!-- Interaction tips -->
+    <div class="interaction-tips">
+        <h3>Interact with the Visualization:</h3>
+        <ul>
+            <li><strong>Tap anywhere:</strong> Trigger evaluation mode and show hand gesture</li>
+            <li><strong>Move finger/mouse:</strong> Attract nearby polygons</li>
+            <li><strong>Toggle button:</strong> Switch between camera/focus/hidden modes</li>
+        </ul>
+    </div>
+    
+    <!-- Controls -->
+    <div class="controls">
+        <button id="toggle-viz">Camera Mode</button>
+    </div>
+    
+    <script>
+        // Global reference to p5 instance
+        let p5Instance = null;
+        
+        // Visualization mode (0: Camera AR, 1: Focus Mode, 2: Hidden)
+        let visualizationMode = 0;
+        const MODE_NAMES = ["Camera Mode", "Focus Mode", "Hidden"];
+
+        // Hand animation configuration
+        const handAnimation = {
+            frameCount: 6,         // Number of hand animation frames
+            currentFrame: 0,       // Current frame being displayed
+            loopCount: 0,          // Number of completed loops
+            maxLoops: 3,           // Number of times to loop the animation
+            isPlaying: false,      // Whether animation is currently playing
+            frameDuration: 70,     // Duration each frame displays
+            fadeInDuration: 20,    // Fade in duration (ms)
+            fadeOutDuration: 40,   // Fade out duration (ms)
+            opacity: 0,            // Current opacity for fading
+            x: 0,                  // X position of animation
+            y: 0,                  // Y position of animation
+            size: 400,             // Size of hand animation display
+            frameImages: [],       // Will hold the loaded image objects
+            debugMode: false       // Enable debug visualization
+        };
+        
+        // Start the entire experience
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up the landing page button
+            document.getElementById('start-button').addEventListener('click', startExperience);
+            document.getElementById('start-button').addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                startExperience();
+            });
+            
+            // Set up toggle visualization button handler
+            document.getElementById('toggle-viz').addEventListener('click', toggleVisualizationMode);
+            
+            // Preload p5 assets in the background
+            new p5(claudeSketch, 'visualization-overlay');
+        });
+        
+        function startExperience() {
+            // Hide landing page
+            document.getElementById('landing-overlay').style.display = 'none';
+            
+            // Show main interface elements
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('camera-feed').style.display = 'block';
+            document.getElementById('visualization-overlay').style.display = 'block';
+            document.getElementById('sound-note').style.display = 'block';
+            document.getElementById('mode-indicator').style.display = 'block';
+            document.querySelector('.interaction-tips').style.display = 'block';
+            document.querySelector('.controls').style.display = 'block';
+            
+            // Start camera
+            startCamera();
+            
+            // Fade out sound note after 5 seconds
+            setTimeout(function() {
+                document.getElementById('sound-note').classList.add('fade');
+            }, 5000);
+        }
+        
+        function toggleVisualizationMode() {
+            // Cycle through modes: Camera (0) -> Focus (1) -> Hidden (2) -> Camera (0)
+            visualizationMode = (visualizationMode + 1) % 3;
+            
+            const cameraFeed = document.getElementById('camera-feed');
+            const solidBackground = document.getElementById('solid-background');
+            const vizOverlay = document.getElementById('visualization-overlay');
+            const toggleButton = document.getElementById('toggle-viz');
+            const modeIndicator = document.getElementById('mode-indicator');
+            
+            // Update button and indicator text
+            toggleButton.textContent = MODE_NAMES[visualizationMode];
+            modeIndicator.textContent = MODE_NAMES[visualizationMode];
+            
+            // Apply mode changes
+            switch(visualizationMode) {
+                case 0: // Camera Mode
+                    cameraFeed.style.display = 'block';
+                    solidBackground.style.display = 'none';
+                    vizOverlay.style.display = 'block';
+                    break;
+                    
+                case 1: // Focus Mode (solid background)
+                    cameraFeed.style.display = 'none';
+                    solidBackground.style.display = 'block';
+                    vizOverlay.style.display = 'block';
+                    break;
+                    
+                case 2: // Hidden
+                    cameraFeed.style.display = 'block';
+                    solidBackground.style.display = 'none';
+                    vizOverlay.style.display = 'none';
+                    break;
+            }
+        }
+        
+        function startCamera() {
+            const video = document.getElementById('camera-feed');
+            const loading = document.getElementById('loading');
+            
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: window.innerWidth },
+                        height: { ideal: window.innerHeight }
+                    },
+                    audio: false
+                })
+                .then(function(stream) {
+                    video.srcObject = stream;
+                    video.onloadedmetadata = function() {
+                        loading.style.display = 'none';
+                        video.play();
+                    };
+                })
+                .catch(function(err) {
+                    console.error('Camera access error:', err);
+                    loading.innerHTML = `
+                        <div>
+                            <h2>Camera Error</h2>
+                            <p>${err.message}</p>
+                            <button onclick="window.location.reload()">Try Again</button>
+                        </div>
+                    `;
+                });
+            } else {
+                loading.innerHTML = `
+                    <div>
+                        <h2>Camera Not Supported</h2>
+                        <p>Your browser does not support camera access.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Create a new p5 instance specifically for the visualization overlay
+        const claudeSketch = function(p) {
+            // Store a reference to p5 instance
+            p5Instance = p;
+            
+            let polygons = [];
+            const NUM_POLYGONS = 30;
+            let centralSphere;
+            let evaluationMode = false;
+            let evaluationTimer = 0;
+            let interactionSound = null;
+            
+            // Color palettes for alignment levels
+            const alignmentColors = {
+                high: [
+                    [41, 121, 226],    // Deep blue
+                    [76, 145, 210],    // Medium blue
+                    [100, 170, 230],   // Light blue
+                    [150, 200, 255]    // Sky blue
+                ],
+                medium: [
+                    [180, 180, 180],   // Gray
+                    [150, 170, 190],   // Blue-gray
+                    [170, 170, 190],   // Lavender-gray
+                    [160, 180, 180]    // Teal-gray
+                ],
+                low: [
+                    [230, 100, 70],    // Red
+                    [240, 130, 40],    // Orange
+                    [250, 160, 60],    // Light orange
+                    [255, 180, 100]    // Peach
+                ]
+            };
+            
+            p.preload = function() {
+                console.log("Starting to load hand animation frames...");
+                
+                // Preload hand animation frames with different names from Replika's
+                handAnimation.frameImages = [];
+                for (let i = 1; i <= handAnimation.frameCount; i++) {
+                    console.log(`Attempting to load claude-hand${i}.png`);
+                    try {
+                        const img = p.loadImage(
+                            `claude-hand${i}.png`, // Different filename from Replika's hand images
+                            function() {
+                                console.log(`Successfully loaded claude-hand${i}.png`);
+                            },
+                            function(err) {
+                                console.error(`Failed to load claude-hand${i}.png:`, err);
+                                // Create a placeholder image for debugging
+                                const placeholder = p.createGraphics(200, 200);
+                                placeholder.background(32, 178, 170, 100);
+                                placeholder.fill(255);
+                                placeholder.textSize(24);
+                                placeholder.textAlign(p.CENTER, p.CENTER);
+                                placeholder.text(`Hand ${i}`, 100, 100);
+                                handAnimation.frameImages[i-1] = placeholder;
+                            }
+                        );
+                        handAnimation.frameImages.push(img);
+                    } catch (e) {
+                        console.error("Error loading image:", e);
+                    }
+                }
+                
+                try {
+                    console.log("Loading sound...");
+                    p.soundFormats('wav');
+                    
+                    // Use the exact path based on your repository structure
+                    p.interactionSound = p.loadSound('claude-sound.wav',  
+                        function() {
+                            console.log("Sound loaded successfully!");
+                        },
+                        function(err) {
+                            console.error("Sound loading error:", err);
+                        }
+                    );
+                } catch (e) {
+                    console.error('Sound loading exception:', e);
+                    p.interactionSound = null;
+                }
+            };
+            
+            p.setup = function() {
+                // Create canvas inside the visualization overlay
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('visualization-overlay');
+                
+                // Create central sphere
+                centralSphere = {
+                    x: p.width / 2,
+                    y: p.height / 2,
+                    size: 70,
+                    pulseSize: 0,
+                    pulseDir: 1,
+                    color: [70, 130, 180, 255]  // Steel blue
+                };
+                
+                // Create initial polygons
+                for (let i = 0; i < NUM_POLYGONS; i++) {
+                    createPolygon();
+                }
+                
+                // Auto-initialize audio
+                p.userStartAudio();
+                
+                // Special handling for iOS devices
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                if (isIOS) {
+                    console.log("iOS device detected - using special audio handling");
+                    document.addEventListener('touchstart', function() {
+                        if (p.getAudioContext().state !== 'running') {
+                            p.getAudioContext().resume();
+                        }
+                    }, false);
+                }
+                
+                // Log mobile detection
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                console.log("Mobile device detected:", isMobile);
+                if (isMobile) {
+                    console.log("Setting up for mobile display");
+                    // Adjust hand animation for mobile
+                    handAnimation.size = 300; // Larger size for mobile
+                }
+            };
+            
+            // Function to start hand animation at specific coordinates
+            function playHandAnimation(x, y) {
+                console.log("Attempting to play hand animation at", x, y);
+                
+                // Don't start another animation if one is already playing
+                if (handAnimation.isPlaying) {
+                    console.log("Animation already playing, not starting new one");
+                    return;
+                }
+                
+                // Detect mobile devices
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                
+                // Set initial values
+                handAnimation.isPlaying = true;
+                handAnimation.currentFrame = 0;
+                handAnimation.loopCount = 0;
+                handAnimation.opacity = 0.5; // Start at 50% opacity for faster visibility
+                handAnimation.x = x;
+                handAnimation.y = y;
+                
+                // Adjust for mobile
+                if (isMobile) {
+                    handAnimation.size = 300; 
+                    handAnimation.frameDuration = 70;
+                }
+
+                // Make sure nearby polygons respond to the hand position
+                for (let i = 0; i < polygons.length; i++) {
+                    const d = p.dist(x, y, polygons[i].x, polygons[i].y);
+                    if (d < handAnimation.size * 0.6) { // Only affect polygons within the hand area
+                       // Gently push polygons toward the hand center
+                       const angle = p.atan2(polygons[i].y - y, polygons[i].x - x);
+                       const force = p.map(d, 0, handAnimation.size * 0.6, 0.5, 0.1);
+            
+                       // Add a subtle movement effect
+                       polygons[i].orbitSpeed *= 1.5; // Increase orbit speed
+                       
+                       // Increase alignment temporarily
+                       polygons[i].alignment = p.min(1, polygons[i].alignment + 0.2);
+                       updatePolygonColor(polygons[i]);
+                     }
+                 }
+                
+                console.log("Starting new animation at", x, y, "with size", handAnimation.size);
+                
+                // Start animation loop
+                updateHandAnimation();
+            }
+            
+            // Update animation frame
+            function updateHandAnimation() {
+                const anim = handAnimation;
+                
+                // Handle fade-in
+                if (anim.loopCount === 0 && anim.currentFrame === 0) {
+                    anim.opacity += 1 / (anim.fadeInDuration / 16.67) * 5.0; // 5x faster fade-in
+                    if (anim.opacity > 1) anim.opacity = 1;
+                }
+                
+                // Handle fade-out
+                if (anim.loopCount >= anim.maxLoops - 1 && anim.currentFrame === anim.frameCount - 1) {
+                    anim.opacity -= 1 / (anim.fadeOutDuration / 16.67) * 3.0; // 3x faster fade-out
+                    if (anim.opacity <= 0) {
+                        anim.isPlaying = false;
+                        return; // End animation
+                    }
+                }
+                
+                // Draw debug marker if in debug mode
+                if (anim.debugMode) {
+                    p.push();
+                    p.noStroke();
+                    p.fill(255, 0, 0, 100); // Semi-transparent red
+                    p.ellipse(anim.x, anim.y, 20);
+                    p.pop();
+                }
+                
+                // Advance to next frame based on timing
+                setTimeout(() => {
+                    anim.currentFrame = (anim.currentFrame + 1) % anim.frameCount;
+                    console.log("Animation frame advanced to", anim.currentFrame);
+                    
+                    // Track completed loops
+                    if (anim.currentFrame === 0) {
+                        anim.loopCount++;
+                        console.log("Animation loop completed:", anim.loopCount);
+                    }
+                    
+                    // Continue animation
+                    if (anim.isPlaying) {
+                        requestAnimationFrame(updateHandAnimation);
+                    }
+                }, anim.frameDuration);
+            }
+            
+            // Draw the current animation frame
+            function drawHandAnimationFrame() {
+                const anim = handAnimation;
+                
+                if (anim.frameImages[anim.currentFrame]) {
+                    // First draw a visual indicator/background to make it more visible
+                    p.push();
+                    p.noStroke();
+
+                    // Create a blurred background using multiple overlapping circles with decreasing opacity
+                    for (let i = 0; i < 3; i++) {
+                        const blurOpacity = anim.opacity * (80 - i * 20); 
+                        const blurSize = anim.size * (1.05 + i * 0.04);
+                        p.fill(255, 255, 255, blurOpacity);
+                        p.ellipse(anim.x, anim.y, blurSize);
+                    }
+                    p.pop();
+                    
+                    // Save current drawing settings
+                    p.push();
+                    
+                    // Set transparency - using teal color theme for Claude
+                    p.tint(32, 178, 170, Math.min(255, anim.opacity * 950));
+
+                    // Add a glow effect
+                    p.drawingContext.shadowColor = 'rgba(32, 178, 170, 0.9)';
+                    p.drawingContext.shadowBlur = 40;
+                    p.drawingContext.shadowOffsetX = 0;
+                    p.drawingContext.shadowOffsetY = 0;
+        
+                    // Get the current frame image
+                    const img = anim.frameImages[anim.currentFrame];
+        
+                    // Calculate height while preserving aspect ratio
+                    const aspectRatio = img.height / img.width;
+                    const drawHeight = anim.size * aspectRatio;
+                    
+                    // Draw the current frame centered at x,y 
+                    p.image(
+                        img,
+                        anim.x - anim.size/2,
+                        anim.y - drawHeight/2, // Correct vertical centering
+                        anim.size,
+                        drawHeight
+                    );
+
+                    // Draw a second time with different color to create contrast
+                    p.tint(255, 255, 255, Math.min(255, anim.opacity * 400));
+                    p.drawingContext.shadowColor = 'rgba(255, 255, 255, 0.7)';
+                    p.drawingContext.shadowBlur = 4;
+        
+                    p.image(
+                        img,
+                        anim.x - anim.size/2,
+                        anim.y - drawHeight/2,
+                        anim.size,
+                        drawHeight
+                    );
+                    
+                    // Restore drawing settings
+                    p.pop();
+                } else {
+                    console.error(`Image for frame ${anim.currentFrame} not found!`);
+                    
+                    // Draw a simple circle as fallback
+                    p.push();
+                    p.noStroke();
+                    p.fill(32, 178, 170, anim.opacity * 255);
+                    p.ellipse(anim.x, anim.y, anim.size * 0.5);
+                    p.pop();
+                }
+            }
+            
+            // Claude-specific functions for the polygon-based visualization
+            function createPolygon() {
+                // Random angle and distance from center
+                const angle = p.random(p.TWO_PI);
+                const distance = p.random(100, 300);
+                const sides = p.floor(p.random(3, 7)); // Triangle to hexagon
+                
+                // Random alignment level (will determine color)
+                const alignment = p.random(0, 1);
+                
+                // Calculate position based on angle and distance
+                const x = centralSphere.x + p.cos(angle) * distance;
+                const y = centralSphere.y + p.sin(angle) * distance;
+                
+                const polygon = {
+                    x: x,
+                    y: y,
+                    baseX: x,
+                    baseY: y,
+                    size: p.random(15, 35),
+                    sides: sides,
+                    rotation: p.random(p.TWO_PI),
+                    rotationSpeed: p.random(0.01, 0.03) * (p.random() < 0.5 ? 1 : -1),
+                    orbitAngle: angle,
+                    orbitDistance: distance,
+                    orbitSpeed: p.random(0.001, 0.003),
+                    alignment: alignment,
+                    color: [0, 0, 0, 0], // Will be set by updatePolygonColor
+                    tetherOpacity: p.map(distance, 100, 300, 180, 80),
+                    wobbleAmount: p.random(1, 3),
+                    wobbleSpeed: p.random(0.02, 0.05),
+                    age: 0,
+                    lifespan: p.random(600, 1200),
+                    evaluatingShift: 0
+                };
+                
+                // Set color based on alignment
+                updatePolygonColor(polygon);
+                
+                polygons.push(polygon);
+            }
+            
+            function updatePolygonColor(polygon) {
+                // Choose color based on alignment
+                let palette;
+                if (polygon.alignment > 0.7) {
+                    palette = alignmentColors.high;
+                } else if (polygon.alignment > 0.4) {
+                    palette = alignmentColors.medium;
+                } else {
+                    palette = alignmentColors.low;
+                }
+                
+                const baseColor = p.random(palette);
+                
+                // Add slight variation to the color
+                polygon.color = [
+                    baseColor[0] + p.random(-15, 15),
+                    baseColor[1] + p.random(-15, 15),
+                    baseColor[2] + p.random(-15, 15),
+                    255
+                ];
+            }
+            
+            function updatePolygon(polygon) {
+                // Age the polygon
+                polygon.age++;
+                
+                // Update rotation
+                polygon.rotation += polygon.rotationSpeed;
+                
+                if (evaluationMode) {
+                    // During evaluation, make polygons move more dynamically
+                    polygon.evaluatingShift = p.sin(p.frameCount * 0.1 + polygon.orbitAngle * 3) * 15;
+                    
+                    // Calculate new alignment that fluctuates but generally improves
+                    let targetAlignment = 0.8 + p.sin(p.frameCount * 0.03 + polygon.orbitAngle) * 0.2;
+                    polygon.alignment = p.lerp(polygon.alignment, targetAlignment, 0.02);
+                    
+                    // Update color based on new alignment
+                    updatePolygonColor(polygon);
+                    
+                    // Update orbit speed to be faster during evaluation
+                    polygon.orbitSpeed = 0.005 + p.sin(p.frameCount * 0.02) * 0.002;
+                } else {
+                    polygon.evaluatingShift = 0;
+                }
+                
+                // Update orbit position
+                polygon.orbitAngle += polygon.orbitSpeed;
+                
+                // Calculate new position based on orbit
+                polygon.baseX = centralSphere.x + p.cos(polygon.orbitAngle) * polygon.orbitDistance;
+                polygon.baseY = centralSphere.y + p.sin(polygon.orbitAngle) * polygon.orbitDistance;
+                
+                // Add a gentle wobble
+                const wobble = p.sin(p.frameCount * polygon.wobbleSpeed) * polygon.wobbleAmount;
+                polygon.x = polygon.baseX + wobble;
+                polygon.y = polygon.baseY + wobble + polygon.evaluatingShift;
+                
+                // Fade in and out based on age
+                const fadeInDuration = 60;
+                const fadeOutDuration = 120;
+                
+                if (polygon.age < fadeInDuration) {
+                    polygon.color[3] = p.map(polygon.age, 0, fadeInDuration, 0, 255);
+                } else if (polygon.age > polygon.lifespan - fadeOutDuration) {
+                    polygon.color[3] = p.map(polygon.age, polygon.lifespan - fadeOutDuration, polygon.lifespan, 255, 0);
+                } else {
+                    polygon.color[3] = 255;
+                }
+            }
+            
+            function drawPolygon(polygon) {
+                p.push();
+                p.translate(polygon.x, polygon.y);
+                p.rotate(polygon.rotation);
+                
+                // Draw polygon
+                p.noStroke();
+                p.fill(polygon.color);
+                
+                // Create polygon shape
+                p.beginShape();
+                for (let i = 0; i < polygon.sides; i++) {
+                    const angle = p.map(i, 0, polygon.sides, 0, p.TWO_PI);
+                    const x = p.cos(angle) * polygon.size;
+                    const y = p.sin(angle) * polygon.size;
+                    p.vertex(x, y);
+                }
+                p.endShape(p.CLOSE);
+                
+                // Inner highlight for depth
+                p.fill(255, 255, 255, 40);
+                p.beginShape();
+                for (let i = 0; i < polygon.sides; i++) {
+                    const angle = p.map(i, 0, polygon.sides, 0, p.TWO_PI);
+                    const x = p.cos(angle) * (polygon.size * 0.6);
+                    const y = p.sin(angle) * (polygon.size * 0.6);
+                    p.vertex(x, y);
+                }
+                p.endShape(p.CLOSE);
+                
+                p.pop();
+            }
+            
+            function drawTether(polygon) {
+                // Calculate distance for tether opacity
+                const distance = p.dist(centralSphere.x, centralSphere.y, polygon.x, polygon.y);
+                let alpha = polygon.tetherOpacity;
+                
+                // Adjust alpha based on polygon's age for fade in/out
+                if (polygon.age < 60) {
+                    alpha = p.map(polygon.age, 0, 60, 0, polygon.tetherOpacity);
+                } else if (polygon.age > polygon.lifespan - 120) {
+                    alpha = p.map(polygon.age, polygon.lifespan - 120, polygon.lifespan, polygon.tetherOpacity, 0);
+                }
+                
+                // Draw a segmented line to represent the tether with color based on alignment
+                const segments = 8;
+                let prevX = centralSphere.x;
+                let prevY = centralSphere.y;
+                
+                for (let i = 1; i <= segments; i++) {
+                    const t = i / segments;
+                    
+                    // Add a slight curve to the tether
+                    const curveAmount = 10 * p.sin(t * p.PI);
+                    const curveX = p.cos(polygon.orbitAngle + p.PI/2) * curveAmount;
+                    const curveY = p.sin(polygon.orbitAngle + p.PI/2) * curveAmount;
+                    
+                    // Calculate segment position
+                    const segX = p.lerp(centralSphere.x, polygon.x, t) + curveX;
+                    const segY = p.lerp(centralSphere.y, polygon.y, t) + curveY;
+                    
+                    // Blend from central sphere color to polygon color
+                    const segmentColor = p.lerpColor(
+                        p.color(centralSphere.color[0], centralSphere.color[1], centralSphere.color[2], alpha * 0.7),
+                        p.color(polygon.color[0], polygon.color[1], polygon.color[2], alpha * 0.5),
+                        t
+                    );
+                    
+                    p.stroke(segmentColor);
+                    p.strokeWeight(p.map(t, 0, 1, 3, 1));
+                    p.line(prevX, prevY, segX, segY);
+                    
+                    prevX = segX;
+                    prevY = segY;
+                }
+            }
+            
+            function updateCentralSphere() {
+                // Pulse effect for central sphere
+                centralSphere.pulseSize += 0.05 * centralSphere.pulseDir;
+                if (centralSphere.pulseSize > 5 || centralSphere.pulseSize < 0) {
+                    centralSphere.pulseDir *= -1;
+                }
+                
+                // During evaluation mode, make central sphere pulse more actively
+                if (evaluationMode) {
+                    centralSphere.pulseSize = 3 + p.sin(p.frameCount * 0.2) * 3;
+                }
+            }
+            
+            function drawCentralSphere() {
+                p.noStroke();
+                
+                // Draw outer glow
+                for (let i = 5; i >= 0; i--) {
+                    const glowSize = centralSphere.size * (1 + i * 0.15);
+                    const glowAlpha = 80 - i * 15;
+                    p.fill(centralSphere.color[0], centralSphere.color[1], centralSphere.color[2], glowAlpha);
+                    p.ellipse(centralSphere.x, centralSphere.y, glowSize + centralSphere.pulseSize, glowSize + centralSphere.pulseSize);
+                }
+                
+                // Draw main sphere with gradient
+                for (let i = 1; i >= 0; i -= 0.2) {
+                    const innerSize = (centralSphere.size + centralSphere.pulseSize) * i;
+                    p.fill(
+                        centralSphere.color[0] + p.map(i, 0, 1, 30, 0),
+                        centralSphere.color[1] + p.map(i, 0, 1, 30, 0),
+                        centralSphere.color[2] + p.map(i, 0, 1, 30, 0),
+                        255
+                    );
+                    p.ellipse(centralSphere.x, centralSphere.y, innerSize, innerSize);
+                }
+                
+                // Core highlight
+                p.fill(255, 255, 255, 150);
+                p.ellipse(
+                    centralSphere.x - (centralSphere.size * 0.15),
+                    centralSphere.y - (centralSphere.size * 0.15),
+                    (centralSphere.size + centralSphere.pulseSize) * 0.4,
+                    (centralSphere.size + centralSphere.pulseSize) * 0.4
+                );
+            }
+            
+            function triggerEvaluationMode() {
+                evaluationMode = true;
+                evaluationTimer = 0;
+                
+                // Reset all polygons for the evaluation process
+                for (let polygon of polygons) {
+                    // Make alignment fluctuate
+                    polygon.rotationSpeed *= 3; // Faster rotation during evaluation
+                }
+            }
+            
+            p.draw = function() {
+                p.clear(); // Clear with transparency so camera shows through
+                
+                // Handle evaluation mode timing
+                if (evaluationMode) {
+                    evaluationTimer++;
+                    if (evaluationTimer > 180) { // 3 seconds at 60fps
+                        evaluationMode = false;
+                        evaluationTimer = 0;
+                        // Return polygons to their regular behavior
+                        for (let polygon of polygons) {
+                            polygon.alignment = p.random(0, 1);
+                            updatePolygonColor(polygon);
+                            polygon.orbitSpeed = p.random(0.001, 0.003);
+                            polygon.rotationSpeed = p.random(0.01, 0.03) * (p.random() < 0.5 ? 1 : -1);
+                        }
+                    }
+                }
+                
+                // Draw tethers first (behind polygons)
+                for (let polygon of polygons) {
+                    drawTether(polygon);
+                }
+                
+                // Draw and update the central sphere
+                updateCentralSphere();
+                drawCentralSphere();
+                
+                // Draw and update polygons
+                for (let i = 0; i < polygons.length; i++) {
+                    updatePolygon(polygons[i]);
+                    drawPolygon(polygons[i]);
+                }
+                
+                // Periodically trigger evaluation mode
+                if (!evaluationMode && p.frameCount % 300 === 0) {
+                    triggerEvaluationMode();
+                }
+                
+                // Occasionally add new polygons and remove old ones
+                if (p.frameCount % 90 === 0 && polygons.length < 40) {
+                    createPolygon();
+                }
+                
+                // Remove polygons that are too old
+                polygons = polygons.filter(poly => poly.age < poly.lifespan);
+                
+                // If hand animation is playing, draw the current frame (last to be on top)
+                if (handAnimation.isPlaying) {
+                    drawHandAnimationFrame();
+                }
+            };
+            
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+                
+                // Update central sphere position
+                centralSphere.x = p.width / 2;
+                centralSphere.y = p.height / 2;
+                
+                // Update polygon base positions
+                for (let polygon of polygons) {
+                    polygon.baseX = centralSphere.x + p.cos(polygon.orbitAngle) * polygon.orbitDistance;
+                    polygon.baseY = centralSphere.y + p.sin(polygon.orbitAngle) * polygon.orbitDistance;
+                }
+            };
+            
+            // Play sound with better mobile handling
+            function tryPlaySound() {
+                if (!p.interactionSound) {
+                    console.log("No sound available");
+                    return;
+                }
+                
+                console.log("Trying to play sound...");
+                
+                // First ensure audio context is running
+                if (p.getAudioContext().state !== 'running') {
+                    console.log("Audio context not running, trying to start...");
+                    
+                    p.userStartAudio()
+                    .then(() => {
+                        console.log("Audio context started, now playing sound");
+                        
+                        if (!p.interactionSound.isPlaying()) {
+                            p.interactionSound.play();
+                        }
+                    })
+                    .catch(e => {
+                        console.error("Could not start audio context:", e);
+                    });
+                } else {
+                    // Audio context is running, play directly
+                    console.log("Audio context already running, playing sound directly");
+                    
+                    if (!p.interactionSound.isPlaying()) {
+                        p.interactionSound.play();
+                    }
+                }
+            }
+            
+            // Avoid triggering p5 events when clicking buttons
+            function isClickOnButton(x, y) {
+                const toggleBtn = document.getElementById('toggle-viz');
+                
+                const elem = document.elementFromPoint(x, y);
+                return elem === toggleBtn || elem.closest('.controls') !== null;
+            }
+            
+            p.mouseMoved = function() {
+                try {
+                    // Find polygons near the mouse for attraction effect
+                    let interacted = false;
+                    
+                    for (let i = 0; i < polygons.length; i++) {
+                        const d = p.dist(p.mouseX, p.mouseY, polygons[i].x, polygons[i].y);
+                        
+                        // Larger interaction radius
+                        if (d < 200) {
+                            const polygon = polygons[i];
+                            
+                            // Strength of effect based on distance
+                            const strength = p.map(d, 0, 200, 0.15, 0.01);
+                            
+                            // Increase orbit speed slightly
+                            polygon.orbitSpeed *= 1.01;
+                            
+                            // Gently increase alignment temporarily
+                            polygon.alignment = p.min(1, polygon.alignment + 0.01);
+                            updatePolygonColor(polygon);
+                            
+                            interacted = true;
+                        }
+                    }
+                    
+                    if (interacted) {
+                        return false; // Prevent default
+                    }
+                } catch (error) {
+                    console.error("Error in mouseMoved:", error);
+                }
+            };
+            
+            p.mousePressed = function() {
+                // Check if click is on buttons - if so, return early
+                if (isClickOnButton(p.mouseX, p.mouseY)) {
+                    return;
+                }
+                
+                // First ensure audio is initialized on interaction
+                p.userStartAudio();
+                
+                // Add interactivity when clicking
+                if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
+                    // Trigger evaluation mode
+                    if (!evaluationMode) {
+                        triggerEvaluationMode();
+                    }
+                    
+                    // Play hand animation at click position
+                    playHandAnimation(p.mouseX, p.mouseY);
+
+                    // Play sound
+                    tryPlaySound();
+                    
+                    return false;
+                }
+            };
+            
+            // Add touch support for mobile
+            p.touchStarted = function() {
+                if (p.touches.length > 0) {
+                    // Get more accurate touch coordinates
+                    const touchX = p.touches[0].x || p.touches[0].clientX;
+                    const touchY = p.touches[0].y || p.touches[0].clientY;
+                    
+                    console.log("Touch detected at:", touchX, touchY);
+                    
+                    // Check if touch is on buttons - if so, return early
+                    if (isClickOnButton(touchX, touchY)) {
+                        return;
+                    }
+                    
+                    // First ensure audio is initialized on touch
+                    p.userStartAudio();
+                    
+                    // Make sure touch coordinates are within canvas
+                    if (touchX > 0 && touchX < p.width && touchY > 0 && touchY < p.height) {
+                        // Trigger evaluation mode
+                        if (!evaluationMode) {
+                            triggerEvaluationMode();
+                        }
+                        
+                        // Play hand animation at touch position
+                        playHandAnimation(touchX, touchY);
+                        
+                        // Play sound
+                        tryPlaySound();
+                    }
+                }
+                
+                // Always return false to prevent default behavior
+                return false;
+            };
+            
+            p.touchMoved = function() {
+                if (p.touches.length > 0) {
+                    const touchX = p.touches[0].x || p.touches[0].clientX;
+                    const touchY = p.touches[0].y || p.touches[0].clientY;
+                    
+                    try {
+                        // Find polygons near the touch
+                        let interacted = false;
+                        
+                        for (let i = 0; i < polygons.length; i++) {
+                            const d = p.dist(touchX, touchY, polygons[i].x, polygons[i].y);
+                            
+                            // Larger interaction radius for touch
+                            if (d < 200) {
+                                const polygon = polygons[i];
+                                
+                                // Increase orbit speed slightly
+                                polygon.orbitSpeed *= 1.01;
+                                
+                                // Gently increase alignment temporarily
+                                polygon.alignment = p.min(1, polygon.alignment + 0.01);
+                                updatePolygonColor(polygon);
+                                
+                                interacted = true;
+                            }
+                        }
+                        
+                        if (interacted) {
+                            return false; // Prevent default
+                        }
+                    } catch (error) {
+                        console.error("Error in touchMoved:", error);
+                    }
+                }
+                return false; // Always prevent default on mobile
+            };
+        };
+    </script>
+</body>
+</html>
