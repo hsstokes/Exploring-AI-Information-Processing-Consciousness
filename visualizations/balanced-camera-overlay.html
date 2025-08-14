@@ -450,6 +450,35 @@
             
             // Set up toggle visualization button handler
             document.getElementById('toggle-viz').addEventListener('click', toggleVisualizationMode);
+
+            
+            // Sound control setup - ADD THIS NEW CODE HERE
+            const playButton = document.getElementById('play-sound');
+            const volumeSlider = document.getElementById('volume-slider');
+    
+            playButton.addEventListener('click', function() {
+                console.log("Manual sound play requested");
+                if (p5Instance) {
+                    p5Instance.userStartAudio().then(() => {
+                        console.log("Audio context started by button");
+                        if (p5Instance.interactionSound && !p5Instance.interactionSound.isPlaying()) {
+                            p5Instance.interactionSound.play();
+                            console.log("Sound playing initiated by button");
+                        }
+                    }).catch(e => {
+                       console.error("Could not start audio from button:", e);
+                    });
+                 }
+            });
+    
+            volumeSlider.addEventListener('input', function() {
+                if (p5Instance && p5Instance.interactionSound) {
+                    const volume = this.value / 100;
+                    p5Instance.interactionSound.setVolume(volume);
+                    console.log("Volume set to:", volume);
+                }
+            });
+    
             
             // Preload p5 assets in the background
             new p5(replikaSketch, 'visualization-overlay');
