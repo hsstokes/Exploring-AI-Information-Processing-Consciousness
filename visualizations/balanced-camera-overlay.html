@@ -265,7 +265,12 @@
             align-items: center;
             z-index: 999;
             font-family: 'Orator Std', 'Courier New', monospace;
-            display: none; /* Hidden until landing page dismissed */
+            display: none; /* Hidden until landing page dismissed *
+            /* Add blue-tinted graph paper background */
+            background-image: linear-gradient(rgba(41, 171, 226, 0.1) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(41, 171, 226, 0.1) 1px, transparent 1px);
+           background-size: 20px 20px;
+        }
 
         }
         
