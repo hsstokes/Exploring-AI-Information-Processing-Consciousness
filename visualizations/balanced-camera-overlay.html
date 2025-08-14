@@ -1152,30 +1152,38 @@
                 
                 console.log("Trying to play sound...");
                 
+                // Get current volume setting
+                const volumeSlider = document.getElementById('volume-slider');
+                const volume = volumeSlider ? volumeSlider.value / 100 : 0.3;
+    
                 // First ensure audio context is running
                 if (p.getAudioContext().state !== 'running') {
                     console.log("Audio context not running, trying to start...");
-                    
+        
                     p.userStartAudio()
                     .then(() => {
                         console.log("Audio context started, now playing sound");
-                        
+            
                         if (!p.interactionSound.isPlaying()) {
+                            p.interactionSound.setVolume(volume);
                             p.interactionSound.play();
+                            console.log("Sound playing with volume:", volume);
                         }
-                    })
-                    .catch(e => {
-                        console.error("Could not start audio context:", e);
-                    });
-                } else {
-                    // Audio context is running, play directly
-                    console.log("Audio context already running, playing sound directly");
-                    
-                    if (!p.interactionSound.isPlaying()) {
-                        p.interactionSound.play();
-                    }
-                }
-            }
+                     })
+                     .catch(e => {
+                         console.error("Could not start audio context:", e);
+                     });
+                 } else {
+                     // Audio context is running, play directly
+                     console.log("Audio context already running, playing sound directly");
+        
+                     if (!p.interactionSound.isPlaying()) {
+                         p.interactionSound.setVolume(volume);
+                         p.interactionSound.play();
+                         console.log("Sound playing with volume:", volume);
+                     }
+                  }
+               }
             
             // Avoid triggering p5 events when clicking buttons
             function isClickOnButton(x, y) {
