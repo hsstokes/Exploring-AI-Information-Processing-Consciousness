@@ -4,6 +4,7 @@
     <title>Claude - Self-Reflection</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
     <style>
@@ -16,6 +17,7 @@
             background-color: #f5f5f7;
             font-family: 'Roboto Mono', monospace;
             -webkit-text-size-adjust: 100%;
+            touch-action: none; /* Prevent browser default touch actions */
         }
         
         /* Landing page overlay */
@@ -290,9 +292,26 @@
         .sound-note.fade {
             opacity: 0;
         }
+        
+        /* Touch indicator */
+        .touch-indicator {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(32, 178, 170, 0.6);
+            pointer-events: none;
+            z-index: 10;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
     </style>
 </head>
 <body>
+    <!-- Touch indicator element -->
+    <div id="touch-indicator" class="touch-indicator"></div>
+    
     <!-- Landing page -->
     <div id="landing-overlay">
         <div class="grid-background"></div>
@@ -368,6 +387,12 @@
         let visualizationMode = 0;
         const MODE_NAMES = ["Camera Mode", "Focus Mode", "Hidden"];
 
+        // Touch tracking for visualization
+        let lastTouchPosition = {x: 0, y: 0, active: false, timer: 0};
+        
+        // Touch indicator element
+        const touchIndicator = document.getElementById('touch-indicator');
+
         // Hand animation configuration
         const handAnimation = {
             frameCount: 6,         // Number of hand animation frames
@@ -397,6 +422,18 @@
             
             // Set up toggle visualization button handler
             document.getElementById('toggle-viz').addEventListener('click', toggleVisualizationMode);
+            
+            // Disable default touch behaviors
+            document.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+            }, { passive: false });
+            
+            document.addEventListener('touchstart', function(e) {
+                // Allow default only for buttons
+                if (!e.target.closest('button')) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
             
             // Preload p5 assets in the background
             new p5(claudeSketch, 'visualization-overlay');
@@ -458,6 +495,18 @@
                     vizOverlay.style.display = 'none';
                     break;
             }
+        }
+        
+        // Show touch indicator at the specified position
+        function showTouchIndicator(x, y) {
+            touchIndicator.style.left = x + 'px';
+            touchIndicator.style.top = y + 'px';
+            touchIndicator.style.opacity = '1';
+            
+            // Hide indicator after a short delay
+            setTimeout(() => {
+                touchIndicator.style.opacity = '0';
+            }, 300);
         }
         
         function startCamera() {
@@ -830,7 +879,10 @@
                     wobbleSpeed: p.random(0.02, 0.05),
                     age: 0,
                     lifespan: p.random(600, 1200),
-                    evaluatingShift: 0
+                    evaluatingShift: 0,
+                    attractToPoint: false,
+                    attractPoint: {x: 0, y: 0},
+                    attractStrength: 0
                 };
                 
                 // Set color based on alignment
@@ -894,8 +946,37 @@
                 
                 // Add a gentle wobble
                 const wobble = p.sin(p.frameCount * polygon.wobbleSpeed) * polygon.wobbleAmount;
-                polygon.x = polygon.baseX + wobble;
-                polygon.y = polygon.baseY + wobble + polygon.evaluatingShift;
+                
+                // Default position with wobble
+                let newX = polygon.baseX + wobble;
+                let newY = polygon.baseY + wobble + polygon.evaluatingShift;
+                
+                // If being attracted to a touch point
+                if (polygon.attractToPoint && polygon.attractStrength > 0) {
+                    // Calculate vector toward attract point
+                    let dx = polygon.attractPoint.x - newX;
+                    let dy = polygon.attractPoint.y - newY;
+                    let dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist > 0) {
+                        // Normalize and apply attraction
+                        dx = dx / dist * polygon.attractStrength;
+                        dy = dy / dist * polygon.attractStrength;
+                        
+                        // Move toward point
+                        newX += dx;
+                        newY += dy;
+                    }
+                    
+                    // Reduce attraction strength over time
+                    polygon.attractStrength *= 0.95;
+                    if (polygon.attractStrength < 0.1) {
+                        polygon.attractToPoint = false;
+                    }
+                }
+                
+                polygon.x = newX;
+                polygon.y = newY;
                 
                 // Fade in and out based on age
                 const fadeInDuration = 60;
@@ -1045,6 +1126,26 @@
                 }
             }
             
+            // Draw touch indicator
+            function drawTouchFeedback() {
+                if (lastTouchPosition.active) {
+                    p.noStroke();
+                    p.fill(32, 178, 170, 80);
+                    p.ellipse(lastTouchPosition.x, lastTouchPosition.y, 40, 40);
+                    
+                    // Draw ripple effect
+                    p.noFill();
+                    p.stroke(32, 178, 170, 60 - lastTouchPosition.timer);
+                    p.strokeWeight(2);
+                    p.ellipse(lastTouchPosition.x, lastTouchPosition.y, 40 + lastTouchPosition.timer, 40 + lastTouchPosition.timer);
+                    
+                    lastTouchPosition.timer++;
+                    if (lastTouchPosition.timer > 20) {
+                        lastTouchPosition.active = false;
+                    }
+                }
+            }
+            
             p.draw = function() {
                 p.clear(); // Clear with transparency so camera shows through
                 
@@ -1072,6 +1173,9 @@
                 // Draw and update the central sphere
                 updateCentralSphere();
                 drawCentralSphere();
+                
+                // Draw touch feedback
+                drawTouchFeedback();
                 
                 // Draw and update polygons
                 for (let i = 0; i < polygons.length; i++) {
@@ -1111,6 +1215,32 @@
                     polygon.baseY = centralSphere.y + p.sin(polygon.orbitAngle) * polygon.orbitDistance;
                 }
             };
+            
+            // Helper function to apply attraction to nearby polygons
+            function attractPolygonsToPoint(x, y, radius, strength) {
+                let interacted = false;
+                
+                for (let i = 0; i < polygons.length; i++) {
+                    const d = p.dist(x, y, polygons[i].x, polygons[i].y);
+                    
+                    if (d < radius) {
+                        polygons[i].attractToPoint = true;
+                        polygons[i].attractPoint = {x: x, y: y};
+                        polygons[i].attractStrength = p.map(d, 0, radius, strength, 0.1);
+                        
+                        // Increase alignment temporarily
+                        polygons[i].alignment = p.min(1, polygons[i].alignment + 0.1);
+                        updatePolygonColor(polygons[i]);
+                        
+                        // Increase orbit speed
+                        polygons[i].orbitSpeed *= 1.1;
+                        
+                        interacted = true;
+                    }
+                }
+                
+                return interacted;
+            }
             
             // Play sound with better mobile handling
             function tryPlaySound() {
@@ -1157,28 +1287,7 @@
             p.mouseMoved = function() {
                 try {
                     // Find polygons near the mouse for attraction effect
-                    let interacted = false;
-                    
-                    for (let i = 0; i < polygons.length; i++) {
-                        const d = p.dist(p.mouseX, p.mouseY, polygons[i].x, polygons[i].y);
-                        
-                        // Larger interaction radius
-                        if (d < 200) {
-                            const polygon = polygons[i];
-                            
-                            // Strength of effect based on distance
-                            const strength = p.map(d, 0, 200, 0.15, 0.01);
-                            
-                            // Increase orbit speed slightly
-                            polygon.orbitSpeed *= 1.01;
-                            
-                            // Gently increase alignment temporarily
-                            polygon.alignment = p.min(1, polygon.alignment + 0.01);
-                            updatePolygonColor(polygon);
-                            
-                            interacted = true;
-                        }
-                    }
+                    let interacted = attractPolygonsToPoint(p.mouseX, p.mouseY, 200, 0.15);
                     
                     if (interacted) {
                         return false; // Prevent default
@@ -1218,8 +1327,8 @@
             p.touchStarted = function() {
                 if (p.touches.length > 0) {
                     // Get more accurate touch coordinates
-                    const touchX = p.touches[0].x || p.touches[0].clientX;
-                    const touchY = p.touches[0].y || p.touches[0].clientY;
+                    const touchX = p.touches[0].clientX || p.touches[0].x;
+                    const touchY = p.touches[0].clientY || p.touches[0].y;
                     
                     console.log("Touch detected at:", touchX, touchY);
                     
@@ -1252,39 +1361,34 @@
             
             p.touchMoved = function() {
                 if (p.touches.length > 0) {
-                    const touchX = p.touches[0].x || p.touches[0].clientX;
-                    const touchY = p.touches[0].y || p.touches[0].clientY;
+                    // Get touch coordinates with fallbacks
+                    let touchX, touchY;
                     
-                    try {
-                        // Find polygons near the touch
-                        let interacted = false;
-                        
-                        for (let i = 0; i < polygons.length; i++) {
-                            const d = p.dist(touchX, touchY, polygons[i].x, polygons[i].y);
-                            
-                            // Larger interaction radius for touch
-                            if (d < 200) {
-                                const polygon = polygons[i];
-                                
-                                // Increase orbit speed slightly
-                                polygon.orbitSpeed *= 1.01;
-                                
-                                // Gently increase alignment temporarily
-                                polygon.alignment = p.min(1, polygon.alignment + 0.01);
-                                updatePolygonColor(polygon);
-                                
-                                interacted = true;
-                            }
-                        }
-                        
-                        if (interacted) {
-                            return false; // Prevent default
-                        }
-                    } catch (error) {
-                        console.error("Error in touchMoved:", error);
+                    // Try different ways to get touch coordinates
+                    if (p.touches[0].clientX !== undefined) {
+                        touchX = p.touches[0].clientX;
+                        touchY = p.touches[0].clientY;
+                    } else if (p.touches[0].x !== undefined) {
+                        touchX = p.touches[0].x;
+                        touchY = p.touches[0].y;
+                    } else {
+                        // Use the canvas-relative touch position
+                        touchX = p.touchX;
+                        touchY = p.touchY;
                     }
+
+                    console.log("Touch moved:", touchX, touchY);
+                    
+                    // Show visual touch indicator both in p5 and with DOM element
+                    lastTouchPosition = {x: touchX, y: touchY, active: true, timer: 0};
+                    showTouchIndicator(touchX, touchY);
+                    
+                    // Apply stronger attraction for mobile
+                    attractPolygonsToPoint(touchX, touchY, 300, 0.3);
                 }
-                return false; // Always prevent default on mobile
+                        
+                // Always prevent default to avoid page scrolling
+                return false;  
             };
         };
     </script>
