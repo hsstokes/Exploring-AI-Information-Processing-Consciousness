@@ -168,7 +168,7 @@
             border: 1px solid rgba(138, 95, 195, 0.3);
             z-index: 3;
             max-width: calc(100% - 40px);
-            display: none; /* Hidden until landing page dismissed */
+            display: none !important; /* Always hidden - use tutorial instead */
         }
         
         .interaction-tips h3 {
@@ -288,15 +288,17 @@
         }
 
         .tutorial-hint {
-            background-color: rgba(138, 95, 195, 0.85);
+            background-color: rgba(138, 95, 195, 0.9); /* More opaque */
             padding: 15px 25px;
             border-radius: 30px;
             max-width: 80%;
             text-align: center;
-            margin-bottom: 100px;
+            margin-bottom: 120px;
             color: white;
             display: flex;
+            flex-direction: row; /* Ensure horizontal layout */
             align-items: center;
+            justify-content: space-between; /* Separate text and button */
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
          }
 
@@ -438,16 +440,6 @@
     <!-- p5.js visualization will be attached to this div -->
     <div id="visualization-overlay"></div>
     
-    <!-- Interaction tips -->
-    <div class="interaction-tips">
-        <h3>Interact with the Visualization:</h3>
-        <ul>
-            <li><strong>Tap once:</strong> Shows hand gesture and creates bubbles</li>
-            <li><strong>Continue moving:</strong> Directly attract nearby bubbles</li>
-            <li><strong>Switch to Clear View:</strong> See patterns without camera background</li>
-        </ul>
-    </div>
-    
     <!-- Controls -->
     <div class="controls">
         <button id="toggle-viz">Camera Mode</button>
@@ -505,6 +497,7 @@
             
             // Set up tutorial handlers
             document.getElementById('tutorial-next').addEventListener('click', function(e) {
+                console.log("Got it button touched!");
                 e.preventDefault();
                 e.stopPropagation();
                 advanceTutorial();
@@ -524,7 +517,6 @@
             document.getElementById('visualization-overlay').style.display = 'block';
             document.getElementById('sound-note').style.display = 'block';
             document.getElementById('mode-indicator').style.display = 'block';
-            document.querySelector('.interaction-tips').style.display = 'block';
             document.querySelector('.controls').style.display = 'block';
             
             // Start camera
@@ -548,19 +540,23 @@
             document.getElementById('tutorial-text').textContent = tutorialSteps[tutorialStep];
             document.getElementById('tutorial-overlay').classList.add('active');
             tutorialShown = true;
-        }
+    
+            // Hide the interaction tips panel completely
+            document.querySelector('.interaction-tips').style.display = 'none';
+    
+            console.log("Tutorial shown: Step " + tutorialStep);
+         }
         
         function advanceTutorial() {
+            console.log("Advancing tutorial from step " + tutorialStep);
+            
             tutorialStep++;
             if (tutorialStep < tutorialSteps.length) {
                 document.getElementById('tutorial-text').textContent = tutorialSteps[tutorialStep];
+                console.log("Advanced to step " + tutorialStep + ": " + tutorialSteps[tutorialStep]);
             } else {
                 document.getElementById('tutorial-overlay').classList.remove('active');
-        
-                // Hide the bottom tips since we've shown the tutorial
-                setTimeout(() => {
-                    document.querySelector('.interaction-tips').style.display = 'none';
-                }, 1000);
+                console.log("Tutorial completed and hidden");
             }
         }
         
