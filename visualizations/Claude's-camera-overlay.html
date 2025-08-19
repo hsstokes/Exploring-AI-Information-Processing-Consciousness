@@ -701,7 +701,7 @@
 
                     // Create a blurred background using multiple overlapping circles with decreasing opacity
                     for (let i = 0; i < 3; i++) {
-                        const blurOpacity = anim.opacity * (80 - i * 20); 
+                        const blurOpacity = anim.opacity * (100 - i * 20); 
                         const blurSize = anim.size * (1.05 + i * 0.04);
                         p.fill(255, 255, 255, blurOpacity);
                         p.ellipse(anim.x, anim.y, blurSize);
@@ -726,6 +726,13 @@
                     // Calculate height while preserving aspect ratio
                     const aspectRatio = img.height / img.width;
                     const drawHeight = anim.size * aspectRatio;
+
+                    // First draw a light base outline of the hand
+                    p.tint(255, 255, 255, Math.min(255, anim.opacity * 600)); // Brighter white base
+                    p.drawingContext.shadowColor = 'rgba(255, 255, 255, 0.9)';
+                    p.drawingContext.shadowBlur = 8;
+                    p.drawingContext.shadowOffsetX = 0;
+                    p.drawingContext.shadowOffsetY = 0;
                     
                     // Draw the current frame centered at x,y 
                     p.image(
@@ -737,9 +744,9 @@
                     );
 
                     // Draw a second time with different color to create contrast
-                    p.tint(255, 255, 255, Math.min(255, anim.opacity * 400));
-                    p.drawingContext.shadowColor = 'rgba(255, 255, 255, 0.7)';
-                    p.drawingContext.shadowBlur = 4;
+                    p.tint(32, 178, 170, Math.min(255, anim.opacity * 500));
+                    p.drawingContext.shadowColor = 'rgba(32, 178, 170, 0.7)';
+                    p.drawingContext.shadowBlur = 20;
         
                     p.image(
                         img,
