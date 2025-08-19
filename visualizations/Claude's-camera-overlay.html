@@ -690,7 +690,7 @@
                 }, anim.frameDuration);
             }
             
-            // Draw the current animation frame
+            // Draw the current animation frame - FIXED VERSION WITHOUT TEAL OVERLAY
             function drawHandAnimationFrame() {
                 const anim = handAnimation;
                 
@@ -708,29 +708,21 @@
                     }
                     p.pop();
                     
-                    // Save current drawing settings
-                    p.push();
-                    
-                    // Set transparency - using teal color theme for Claude
-                    p.tint(32, 178, 170, Math.min(255, anim.opacity * 950));
-
-                    // Add a glow effect
-                    p.drawingContext.shadowColor = 'rgba(32, 178, 170, 0.9)';
-                    p.drawingContext.shadowBlur = 40;
-                    p.drawingContext.shadowOffsetX = 0;
-                    p.drawingContext.shadowOffsetY = 0;
-        
                     // Get the current frame image
                     const img = anim.frameImages[anim.currentFrame];
-        
+                    
                     // Calculate height while preserving aspect ratio
                     const aspectRatio = img.height / img.width;
                     const drawHeight = anim.size * aspectRatio;
-
-                    // First draw a light base outline of the hand
-                    p.tint(255, 255, 255, Math.min(255, anim.opacity * 600)); // Brighter white base
-                    p.drawingContext.shadowColor = 'rgba(255, 255, 255, 0.9)';
-                    p.drawingContext.shadowBlur = 8;
+                    
+                    // Draw the hand without tint (natural colors)
+                    p.push();
+                    // No tint, just use the image as-is with opacity
+                    p.tint(255, 255, 255, Math.min(255, anim.opacity * 255));
+                    
+                    // Add a subtle glow effect
+                    p.drawingContext.shadowColor = 'rgba(255, 255, 255, 0.7)';
+                    p.drawingContext.shadowBlur = 15;
                     p.drawingContext.shadowOffsetX = 0;
                     p.drawingContext.shadowOffsetY = 0;
                     
@@ -742,21 +734,6 @@
                         anim.size,
                         drawHeight
                     );
-
-                    // Draw a second time with different color to create contrast
-                    p.tint(32, 178, 170, Math.min(255, anim.opacity * 500));
-                    p.drawingContext.shadowColor = 'rgba(32, 178, 170, 0.7)';
-                    p.drawingContext.shadowBlur = 20;
-        
-                    p.image(
-                        img,
-                        anim.x - anim.size/2,
-                        anim.y - drawHeight/2,
-                        anim.size,
-                        drawHeight
-                    );
-                    
-                    // Restore drawing settings
                     p.pop();
                 } else {
                     console.error(`Image for frame ${anim.currentFrame} not found!`);
@@ -764,7 +741,7 @@
                     // Draw a simple circle as fallback
                     p.push();
                     p.noStroke();
-                    p.fill(32, 178, 170, anim.opacity * 255);
+                    p.fill(255, 255, 255, anim.opacity * 255);
                     p.ellipse(anim.x, anim.y, anim.size * 0.5);
                     p.pop();
                 }
@@ -1071,7 +1048,9 @@
             }
             
             p.draw = function() {
-                p.clear(); // Clear with transparency so camera shows through
+                // Make sure we're completely clearing the canvas
+                p.clear();
+                p.background(255, 255, 255, 0); // Transparent background
                 
                 // Handle evaluation mode timing
                 if (evaluationMode) {
