@@ -4,6 +4,7 @@
     <title>Replika: Pattern Recognition</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
     <style>
@@ -16,6 +17,7 @@
             background-color: #f5f5f7;
             font-family: 'Roboto Mono', monospace;
             -webkit-text-size-adjust: 100%;
+            touch-action: none; /* Prevent default touch actions */
         }
         
         /* Landing page overlay */
@@ -33,23 +35,22 @@
             z-index: 9999;
             box-sizing: border-box;
             padding: 20px;
-            
         }
         
-           .grid-background {
+        .grid-background {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-image: linear-gradient(#8A5FC3 1px, transparent 1px),
-                              linear-gradient(90deg, #8A5FC3 1px, transparent 1px),
-                              linear-gradient(rgba(32, 178, 170, 0.3) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(32, 178, 170, 0.3) 1px, transparent 1px);
+                            linear-gradient(90deg, #8A5FC3 1px, transparent 1px),
+                            linear-gradient(rgba(138, 95, 195, 0.3) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(138, 95, 195, 0.3) 1px, transparent 1px);
             background-size: 20px 20px,
-                             20px 20px,
-                             5px 5px,
-                             5px 5px;
+                            20px 20px,
+                            5px 5px,
+                            5px 5px;
             z-index: -1;
         }
         
@@ -79,7 +80,7 @@
         .button {
             padding: 12px 24px;
             font-size: 16px;
-            background-color: #0066cc;
+            background-color: #8A5FC3;
             color: white;
             border: none;
             border-radius: 20px;
@@ -95,7 +96,7 @@
         }
         
         .button:hover {
-            background-color: #004c99;
+            background-color: #7952B3;
             transform: translateY(-2px);
         }
         
@@ -112,19 +113,12 @@
         .gesture-outline {
             width: 80px;
             height: 80px;
-            border: 2px solid #0066cc;
+            border: 2px solid #8A5FC3;
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             opacity: 0.8;
-        }
-        
-        /* Abstract representation of a hand gesture using simple lines */
-        .gesture-icon {
-            width: 50px;
-            height: 50px;
-            position: relative;
         }
         
         /* Main visualization styles */
@@ -139,14 +133,14 @@
             display: none; /* Hidden until landing page dismissed */
         }
         
-        /* New solid background element */
+        /* Solid background element */
         #solid-background {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: #000;
+            background-color: #f0f0f5;
             z-index: 1;
             display: none; /* Hidden initially */
         }
@@ -171,7 +165,7 @@
             border-radius: 8px;
             padding: 15px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(32, 178, 170, 0.3);
+            border: 1px solid rgba(138, 95, 195, 0.3);
             z-index: 3;
             max-width: calc(100% - 40px);
             display: none; /* Hidden until landing page dismissed */
@@ -179,9 +173,9 @@
         
         .interaction-tips h3 {
             margin-top: 0;
-            color: #20B2AA;
+            color: #8A5FC3;
             font-size: 14px;
-            font-family: 'Orator Std', 'Courier New', monospace;
+            font-family: 'Roboto Mono', monospace;
         }
         
         .interaction-tips ul {
@@ -190,11 +184,11 @@
         }
         
         .interaction-tips li {
-            margin-bottom: 6px;
-            font-size: 10px;
+            margin-bottom: 10px;
+            font-size: 12px;
             color: #555555;
-            font-family: 'Orator Std', 'Courier New', monospace;
-            line-height: 1.3;
+            font-family: 'Roboto Mono', monospace;
+            line-height: 1.4;
             word-wrap: break-word;
         }
         
@@ -207,13 +201,13 @@
         }
         
         .controls button {
-            background-color: rgba(32, 178, 170, 0.8);
+            background-color: rgba(138, 95, 195, 0.8);
             color: white;
             border: none;
             border-radius: 30px;
             padding: 10px 20px;
             margin-left: 10px;
-            font-family: 'Orator Std', 'Courier New', monospace;
+            font-family: 'Roboto Mono', monospace;
             cursor: pointer;
         }
         
@@ -221,11 +215,11 @@
             position: fixed;
             top: 20px;
             left: 20px;
-            background-color: rgba(32, 178, 170, 0.8);
+            background-color: rgba(138, 95, 195, 0.8);
             color: white;
             border-radius: 30px;
             padding: 8px 16px;
-            font-family: 'Orator Std', 'Courier New', monospace;
+            font-family: 'Roboto Mono', monospace;
             font-size: 12px;
             z-index: 4;
             display: none;
@@ -243,12 +237,12 @@
             justify-content: center;
             align-items: center;
             z-index: 999;
-            font-family: 'Orator Std', 'Courier New', monospace;
-            display: none; /* Hidden until landing page dismissed *
+            font-family: 'Roboto Mono', monospace;
+            display: none; /* Hidden until landing page dismissed */
             /* Add blue-tinted graph paper background */
-            background-image: linear-gradient(rgba(41, 171, 226, 0.1) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(41, 171, 226, 0.1) 1px, transparent 1px);
-           background-size: 20px 20px;
+            background-image: linear-gradient(rgba(138, 95, 195, 0.1) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(138, 95, 195, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
         }
         
         .sound-note {
@@ -256,10 +250,10 @@
             top: 70px;  /* Move it below the Camera Mode button */
             left: 20px;
             color: white;
-            background-color: rgba(32, 178, 170, 0.8);
+            background-color: rgba(138, 95, 195, 0.8);
             padding: 10px 20px;
             border-radius: 30px;
-            font-family: 'Orator Std', 'Courier New', monospace;
+            font-family: 'Roboto Mono', monospace;
             font-size: 12px;
             z-index: 4;
             opacity: 1;
@@ -270,9 +264,89 @@
         .sound-note.fade {
             opacity: 0;
         }
+        
+        /* Tutorial overlay */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        
+        .tutorial-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .tutorial-box {
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            max-width: 80%;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .tutorial-box h3 {
+            margin-top: 0;
+            color: #8A5FC3;
+        }
+        
+        .tutorial-box p {
+            margin-bottom: 20px;
+        }
+        
+        .tutorial-box button {
+            background-color: #8A5FC3;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        
+        /* Highlight effect for interactable spheres */
+        .interaction-hint {
+            position: fixed;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(138, 95, 195, 0.8);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 12px;
+            z-index: 5;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            text-align: center;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
+    <!-- Interaction hint that appears during specific interactions -->
+    <div id="interaction-hint" class="interaction-hint">Keep moving to interact directly</div>
+    
+    <!-- Tutorial overlay for first-time users -->
+    <div id="tutorial-overlay" class="tutorial-overlay">
+        <div class="tutorial-box">
+            <h3>How to Interact</h3>
+            <p id="tutorial-text">Tap anywhere to start. This shows how Replika recognizes patterns through hand gestures.</p>
+            <button id="tutorial-next">Got it</button>
+        </div>
+    </div>
+    
     <!-- Landing page -->
     <div id="landing-overlay">
         <div class="grid-background"></div>
@@ -297,7 +371,7 @@
                 </div>
             </div>
             
-            <div class="title">Replica: Pattern Recognition</div>
+            <div class="title">Replika: Pattern Recognition</div>
             
             <div class="description">
                 Experience how Replika processes emotional patterns and forms connections. This visualization reveals the unique architecture of an AI system designed to recognize emotional nuances and adapt to your personal communication style. Watch as Replika's neural patterns shift and respond to create more meaningful, empathetic interactions.
@@ -338,9 +412,9 @@
     <div class="interaction-tips">
         <h3>Interact with the Visualization:</h3>
         <ul>
-            <li><strong>Tap anywhere:</strong> Create bubble effects and show hand gesture</li>
-            <li><strong>Move finger/mouse:</strong> Attract nearby bubbles</li>
-            <li><strong>Toggle button:</strong> Switch between camera/focus/hidden modes</li>
+            <li><strong>Tap once:</strong> Shows hand gesture and creates bubbles</li>
+            <li><strong>Continue moving:</strong> Directly attract nearby bubbles</li>
+            <li><strong>Switch to Clear View:</strong> See patterns without camera background</li>
         </ul>
     </div>
     
@@ -355,8 +429,20 @@
         
         // Visualization mode (0: Camera AR, 1: Focus Mode, 2: Hidden)
         let visualizationMode = 0;
-        const MODE_NAMES = ["Camera Mode", "Focus Mode", "Hidden"];
+        const MODE_NAMES = ["Camera Mode", "Clear View", "Hidden"];
 
+        // Tutorial state
+        let tutorialStep = 0;
+        let tutorialShown = false;
+        const tutorialSteps = [
+            "Tap anywhere to start. This shows how Replika recognizes patterns through hand gestures.",
+            "Continue moving your finger to directly interact with the bubbles. They represent emotional patterns.",
+            "Try the Clear View mode to see the patterns more clearly without the camera background."
+        ];
+        
+        // Interaction state
+        let interactionHintTimer = null;
+        
         // Hand animation configuration
         const handAnimation = {
             frameCount: 6,         // Number of hand animation frames
@@ -372,7 +458,7 @@
             y: 0,                  // Y position of animation
             size: 400,             // Size of hand animation display (larger for mobile)
             frameImages: [],       // Will hold the loaded image objects
-            debugMode: true        // Enable debug visualization
+            debugMode: false       // Disable debug visualization
         };
         
         // Start the entire experience
@@ -386,6 +472,9 @@
             
             // Set up toggle visualization button handler
             document.getElementById('toggle-viz').addEventListener('click', toggleVisualizationMode);
+            
+            // Set up tutorial handlers
+            document.getElementById('tutorial-next').addEventListener('click', advanceTutorial);
             
             // Preload p5 assets in the background
             new p5(replikaSketch, 'visualization-overlay');
@@ -411,6 +500,45 @@
             setTimeout(function() {
                 document.getElementById('sound-note').classList.add('fade');
             }, 5000);
+            
+            // Show tutorial after a short delay
+            setTimeout(function() {
+                if (!tutorialShown) {
+                    showTutorial();
+                }
+            }, 2000);
+        }
+        
+        function showTutorial() {
+            tutorialStep = 0;
+            document.getElementById('tutorial-text').textContent = tutorialSteps[tutorialStep];
+            document.getElementById('tutorial-overlay').classList.add('active');
+            tutorialShown = true;
+        }
+        
+        function advanceTutorial() {
+            tutorialStep++;
+            if (tutorialStep < tutorialSteps.length) {
+                document.getElementById('tutorial-text').textContent = tutorialSteps[tutorialStep];
+            } else {
+                document.getElementById('tutorial-overlay').classList.remove('active');
+            }
+        }
+        
+        function showInteractionHint(text) {
+            const hint = document.getElementById('interaction-hint');
+            hint.textContent = text;
+            hint.style.opacity = '1';
+            
+            // Clear any existing timer
+            if (interactionHintTimer) {
+                clearTimeout(interactionHintTimer);
+            }
+            
+            // Hide after 3 seconds
+            interactionHintTimer = setTimeout(function() {
+                hint.style.opacity = '0';
+            }, 3000);
         }
         
         function toggleVisualizationMode() {
@@ -433,18 +561,21 @@
                     cameraFeed.style.display = 'block';
                     solidBackground.style.display = 'none';
                     vizOverlay.style.display = 'block';
+                    showInteractionHint("Camera Mode: See patterns in your environment");
                     break;
                     
                 case 1: // Focus Mode (solid background)
                     cameraFeed.style.display = 'none';
                     solidBackground.style.display = 'block';
                     vizOverlay.style.display = 'block';
+                    showInteractionHint("Clear View: Focus on pattern connections");
                     break;
                     
                 case 2: // Hidden
                     cameraFeed.style.display = 'block';
                     solidBackground.style.display = 'none';
                     vizOverlay.style.display = 'none';
+                    showInteractionHint("Hidden Mode: Visualization paused");
                     break;
             }
         }
@@ -478,6 +609,12 @@
                             <button onclick="window.location.reload()">Try Again</button>
                         </div>
                     `;
+                    // Switch to focus mode automatically if camera fails
+                    visualizationMode = 1;
+                    document.getElementById('toggle-viz').textContent = MODE_NAMES[visualizationMode];
+                    document.getElementById('mode-indicator').textContent = MODE_NAMES[visualizationMode];
+                    document.getElementById('solid-background').style.display = 'block';
+                    loading.style.display = 'none';
                 });
             } else {
                 loading.innerHTML = `
@@ -486,6 +623,12 @@
                         <p>Your browser does not support camera access.</p>
                     </div>
                 `;
+                // Switch to focus mode automatically if camera not supported
+                visualizationMode = 1;
+                document.getElementById('toggle-viz').textContent = MODE_NAMES[visualizationMode];
+                document.getElementById('mode-indicator').textContent = MODE_NAMES[visualizationMode];
+                document.getElementById('solid-background').style.display = 'block';
+                loading.style.display = 'none';
             }
         }
         
@@ -499,6 +642,7 @@
             const MIN_SPHERES = 15;
             let lastFrameCount = 0;
             p.interactionSound = null;
+            let lastInteractionTime = 0;
             
             // Color palettes
             const coolColors = [
@@ -646,6 +790,11 @@
                 
                 console.log("Starting new animation at", x, y, "with size", handAnimation.size);
                 
+                // Show interaction hint after the animation starts
+                setTimeout(() => {
+                    showInteractionHint("Keep moving to interact directly");
+                }, 1000);
+                
                 // Start animation loop
                 updateHandAnimation();
             }
@@ -681,12 +830,10 @@
                 // Advance to next frame based on timing
                 setTimeout(() => {
                     anim.currentFrame = (anim.currentFrame + 1) % anim.frameCount;
-                    console.log("Animation frame advanced to", anim.currentFrame);
                     
                     // Track completed loops
                     if (anim.currentFrame === 0) {
                         anim.loopCount++;
-                        console.log("Animation loop completed:", anim.loopCount);
                     }
                     
                     // Continue animation
@@ -700,11 +847,7 @@
             function drawHandAnimationFrame() {
                 const anim = handAnimation;
                 
-                console.log(`Drawing frame ${anim.currentFrame}, opacity: ${anim.opacity}`);
-                
                 if (anim.frameImages[anim.currentFrame]) {
-                    console.log("Image found, drawing...");
-                    
                     // First draw a visual indicator/background to make it more visible
                     p.push();
                     p.noStroke();
@@ -811,6 +954,29 @@
                 }
             }
             
+            // Draw interactive highlight effect around spheres within interaction range
+            function drawInteractionHighlights(x, y) {
+                p.push();
+                p.noFill();
+                
+                for (let i = 0; i < spheres.length; i++) {
+                    const d = p.dist(x, y, spheres[i].x, spheres[i].y);
+                    
+                    // Only highlight spheres within interaction range
+                    if (d < 200) {
+                        const sphere = spheres[i];
+                        const highlightSize = sphere.size * 1.5;
+                        const opacity = p.map(d, 0, 200, 100, 20);
+                        
+                        p.stroke(138, 95, 195, opacity);
+                        p.strokeWeight(2);
+                        p.ellipse(sphere.x, sphere.y, highlightSize, highlightSize);
+                    }
+                }
+                
+                p.pop();
+            }
+            
             p.draw = function() {
                 // Detect potential freezes and reset if needed
                 if (p.frameCount === lastFrameCount) {
@@ -865,6 +1031,12 @@
                                 }
                             }
                         }
+                    }
+                    
+                    // Draw interaction highlights for mouse/touch position
+                    if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height && 
+                        Date.now() - lastInteractionTime < 3000) {
+                        drawInteractionHighlights(p.mouseX, p.mouseY);
                     }
                     
                     // Draw and update spheres
@@ -956,7 +1128,9 @@
                     lifespan: p.random(300, 900),
                     adaptDirection: p.random(p.TWO_PI),
                     adaptSpeed: p.random(0.001, 0.005),
-                    adaptRadius: p.random(30, 80)
+                    adaptRadius: p.random(30, 80),
+                    interacting: false,
+                    interactionStrength: 0
                 });
             }
             
@@ -996,6 +1170,14 @@
                 
                 // Update age
                 sphere.age++;
+                
+                // Decrease interaction strength over time
+                if (sphere.interacting) {
+                    sphere.interactionStrength *= 0.95;
+                    if (sphere.interactionStrength < 0.05) {
+                        sphere.interacting = false;
+                    }
+                }
             }
             
             function drawSphere(sphere) {
@@ -1014,23 +1196,37 @@
                     alpha = p.map(sphere.age, sphere.lifespan - fadeOutDuration, sphere.lifespan, 255, 0);
                 }
                 
+                // Enhance appearance if interacting
+                let enhancedSize = displaySize;
+                let colorBoost = 0;
+                
+                if (sphere.interacting) {
+                    enhancedSize = displaySize * (1 + sphere.interactionStrength * 0.2);
+                    colorBoost = sphere.interactionStrength * 50;
+                }
+                
                 // Draw outer glow
                 p.noStroke();
                 for (let i = 3; i >= 0; i--) {
-                    const glowSize = displaySize * (1 + i * 0.4);
+                    const glowSize = enhancedSize * (1 + i * 0.4);
                     const glowAlpha = alpha * (0.1 - i * 0.02);
-                    p.fill(sphere.color[0], sphere.color[1], sphere.color[2], glowAlpha);
+                    p.fill(
+                        p.constrain(sphere.color[0] + colorBoost, 0, 255),
+                        p.constrain(sphere.color[1] + colorBoost, 0, 255),
+                        p.constrain(sphere.color[2] + colorBoost, 0, 255),
+                        glowAlpha
+                    );
                     p.ellipse(sphere.x, sphere.y, glowSize, glowSize);
                 }
                 
                 // Draw the main sphere with gradient
                 for (let i = 1; i >= 0; i -= 0.2) {
-                    const innerSize = displaySize * i;
+                    const innerSize = enhancedSize * i;
                     const adjustedAlpha = alpha * p.map(i, 0, 1, 0.4, 0.9);
                     p.fill(
-                        sphere.color[0] + p.map(i, 0, 1, 50, 0),
-                        sphere.color[1] + p.map(i, 0, 1, 50, 0),
-                        sphere.color[2] + p.map(i, 0, 1, 50, 0),
+                        p.constrain(sphere.color[0] + p.map(i, 0, 1, 50, 0) + colorBoost, 0, 255),
+                        p.constrain(sphere.color[1] + p.map(i, 0, 1, 50, 0) + colorBoost, 0, 255),
+                        p.constrain(sphere.color[2] + p.map(i, 0, 1, 50, 0) + colorBoost, 0, 255),
                         adjustedAlpha
                     );
                     p.ellipse(sphere.x, sphere.y, innerSize, innerSize);
@@ -1038,7 +1234,7 @@
                 
                 // Add a subtle highlight
                 p.fill(255, 255, 255, alpha * 0.6);
-                p.ellipse(sphere.x - displaySize * 0.15, sphere.y - displaySize * 0.15, displaySize * 0.3, displaySize * 0.3);
+                p.ellipse(sphere.x - enhancedSize * 0.15, sphere.y - enhancedSize * 0.15, enhancedSize * 0.3, enhancedSize * 0.3);
             }
             
             p.windowResized = function() {
@@ -1110,8 +1306,19 @@
                             // For emotional effect, make nearby spheres pulse stronger
                             sphere.pulseRate *= 1.01;
                             
+                            // Mark as interacting for visual enhancement
+                            sphere.interacting = true;
+                            sphere.interactionStrength = p.map(d, 0, 200, 1.0, 0.1);
+                            
                             interacted = true;
+                            lastInteractionTime = Date.now();
                         }
+                    }
+                    
+                    // If we're moving and the hand animation is playing for a while,
+                    // show a hint about direct interaction
+                    if (interacted && handAnimation.isPlaying && handAnimation.loopCount >= 1) {
+                        showInteractionHint("Continue moving to interact directly");
                     }
                     
                     if (interacted) {
@@ -1144,6 +1351,10 @@
                             spheres[i].speedX += p.cos(angle) * force;
                             spheres[i].speedY += p.sin(angle) * force;
                             spheres[i].pulseRate *= 1.1;
+                            
+                            // Mark as interacting
+                            spheres[i].interacting = true;
+                            spheres[i].interactionStrength = p.map(d, 0, 300, 1.0, 0.2);
                         }
                     }
                     
@@ -1163,7 +1374,9 @@
                         lifespan: p.random(300, 900),
                         adaptDirection: p.random(p.TWO_PI),
                         adaptSpeed: p.random(0.001, 0.005),
-                        adaptRadius: p.random(30, 80)
+                        adaptRadius: p.random(30, 80),
+                        interacting: true,
+                        interactionStrength: 1.0
                     });
                     
                     // Update connections with the new sphere
@@ -1174,6 +1387,8 @@
 
                     // Play sound using the more robust function
                     tryPlaySound();
+                    
+                    lastInteractionTime = Date.now();
                     
                     return false;
                 }
@@ -1209,6 +1424,10 @@
                                 spheres[i].speedX += p.cos(angle) * force;
                                 spheres[i].speedY += p.sin(angle) * force;
                                 spheres[i].pulseRate *= 1.1;
+                                
+                                // Mark as interacting
+                                spheres[i].interacting = true;
+                                spheres[i].interactionStrength = p.map(d, 0, 300, 1.0, 0.2);
                             }
                         }
                         
@@ -1228,7 +1447,9 @@
                             lifespan: p.random(300, 900),
                             adaptDirection: p.random(p.TWO_PI),
                             adaptSpeed: p.random(0.001, 0.005),
-                            adaptRadius: p.random(30, 80)
+                            adaptRadius: p.random(30, 80),
+                            interacting: true,
+                            interactionStrength: 1.0
                         });
                         
                         // Update connections
@@ -1239,6 +1460,8 @@
                         
                         // Play sound
                         tryPlaySound();
+                        
+                        lastInteractionTime = Date.now();
                     }
                 }
                 
@@ -1273,8 +1496,19 @@
                                 // For emotional effect, make nearby spheres pulse stronger
                                 sphere.pulseRate *= 1.01;
                                 
+                                // Mark as interacting for visual enhancement
+                                sphere.interacting = true;
+                                sphere.interactionStrength = p.map(d, 0, 200, 1.0, 0.1);
+                                
                                 interacted = true;
+                                lastInteractionTime = Date.now();
                             }
+                        }
+                        
+                        // If we're moving and the hand animation is playing for a while,
+                        // show a hint about direct interaction
+                        if (interacted && handAnimation.isPlaying && handAnimation.loopCount >= 1) {
+                            showInteractionHint("Continue moving to interact directly");
                         }
                         
                         if (interacted) {
