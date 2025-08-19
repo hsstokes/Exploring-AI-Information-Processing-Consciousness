@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Replica - Pattern Recognition</title>
+    <title>Replika: Pattern Recognition</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
@@ -42,8 +42,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-image: linear-gradient(#20B2AA 1px, transparent 1px),
-                              linear-gradient(90deg, #20B2AA 1px, transparent 1px),
+            background-image: linear-gradient(#8A5FC3 1px, transparent 1px),
+                              linear-gradient(90deg, #8A5FC3 1px, transparent 1px),
                               linear-gradient(rgba(32, 178, 170, 0.3) 1px, transparent 1px),
                               linear-gradient(90deg, rgba(32, 178, 170, 0.3) 1px, transparent 1px);
             background-size: 20px 20px,
@@ -125,27 +125,6 @@
             width: 50px;
             height: 50px;
             position: relative;
-        }
-        
-        .gesture-icon::before,
-        .gesture-icon::after {
-            content: "";
-            position: absolute;
-            background-color: #0066cc;
-        }
-        
-        .gesture-icon::before {
-            width: 2px;
-            height: 30px;
-            top: 10px;
-            left: 24px;
-        }
-        
-        .gesture-icon::after {
-            width: 30px;
-            height: 2px;
-            top: 24px;
-            left: 10px;
         }
         
         /* Main visualization styles */
@@ -271,8 +250,6 @@
                               linear-gradient(90deg, rgba(41, 171, 226, 0.1) 1px, transparent 1px);
            background-size: 20px 20px;
         }
-
-        }
         
         .sound-note {
             position: fixed;
@@ -303,14 +280,27 @@
         <div class="content">
             <div class="gesture-container">
                 <div class="gesture-outline">
-                    <div class="gesture-icon"></div>
+                    <svg width="50" height="50" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Replika emotional pattern recognition icon -->
+                        <circle cx="25" cy="25" r="15" fill="#8A5FC3" opacity="0.7" />
+                        <!-- Add connecting nodes to represent relationship building -->
+                        <circle cx="18" cy="15" r="4" fill="#A978DE" />
+                        <circle cx="32" cy="15" r="4" fill="#A978DE" />
+                        <circle cx="36" cy="28" r="4" fill="#A978DE" />
+                        <circle cx="14" cy="28" r="4" fill="#A978DE" />
+                        <!-- Connection lines -->
+                        <line x1="18" y1="15" x2="25" y2="25" stroke="#A978DE" stroke-width="2" />
+                        <line x1="32" y1="15" x2="25" y2="25" stroke="#A978DE" stroke-width="2" />
+                        <line x1="36" y1="28" x2="25" y2="25" stroke="#A978DE" stroke-width="2" />
+                        <line x1="14" y1="28" x2="25" y2="25" stroke="#A978DE" stroke-width="2" />
+                    </svg>
                 </div>
             </div>
             
             <div class="title">Replica: Pattern Recognition</div>
             
             <div class="description">
-                Experience how Replica processes information by identifying and analyzing patterns. This visualization reveals the unique information architecture of an AI system designed to recognize and interpret recurring structures in data.
+                Experience how Replika processes emotional patterns and forms connections. This visualization reveals the unique architecture of an AI system designed to recognize emotional nuances and adapt to your personal communication style. Watch as Replika's neural patterns shift and respond to create more meaningful, empathetic interactions.
             </div>
             
             <div class="description">
