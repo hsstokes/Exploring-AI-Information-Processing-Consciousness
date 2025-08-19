@@ -17,7 +17,7 @@
             background-color: #f5f5f7;
             font-family: 'Roboto Mono', monospace;
             -webkit-text-size-adjust: 100%;
-            touch-action: none; /* Prevent default touch actions */
+            touch-action: none;
         }
         
         /* Landing page overlay */
@@ -130,7 +130,7 @@
             height: 100%;
             object-fit: cover;
             z-index: 1;
-            display: none; /* Hidden until landing page dismissed */
+            display: none; /* Hidden by default since Clear View is default */
         }
         
         /* Solid background element */
@@ -142,7 +142,7 @@
             height: 100%;
             background-color: #f0f0f5;
             z-index: 1;
-            display: none; /* Hidden initially */
+            display: block; /* Shown by default as Clear View is default */
         }
         
         #visualization-overlay {
@@ -156,47 +156,11 @@
             display: none; /* Hidden until landing page dismissed */
         }
         
-        .interaction-tips {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            background-color: rgba(255, 255, 255, 0.8);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(138, 95, 195, 0.3);
-            z-index: 3;
-            max-width: calc(100% - 40px);
-            display: none !important; /* Always hidden - use tutorial instead */
-        }
-        
-        .interaction-tips h3 {
-            margin-top: 0;
-            color: #8A5FC3;
-            font-size: 14px;
-            font-family: 'Roboto Mono', monospace;
-        }
-        
-        .interaction-tips ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-        
-        .interaction-tips li {
-            margin-bottom: 10px;
-            font-size: 12px;
-            color: #555555;
-            font-family: 'Roboto Mono', monospace;
-            line-height: 1.4;
-            word-wrap: break-word;
-        }
-        
         .controls {
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 3;
+            z-index: 10;
             display: none; /* Hidden until landing page dismissed */
         }
         
@@ -209,7 +173,12 @@
             margin-left: 10px;
             font-family: 'Roboto Mono', monospace;
             cursor: pointer;
-            touch-action: none; /* Prevent default touch actions on button */
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        
+        .controls button:active {
+            transform: scale(0.95);
         }
         
         .loading {
@@ -226,7 +195,6 @@
             z-index: 999;
             font-family: 'Roboto Mono', monospace;
             display: none; /* Hidden until landing page dismissed */
-            /* Add blue-tinted graph paper background */
             background-image: linear-gradient(rgba(138, 95, 195, 0.1) 1px, transparent 1px),
                               linear-gradient(90deg, rgba(138, 95, 195, 0.1) 1px, transparent 1px);
             background-size: 20px 20px;
@@ -234,7 +202,7 @@
         
         .sound-note {
             position: fixed;
-            top: 70px;  /* Move it below the Camera Mode button */
+            top: 70px;
             left: 20px;
             color: white;
             background-color: rgba(138, 95, 195, 0.8);
@@ -259,15 +227,15 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0); /* Make background completely transparent */
+            background-color: rgba(0, 0, 0, 0);
             display: flex;
             justify-content: center;
-            align-items: flex-end; /* Position at bottom */
+            align-items: flex-end;
             z-index: 9000;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.5s ease;
-            padding-bottom: 80px; /* Increase from 30px to 80px to position lower */
+            padding-bottom: 80px;
         }
         
         .tutorial-overlay.active {
@@ -276,19 +244,19 @@
         }
 
         .tutorial-hint {
-            background-color: rgba(138, 95, 195, 0.9); /* More opaque */
+            background-color: rgba(138, 95, 195, 0.9);
             padding: 12px 20px;
             border-radius: 30px;
             max-width: 85%;
             text-align: center;
-            margin-bottom: 0; /* Remove the margin-bottom since we're using padding-bottom on the overlay */
+            margin-bottom: 0;
             color: white;
             display: flex;
             align-items: center;
-            justify-content: center; /* Center the text */
+            justify-content: center;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            cursor: pointer; /* Make the entire hint clickable */
-            animation: pulse 2s infinite; /* Add a subtle pulsing animation */
+            cursor: pointer;
+            animation: pulse 2s infinite;
          }
 
          @keyframes pulse {
@@ -303,49 +271,10 @@
             font-size: 14px;
          }
 
-        .tutorial-hint button {
-           background-color: white;
-           color: #8A5FC3;
-           border: none;
-           padding: 6px 15px;
-           border-radius: 15px;
-           font-weight: bold;
-           cursor: pointer;
-           font-family: 'Roboto Mono', monospace;
-         }
-
-        
-        .tutorial-box {
-            background-color: white;
-            padding: 20px;
-            border-radius: 12px;
-            max-width: 80%;
-            text-align: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        }
-        
-        .tutorial-box h3 {
-            margin-top: 0;
-            color: #8A5FC3;
-        }
-        
-        .tutorial-box p {
-            margin-bottom: 20px;
-        }
-        
-        .tutorial-box button {
-            background-color: #8A5FC3;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            cursor: pointer;
-        }
-        
-        /* Highlight effect for interactable spheres */
-        .interaction-hint {
+        /* Mode indicator */
+        .mode-indicator {
             position: fixed;
-            bottom: 70px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             background-color: rgba(138, 95, 195, 0.8);
@@ -355,13 +284,13 @@
             font-family: 'Roboto Mono', monospace;
             font-size: 12px;
             z-index: 5;
-            opacity: 0;
+            opacity: 1;
             transition: opacity 0.3s ease;
             text-align: center;
-            pointer-events: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
-        /* Touch indicator similar to Claude code */
+        /* Touch indicator */
         .touch-indicator {
             position: fixed;
             width: 40px;
@@ -377,11 +306,8 @@
     </style>
 </head>
 <body>
-    <!-- Touch indicator element (adding from Claude code) -->
+    <!-- Touch indicator -->
     <div id="touch-indicator" class="touch-indicator"></div>
-
-    <!-- Interaction hint that appears during specific interactions -->
-    <div id="interaction-hint" class="interaction-hint">Keep moving to interact directly</div>
     
     <!-- Tutorial overlay for first-time users -->
     <div id="tutorial-overlay" class="tutorial-overlay">
@@ -389,6 +315,9 @@
             <p id="tutorial-text">Tap anywhere to start</p>
         </div>
     </div>
+    
+    <!-- Mode indicator -->
+    <div id="mode-indicator" class="mode-indicator">Clear View Mode</div>
     
     <!-- Landing page -->
     <div id="landing-overlay">
@@ -421,28 +350,28 @@
             </div>
             
             <div class="description">
-                <em>Tap the button below to activate your camera and explore the visualization.</em>
+                <em>Tap the button below to explore the visualization.</em>
             </div>
             
             <button id="start-button" class="button">BEGIN INTERACTION</button>
         </div>
     </div>
     
-    <!-- Loading screen (shown after landing page) -->
+    <!-- Loading screen -->
     <div class="loading" id="loading">
         <div>
-            <h2>Starting Camera...</h2>
-            <p>Please allow camera access when prompted</p>
+            <h2>Loading...</h2>
+            <p>Preparing visualization</p>
         </div>
     </div>
     
     <!-- Sound note that fades away -->
     <div class="sound-note" id="sound-note">Sound available with headphones</div>
     
-    <!-- Camera background -->
+    <!-- Camera background (hidden by default) -->
     <video id="camera-feed" autoplay playsinline></video>
     
-    <!-- Solid background for focus mode -->
+    <!-- Solid background (shown by default) -->
     <div id="solid-background"></div>
     
     <!-- p5.js visualization will be attached to this div -->
@@ -450,51 +379,46 @@
     
     <!-- Controls -->
     <div class="controls">
-        <button id="toggle-viz">Camera Mode</button>
+        <button id="toggle-viz">Switch to Camera</button>
     </div>
     
     <script>
         // Global reference to p5 instance
         let p5Instance = null;
         
-        // Visualization mode (0: Camera AR, 1: Focus Mode, 2: Hidden)
+        // Visualization mode (0: Clear View [default], 1: Camera)
         let visualizationMode = 0;
-        const MODE_NAMES = ["Camera Mode", "Clear View", "Hidden"];
+        const MODE_NAMES = ["Clear View Mode", "Camera Mode"];
+        const TOGGLE_TEXT = ["Switch to Camera", "Switch to Clear View"];
 
         // Tutorial state
         let tutorialStep = 0;
         let tutorialShown = false;
         const tutorialSteps = [
             "Tap anywhere to start",
-            "Continue moving to interact directly",
-            "Try Clear View for better visibility"
+            "Continue moving to create connections"
         ];
         
-        // Interaction state
-        let interactionHintTimer = null;
-
-        // Touch tracking for visualization (from Claude code)
+        // Touch tracking
         let lastTouchPosition = {x: 0, y: 0, active: false, timer: 0};
-        
-        // Touch indicator element
         const touchIndicator = document.getElementById('touch-indicator');
         
         // Hand animation configuration
         const handAnimation = {
-            frameCount: 6,         // Number of hand animation frames
-            currentFrame: 0,       // Current frame being displayed
-            loopCount: 0,          // Number of completed loops
-            maxLoops: 3,           // Number of times to loop the animation
-            isPlaying: false,      // Whether animation is currently playing
-            frameDuration: 70,     // Duration each frame displays (slower for mobile)
-            fadeInDuration: 20,    // Fade in duration (ms)
-            fadeOutDuration: 40,   // Fade out duration (ms)
-            opacity: 0,            // Current opacity for fading
-            x: 0,                  // X position of animation
-            y: 0,                  // Y position of animation
-            size: 400,             // Size of hand animation display (larger for mobile)
-            frameImages: [],       // Will hold the loaded image objects
-            debugMode: false       // Disable debug visualization
+            frameCount: 6,
+            currentFrame: 0,
+            loopCount: 0,
+            maxLoops: 3,
+            isPlaying: false,
+            frameDuration: 70,
+            fadeInDuration: 20,
+            fadeOutDuration: 40,
+            opacity: 0,
+            x: 0,
+            y: 0,
+            size: 400,
+            frameImages: [],
+            debugMode: false
         };
         
         // Start the entire experience
@@ -506,48 +430,44 @@
                 startExperience();
             });
             
-            // Set up toggle visualization button handler - FIXING THE BUTTON ISSUE
-            document.getElementById('toggle-viz').addEventListener('click', function(e) {
+            // Set up toggle mode button with multiple event handlers for reliability
+            const toggleBtn = document.getElementById('toggle-viz');
+            
+            // Mouse click
+            toggleBtn.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log("Toggle viz clicked");
                 toggleVisualizationMode();
             });
             
-            // Set up toggle button touch handler like in Claude code
-            document.getElementById('toggle-viz').addEventListener('touchstart', function(e) {
+            // Touch events - attach to multiple touch events for better reliability
+            toggleBtn.addEventListener('touchstart', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                console.log("Toggle viz touched");
-                toggleVisualizationMode();
-                return false;
+                console.log("Toggle button touched");
             }, { passive: false });
             
-            // Set up tutorial handler on the entire hint
-            document.getElementById('tutorial-hint').addEventListener('click', function(e) {
-                console.log("Tutorial hint clicked!");
+            toggleBtn.addEventListener('touchend', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                advanceTutorial();
-            });
-    
+                toggleVisualizationMode();
+            }, { passive: false });
+            
+            // Set up tutorial handler
+            document.getElementById('tutorial-hint').addEventListener('click', advanceTutorial);
             document.getElementById('tutorial-hint').addEventListener('touchend', function(e) {
-                console.log("Tutorial hint touched!");
                 e.preventDefault();
-                e.stopPropagation();
                 advanceTutorial();
             });
             
-            // Disable default touch behaviors like in Claude code
+            // Disable default touch behaviors on the document
             document.addEventListener('touchmove', function(e) {
-                // Allow default only for buttons
                 if (!e.target.closest('button')) {
                     e.preventDefault();
                 }
             }, { passive: false });
             
             document.addEventListener('touchstart', function(e) {
-                // Allow default only for buttons
                 if (!e.target.closest('button')) {
                     e.preventDefault();
                 }
@@ -556,8 +476,8 @@
             // Preload p5 assets in the background
             new p5(replikaSketch, 'visualization-overlay');
         });
-
-        // Show touch indicator at the specified position (from Claude code)
+        
+        // Show touch indicator at the specified position
         function showTouchIndicator(x, y) {
             touchIndicator.style.left = x + 'px';
             touchIndicator.style.top = y + 'px';
@@ -575,13 +495,18 @@
             
             // Show main interface elements
             document.getElementById('loading').style.display = 'flex';
-            document.getElementById('camera-feed').style.display = 'block';
             document.getElementById('visualization-overlay').style.display = 'block';
             document.getElementById('sound-note').style.display = 'block';
+            document.getElementById('mode-indicator').style.display = 'block';
             document.querySelector('.controls').style.display = 'block';
             
-            // Start camera
-            startCamera();
+            // Start camera if needed
+            if (visualizationMode === 1) {
+                startCamera();
+            } else {
+                // Skip camera loading in Clear View mode
+                document.getElementById('loading').style.display = 'none';
+            }
             
             // Fade out sound note after 5 seconds
             setTimeout(function() {
@@ -601,10 +526,6 @@
             document.getElementById('tutorial-text').textContent = tutorialSteps[tutorialStep];
             document.getElementById('tutorial-overlay').classList.add('active');
             tutorialShown = true;
-    
-            // Hide the interaction tips panel completely
-            document.querySelector('.interaction-tips').style.display = 'none';
-    
             console.log("Tutorial shown: Step " + tutorialStep);
          }
         
@@ -621,76 +542,52 @@
             }
         }
         
-        function showInteractionHint(text) {
-            // If tutorial is active, don't show additional hints
-            if (document.getElementById('tutorial-overlay').classList.contains('active')) {
-                return;
-            }
-            
-            // Only show certain important mode change hints, not the "Keep moving" hint
-            if (text.includes("Keep moving")) {
-                return; // Skip this hint
-            }
-            
-            const hint = document.getElementById('interaction-hint');
-            hint.textContent = text;
-            hint.style.opacity = '1';
-            
-            // Clear any existing timer
-            if (interactionHintTimer) {
-                clearTimeout(interactionHintTimer);
-            }
-            
-            // Hide after 3 seconds
-            interactionHintTimer = setTimeout(function() {
-                hint.style.opacity = '0';
-            }, 3000);
-        }
-        
         function toggleVisualizationMode() {
-            console.log("Toggle viz mode called");
+            console.log("Toggling visualization mode");
             
-            // Cycle through modes: Camera (0) -> Focus (1) -> Hidden (2) -> Camera (0)
-            visualizationMode = (visualizationMode + 1) % 3;
+            // Toggle between Clear View (0) and Camera Mode (1)
+            visualizationMode = visualizationMode === 0 ? 1 : 0;
             
             const cameraFeed = document.getElementById('camera-feed');
             const solidBackground = document.getElementById('solid-background');
-            const vizOverlay = document.getElementById('visualization-overlay');
             const toggleButton = document.getElementById('toggle-viz');
+            const modeIndicator = document.getElementById('mode-indicator');
             
             console.log("Switching to mode:", visualizationMode, MODE_NAMES[visualizationMode]);
             
             // Update button text
-            toggleButton.textContent = MODE_NAMES[visualizationMode];
+            toggleButton.textContent = TOGGLE_TEXT[visualizationMode];
+            
+            // Update mode indicator
+            modeIndicator.textContent = MODE_NAMES[visualizationMode];
             
             // Apply mode changes
-            switch(visualizationMode) {
-                case 0: // Camera Mode
+            if (visualizationMode === 1) { // Camera Mode
+                // Start camera if needed
+                if (!cameraFeed.srcObject) {
+                    startCamera();
+                } else {
                     cameraFeed.style.display = 'block';
                     solidBackground.style.display = 'none';
-                    vizOverlay.style.display = 'block';
-                    showInteractionHint("Camera Mode: See patterns in your environment");
-                    break;
-                    
-                case 1: // Focus Mode (solid background)
-                    cameraFeed.style.display = 'none';
-                    solidBackground.style.display = 'block';
-                    vizOverlay.style.display = 'block';
-                    showInteractionHint("Clear View: Focus on pattern connections");
-                    break;
-                    
-                case 2: // Hidden
-                    cameraFeed.style.display = 'block';
-                    solidBackground.style.display = 'none';
-                    vizOverlay.style.display = 'none';
-                    showInteractionHint("Hidden Mode: Visualization paused");
-                    break;
+                }
+            } else { // Clear View Mode
+                cameraFeed.style.display = 'none';
+                solidBackground.style.display = 'block';
             }
+            
+            // Flash the mode indicator to draw attention to it
+            modeIndicator.style.opacity = '1';
+            setTimeout(() => {
+                modeIndicator.style.opacity = '0.8';
+            }, 200);
         }
         
         function startCamera() {
             const video = document.getElementById('camera-feed');
             const loading = document.getElementById('loading');
+            const solidBackground = document.getElementById('solid-background');
+            
+            loading.style.display = 'flex';
             
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
                 navigator.mediaDevices.getUserMedia({ 
@@ -705,6 +602,13 @@
                     video.srcObject = stream;
                     video.onloadedmetadata = function() {
                         loading.style.display = 'none';
+                        
+                        // Only show camera if in camera mode
+                        if (visualizationMode === 1) {
+                            video.style.display = 'block';
+                            solidBackground.style.display = 'none';
+                        }
+                        
                         video.play();
                     };
                 })
@@ -714,31 +618,42 @@
                         <div>
                             <h2>Camera Error</h2>
                             <p>${err.message}</p>
-                            <button onclick="window.location.reload()">Try Again</button>
+                            <p>Switching to Clear View mode</p>
                         </div>
                     `;
-                    // Switch to focus mode automatically if camera fails
-                    visualizationMode = 1;
-                    document.getElementById('toggle-viz').textContent = MODE_NAMES[visualizationMode];
-                    document.getElementById('solid-background').style.display = 'block';
-                    loading.style.display = 'none';
+                    
+                    // Switch to Clear View mode if camera fails
+                    visualizationMode = 0;
+                    document.getElementById('toggle-viz').textContent = TOGGLE_TEXT[visualizationMode];
+                    document.getElementById('mode-indicator').textContent = MODE_NAMES[visualizationMode];
+                    solidBackground.style.display = 'block';
+                    
+                    setTimeout(() => {
+                        loading.style.display = 'none';
+                    }, 2000);
                 });
             } else {
                 loading.innerHTML = `
                     <div>
                         <h2>Camera Not Supported</h2>
                         <p>Your browser does not support camera access.</p>
+                        <p>Using Clear View mode only</p>
                     </div>
                 `;
-                // Switch to focus mode automatically if camera not supported
-                visualizationMode = 1;
-                document.getElementById('toggle-viz').textContent = MODE_NAMES[visualizationMode];
-                document.getElementById('solid-background').style.display = 'block';
-                loading.style.display = 'none';
+                
+                // Switch to Clear View mode if camera not supported
+                visualizationMode = 0;
+                document.getElementById('toggle-viz').textContent = TOGGLE_TEXT[visualizationMode];
+                document.getElementById('mode-indicator').textContent = MODE_NAMES[visualizationMode];
+                solidBackground.style.display = 'block';
+                
+                setTimeout(() => {
+                    loading.style.display = 'none';
+                }, 2000);
             }
         }
         
-        // Create a new p5 instance specifically for the visualization overlay
+        // Create a new p5 instance for the visualization overlay
         const replikaSketch = function(p) {
             // Store a reference to p5 instance
             p5Instance = p;
@@ -774,7 +689,7 @@
                     console.log(`Attempting to load hand${i}.png`);
                     try {
                         const img = p.loadImage(
-                            `hand${i}.png`, // Simple filename in same directory
+                            `hand${i}.png`,
                             function() {
                                 console.log(`Successfully loaded hand${i}.png`);
                             },
@@ -800,7 +715,6 @@
                     console.log("Loading sound...");
                     p.soundFormats('wav');
                     
-                    // Use the exact path based on your repository structure
                     p.interactionSound = p.loadSound('balanced-sound.wav',  
                         function() {
                             console.log("Sound loaded successfully!");
@@ -850,6 +764,9 @@
                     // Adjust hand animation for mobile
                     handAnimation.size = 300; // Larger size for mobile
                 }
+                
+                // Hide loading screen once setup is complete
+                document.getElementById('loading').style.display = 'none';
             };
             
             // Function to start hand animation at specific coordinates
@@ -876,13 +793,13 @@
                 // Adjust for mobile
                 if (isMobile) {
                     handAnimation.size = 300; 
-                    handAnimation.frameDuration = 70; //  Keep mobile fast too
+                    handAnimation.frameDuration = 70;
                 }
 
                 // Make sure nearby bubbles respond to the hand position
                 for (let i = 0; i < spheres.length; i++) {
                     const d = p.dist(x, y, spheres[i].x, spheres[i].y);
-                    if (d < handAnimation.size * 0.6) { // Only affect spheres within the hand area
+                    if (d < handAnimation.size * 0.6) {
                        // Gently push spheres toward the hand center
                        const angle = p.atan2(spheres[i].y - y, spheres[i].x - x);
                        const force = p.map(d, 0, handAnimation.size * 0.6, 0.5, 0.1);
@@ -906,13 +823,13 @@
                 
                 // Handle fade-in
                 if (anim.loopCount === 0 && anim.currentFrame === 0) {
-                    anim.opacity += 1 / (anim.fadeInDuration / 16.67) * 5.0; // 5x faster fade-in
+                    anim.opacity += 1 / (anim.fadeInDuration / 16.67) * 5.0;
                     if (anim.opacity > 1) anim.opacity = 1;
                 }
                 
                 // Handle fade-out
                 if (anim.loopCount >= anim.maxLoops - 1 && anim.currentFrame === anim.frameCount - 1) {
-                    anim.opacity -= 1 / (anim.fadeOutDuration / 16.67) * 3.0; // 3x faster fade-out
+                    anim.opacity -= 1 / (anim.fadeOutDuration / 16.67) * 3.0;
                     if (anim.opacity <= 0) {
                         anim.isPlaying = false;
                         return; // End animation
@@ -923,7 +840,7 @@
                 if (anim.debugMode) {
                     p.push();
                     p.noStroke();
-                    p.fill(255, 0, 0, 100); // Semi-transparent red
+                    p.fill(255, 0, 0, 100);
                     p.ellipse(anim.x, anim.y, 20);
                     p.pop();
                 }
@@ -955,7 +872,7 @@
 
                     // Create a blurred background using multiple overlapping circles with decreasing opacity
                     for (let i = 0; i < 3; i++) {
-                        const blurOpacity = anim.opacity * (80 - i * 20); // Reduce from 150 to 80 base opacity
+                        const blurOpacity = anim.opacity * (80 - i * 20);
                         const blurSize = anim.size * (1.05 + i * 0.04);
                         p.fill(255, 255, 255, blurOpacity);
                         p.ellipse(anim.x, anim.y, blurSize);
@@ -966,11 +883,11 @@
                     p.push();
                     
                     // Set transparency
-                    p.tint(0, 0, 0, Math.min(255, anim.opacity * 950)); // Increased from 800 to 900
+                    p.tint(0, 0, 0, Math.min(255, anim.opacity * 950));
 
                     // Add a stronger glow effect
-                    p.drawingContext.shadowColor = 'rgba(0, 0, 0, 0.9)';  // Black shadow
-                    p.drawingContext.shadowBlur = 40; // Increased from 20 to 40
+                    p.drawingContext.shadowColor = 'rgba(0, 0, 0, 0.9)';
+                    p.drawingContext.shadowBlur = 40;
                     p.drawingContext.shadowOffsetX = 0;
                     p.drawingContext.shadowOffsetY = 0;
         
@@ -978,7 +895,6 @@
                     const img = anim.frameImages[anim.currentFrame];
         
                     // Calculate height while preserving aspect ratio
-                    // Your images are 1829 × 1859 pixels, so aspect ratio is roughly 1.016
                     const aspectRatio = img.height / img.width;
                     const drawHeight = anim.size * aspectRatio;
                     
@@ -992,7 +908,7 @@
                     );
 
                     // Draw a second time with different color to create contrast
-                    p.tint(255, 255, 255, Math.min(255, anim.opacity * 400)); // Add white overlay
+                    p.tint(255, 255, 255, Math.min(255, anim.opacity * 400));
                     p.drawingContext.shadowColor = 'rgba(255, 255, 255, 0.7)';
                     p.drawingContext.shadowBlur = 4;
         
@@ -1012,7 +928,7 @@
                     // Draw a simple circle as fallback
                     p.push();
                     p.noStroke();
-                    p.fill(0, 0, 0, anim.opacity * 255); // Black fallback
+                    p.fill(0, 0, 0, anim.opacity * 255);
                     p.ellipse(anim.x, anim.y, anim.size * 0.5);
                     p.pop();
                 }
@@ -1089,7 +1005,7 @@
                 lastFrameCount = p.frameCount;
                 
                 try {
-                    p.clear(); // Clear with transparency so camera shows through
+                    p.clear(); // Clear with transparency
                     
                     // Make sure we always have enough spheres
                     let spheresAdded = false;
@@ -1553,7 +1469,7 @@
                         // Play hand animation at touch position
                         playHandAnimation(touchX, touchY);
                         
-                        // Show touch indicator (from Claude code)
+                        // Show touch indicator
                         showTouchIndicator(touchX, touchY);
                         
                         // Play sound
@@ -1569,7 +1485,7 @@
             
             p.touchMoved = function() {
                 if (p.touches.length > 0) {
-                    // Get touch coordinates with fallbacks like in Claude code
+                    // Get touch coordinates with fallbacks
                     let touchX, touchY;
                     
                     // Try different ways to get touch coordinates
@@ -1616,7 +1532,7 @@
                             }
                         }
                         
-                        // Show touch indicator (from Claude code)
+                        // Show touch indicator
                         showTouchIndicator(touchX, touchY);
                         
                         if (interacted) {
