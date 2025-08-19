@@ -130,7 +130,7 @@
             height: 100%;
             object-fit: cover;
             z-index: 1;
-            display: none; /* Hidden by default since Clear View is default */
+            display: none; /* Hidden by default */
         }
         
         /* Solid background element */
@@ -142,7 +142,7 @@
             height: 100%;
             background-color: #f0f0f5;
             z-index: 1;
-            display: block; /* Shown by default as Clear View is default */
+            display: block; /* Shown by default */
         }
         
         #visualization-overlay {
@@ -154,31 +154,6 @@
             z-index: 2;
             pointer-events: auto;
             display: none; /* Hidden until landing page dismissed */
-        }
-        
-        .controls {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 10;
-            display: none; /* Hidden until landing page dismissed */
-        }
-        
-        .controls button {
-            background-color: rgba(138, 95, 195, 0.8);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            padding: 10px 20px;
-            margin-left: 10px;
-            font-family: 'Roboto Mono', monospace;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        
-        .controls button:active {
-            transform: scale(0.95);
         }
         
         .loading {
@@ -202,7 +177,7 @@
         
         .sound-note {
             position: fixed;
-            top: 70px;
+            top: 20px;
             left: 20px;
             color: white;
             background-color: rgba(138, 95, 195, 0.8);
@@ -271,25 +246,6 @@
             font-size: 14px;
          }
 
-        /* Mode indicator */
-        .mode-indicator {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(138, 95, 195, 0.8);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-family: 'Roboto Mono', monospace;
-            font-size: 12px;
-            z-index: 5;
-            opacity: 1;
-            transition: opacity 0.3s ease;
-            text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-        }
-
         /* Touch indicator */
         .touch-indicator {
             position: fixed;
@@ -309,15 +265,12 @@
     <!-- Touch indicator -->
     <div id="touch-indicator" class="touch-indicator"></div>
     
-    <!-- Tutorial overlay for first-time users -->
+    <!-- Tutorial overlay that serves as the main UI control -->
     <div id="tutorial-overlay" class="tutorial-overlay">
         <div id="tutorial-hint" class="tutorial-hint">
             <p id="tutorial-text">Tap anywhere to start</p>
         </div>
     </div>
-    
-    <!-- Mode indicator -->
-    <div id="mode-indicator" class="mode-indicator">Clear View Mode</div>
     
     <!-- Landing page -->
     <div id="landing-overlay">
@@ -377,26 +330,17 @@
     <!-- p5.js visualization will be attached to this div -->
     <div id="visualization-overlay"></div>
     
-    <!-- Controls -->
-    <div class="controls">
-        <button id="toggle-viz">Switch to Camera</button>
-    </div>
-    
     <script>
         // Global reference to p5 instance
         let p5Instance = null;
         
-        // Visualization mode (0: Clear View [default], 1: Camera)
-        let visualizationMode = 0;
-        const MODE_NAMES = ["Clear View Mode", "Camera Mode"];
-        const TOGGLE_TEXT = ["Switch to Camera", "Switch to Clear View"];
-
         // Tutorial state
         let tutorialStep = 0;
         let tutorialShown = false;
         const tutorialSteps = [
             "Tap anywhere to start",
-            "Continue moving to create connections"
+            "Continue moving to create connections",
+            "Tap to create new nodes"
         ];
         
         // Touch tracking
@@ -429,29 +373,6 @@
                 e.preventDefault();
                 startExperience();
             });
-            
-            // Set up toggle mode button with multiple event handlers for reliability
-            const toggleBtn = document.getElementById('toggle-viz');
-            
-            // Mouse click
-            toggleBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleVisualizationMode();
-            });
-            
-            // Touch events - attach to multiple touch events for better reliability
-            toggleBtn.addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                console.log("Toggle button touched");
-            }, { passive: false });
-            
-            toggleBtn.addEventListener('touchend', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleVisualizationMode();
-            }, { passive: false });
             
             // Set up tutorial handler
             document.getElementById('tutorial-hint').addEventListener('click', advanceTutorial);
@@ -497,16 +418,11 @@
             document.getElementById('loading').style.display = 'flex';
             document.getElementById('visualization-overlay').style.display = 'block';
             document.getElementById('sound-note').style.display = 'block';
-            document.getElementById('mode-indicator').style.display = 'block';
-            document.querySelector('.controls').style.display = 'block';
             
-            // Start camera if needed
-            if (visualizationMode === 1) {
-                startCamera();
-            } else {
-                // Skip camera loading in Clear View mode
+            // Hide loading after a short delay
+            setTimeout(function() {
                 document.getElementById('loading').style.display = 'none';
-            }
+            }, 1500);
             
             // Fade out sound note after 5 seconds
             setTimeout(function() {
@@ -539,117 +455,6 @@
             } else {
                 document.getElementById('tutorial-overlay').classList.remove('active');
                 console.log("Tutorial completed and hidden");
-            }
-        }
-        
-        function toggleVisualizationMode() {
-            console.log("Toggling visualization mode");
-            
-            // Toggle between Clear View (0) and Camera Mode (1)
-            visualizationMode = visualizationMode === 0 ? 1 : 0;
-            
-            const cameraFeed = document.getElementById('camera-feed');
-            const solidBackground = document.getElementById('solid-background');
-            const toggleButton = document.getElementById('toggle-viz');
-            const modeIndicator = document.getElementById('mode-indicator');
-            
-            console.log("Switching to mode:", visualizationMode, MODE_NAMES[visualizationMode]);
-            
-            // Update button text
-            toggleButton.textContent = TOGGLE_TEXT[visualizationMode];
-            
-            // Update mode indicator
-            modeIndicator.textContent = MODE_NAMES[visualizationMode];
-            
-            // Apply mode changes
-            if (visualizationMode === 1) { // Camera Mode
-                // Start camera if needed
-                if (!cameraFeed.srcObject) {
-                    startCamera();
-                } else {
-                    cameraFeed.style.display = 'block';
-                    solidBackground.style.display = 'none';
-                }
-            } else { // Clear View Mode
-                cameraFeed.style.display = 'none';
-                solidBackground.style.display = 'block';
-            }
-            
-            // Flash the mode indicator to draw attention to it
-            modeIndicator.style.opacity = '1';
-            setTimeout(() => {
-                modeIndicator.style.opacity = '0.8';
-            }, 200);
-        }
-        
-        function startCamera() {
-            const video = document.getElementById('camera-feed');
-            const loading = document.getElementById('loading');
-            const solidBackground = document.getElementById('solid-background');
-            
-            loading.style.display = 'flex';
-            
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: 'environment',
-                        width: { ideal: window.innerWidth },
-                        height: { ideal: window.innerHeight }
-                    },
-                    audio: false
-                })
-                .then(function(stream) {
-                    video.srcObject = stream;
-                    video.onloadedmetadata = function() {
-                        loading.style.display = 'none';
-                        
-                        // Only show camera if in camera mode
-                        if (visualizationMode === 1) {
-                            video.style.display = 'block';
-                            solidBackground.style.display = 'none';
-                        }
-                        
-                        video.play();
-                    };
-                })
-                .catch(function(err) {
-                    console.error('Camera access error:', err);
-                    loading.innerHTML = `
-                        <div>
-                            <h2>Camera Error</h2>
-                            <p>${err.message}</p>
-                            <p>Switching to Clear View mode</p>
-                        </div>
-                    `;
-                    
-                    // Switch to Clear View mode if camera fails
-                    visualizationMode = 0;
-                    document.getElementById('toggle-viz').textContent = TOGGLE_TEXT[visualizationMode];
-                    document.getElementById('mode-indicator').textContent = MODE_NAMES[visualizationMode];
-                    solidBackground.style.display = 'block';
-                    
-                    setTimeout(() => {
-                        loading.style.display = 'none';
-                    }, 2000);
-                });
-            } else {
-                loading.innerHTML = `
-                    <div>
-                        <h2>Camera Not Supported</h2>
-                        <p>Your browser does not support camera access.</p>
-                        <p>Using Clear View mode only</p>
-                    </div>
-                `;
-                
-                // Switch to Clear View mode if camera not supported
-                visualizationMode = 0;
-                document.getElementById('toggle-viz').textContent = TOGGLE_TEXT[visualizationMode];
-                document.getElementById('mode-indicator').textContent = MODE_NAMES[visualizationMode];
-                solidBackground.style.display = 'block';
-                
-                setTimeout(() => {
-                    loading.style.display = 'none';
-                }, 2000);
             }
         }
         
@@ -1292,14 +1097,6 @@
                 }
             }
             
-            // Avoid triggering p5 events when clicking buttons
-            function isClickOnButton(x, y) {
-                const toggleBtn = document.getElementById('toggle-viz');
-                
-                const elem = document.elementFromPoint(x, y);
-                return elem === toggleBtn || elem.closest('.controls') !== null;
-            }
-            
             p.mouseMoved = function() {
                 try {
                     // Find spheres near the mouse
@@ -1341,11 +1138,6 @@
             };
             
             p.mousePressed = function() {
-                // Check if click is on buttons - if so, return early
-                if (isClickOnButton(p.mouseX, p.mouseY)) {
-                    return;
-                }
-                
                 // First ensure audio is initialized on interaction
                 p.userStartAudio();
                 
@@ -1413,11 +1205,6 @@
                     const touchY = p.touches[0].y || p.touches[0].clientY;
                     
                     console.log("Touch detected at:", touchX, touchY);
-                    
-                    // Check if touch is on buttons - if so, return early
-                    if (isClickOnButton(touchX, touchY)) {
-                        return;
-                    }
                     
                     // First ensure audio is initialized on touch
                     p.userStartAudio();
