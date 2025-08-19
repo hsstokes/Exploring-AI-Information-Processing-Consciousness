@@ -209,6 +209,7 @@
             margin-left: 10px;
             font-family: 'Roboto Mono', monospace;
             cursor: pointer;
+            touch-action: none; /* Prevent default touch actions on button */
         }
         
         .loading {
@@ -359,9 +360,26 @@
             text-align: center;
             pointer-events: none;
         }
+
+        /* Touch indicator similar to Claude code */
+        .touch-indicator {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(138, 95, 195, 0.6);
+            pointer-events: none;
+            z-index: 10;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
     </style>
 </head>
 <body>
+    <!-- Touch indicator element (adding from Claude code) -->
+    <div id="touch-indicator" class="touch-indicator"></div>
+
     <!-- Interaction hint that appears during specific interactions -->
     <div id="interaction-hint" class="interaction-hint">Keep moving to interact directly</div>
     
@@ -454,6 +472,12 @@
         
         // Interaction state
         let interactionHintTimer = null;
+
+        // Touch tracking for visualization (from Claude code)
+        let lastTouchPosition = {x: 0, y: 0, active: false, timer: 0};
+        
+        // Touch indicator element
+        const touchIndicator = document.getElementById('touch-indicator');
         
         // Hand animation configuration
         const handAnimation = {
@@ -482,14 +506,22 @@
                 startExperience();
             });
             
-            // Set up toggle visualization button handler with both click and touch events
-            document.getElementById('toggle-viz').addEventListener('click', toggleVisualizationMode);
-            document.getElementById('toggle-viz').addEventListener('touchstart', function(e) {
-                console.log("Toggle button touched");
-                e.preventDefault(); // Prevent default touch behavior
-                e.stopPropagation(); // Stop event from bubbling
+            // Set up toggle visualization button handler - FIXING THE BUTTON ISSUE
+            document.getElementById('toggle-viz').addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("Toggle viz clicked");
                 toggleVisualizationMode();
             });
+            
+            // Set up toggle button touch handler like in Claude code
+            document.getElementById('toggle-viz').addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                console.log("Toggle viz touched");
+                toggleVisualizationMode();
+                return false;
+            }, { passive: false });
             
             // Set up tutorial handler on the entire hint
             document.getElementById('tutorial-hint').addEventListener('click', function(e) {
@@ -499,16 +531,43 @@
                 advanceTutorial();
             });
     
-           document.getElementById('tutorial-hint').addEventListener('touchend', function(e) {
+            document.getElementById('tutorial-hint').addEventListener('touchend', function(e) {
                 console.log("Tutorial hint touched!");
                 e.preventDefault();
                 e.stopPropagation();
                 advanceTutorial();
             });
             
+            // Disable default touch behaviors like in Claude code
+            document.addEventListener('touchmove', function(e) {
+                // Allow default only for buttons
+                if (!e.target.closest('button')) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            document.addEventListener('touchstart', function(e) {
+                // Allow default only for buttons
+                if (!e.target.closest('button')) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
             // Preload p5 assets in the background
             new p5(replikaSketch, 'visualization-overlay');
         });
+
+        // Show touch indicator at the specified position (from Claude code)
+        function showTouchIndicator(x, y) {
+            touchIndicator.style.left = x + 'px';
+            touchIndicator.style.top = y + 'px';
+            touchIndicator.style.opacity = '1';
+            
+            // Hide indicator after a short delay
+            setTimeout(() => {
+                touchIndicator.style.opacity = '0';
+            }, 300);
+        }
         
         function startExperience() {
             // Hide landing page
@@ -836,13 +895,6 @@
                  }
                 
                 console.log("Starting new animation at", x, y, "with size", handAnimation.size);
-                
-                // Remove the hint display after animation
-                /* Removed hint display
-                setTimeout(() => {
-                    showInteractionHint("Keep moving to interact directly");
-                }, 1000);
-                */
                 
                 // Start animation loop
                 updateHandAnimation();
@@ -1364,15 +1416,6 @@
                         }
                     }
                     
-                    // Remove "Keep moving" hint when hand animation is playing
-                    /* 
-                    if (interacted && handAnimation.isPlaying && handAnimation.loopCount >= 1) {
-                        if (!document.getElementById('tutorial-overlay').classList.contains('active')) {
-                            showInteractionHint("Continue moving to interact directly");
-                        }
-                    }
-                    */
-                    
                     if (interacted) {
                         return false; // Prevent default
                     }
@@ -1510,6 +1553,9 @@
                         // Play hand animation at touch position
                         playHandAnimation(touchX, touchY);
                         
+                        // Show touch indicator (from Claude code)
+                        showTouchIndicator(touchX, touchY);
+                        
                         // Play sound
                         tryPlaySound();
                         
@@ -1523,8 +1569,21 @@
             
             p.touchMoved = function() {
                 if (p.touches.length > 0) {
-                    const touchX = p.touches[0].x || p.touches[0].clientX;
-                    const touchY = p.touches[0].y || p.touches[0].clientY;
+                    // Get touch coordinates with fallbacks like in Claude code
+                    let touchX, touchY;
+                    
+                    // Try different ways to get touch coordinates
+                    if (p.touches[0].clientX !== undefined) {
+                        touchX = p.touches[0].clientX;
+                        touchY = p.touches[0].clientY;
+                    } else if (p.touches[0].x !== undefined) {
+                        touchX = p.touches[0].x;
+                        touchY = p.touches[0].y;
+                    } else {
+                        // Use the canvas-relative touch position
+                        touchX = p.touchX;
+                        touchY = p.touchY;
+                    }
                     
                     try {
                         // Find spheres near the touch
@@ -1557,14 +1616,8 @@
                             }
                         }
                         
-                        // Remove "Keep moving" hint when hand animation is playing
-                        /*
-                        if (interacted && handAnimation.isPlaying && handAnimation.loopCount >= 1) {
-                            if (!document.getElementById('tutorial-overlay').classList.contains('active')) {
-                                showInteractionHint("Continue moving to interact directly");
-                            }
-                        }
-                        */
+                        // Show touch indicator (from Claude code)
+                        showTouchIndicator(touchX, touchY);
                         
                         if (interacted) {
                             return false; // Prevent default
