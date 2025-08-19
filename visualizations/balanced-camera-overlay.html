@@ -482,11 +482,12 @@
                 startExperience();
             });
             
-            // Set up toggle visualization button handler
+            // Set up toggle visualization button handler with both click and touch events
             document.getElementById('toggle-viz').addEventListener('click', toggleVisualizationMode);
-            document.getElementById('toggle-viz').addEventListener('touchend', function(e) {
+            document.getElementById('toggle-viz').addEventListener('touchstart', function(e) {
                 console.log("Toggle button touched");
-                e.preventDefault();
+                e.preventDefault(); // Prevent default touch behavior
+                e.stopPropagation(); // Stop event from bubbling
                 toggleVisualizationMode();
             });
             
@@ -565,6 +566,11 @@
             // If tutorial is active, don't show additional hints
             if (document.getElementById('tutorial-overlay').classList.contains('active')) {
                 return;
+            }
+            
+            // Only show certain important mode change hints, not the "Keep moving" hint
+            if (text.includes("Keep moving")) {
+                return; // Skip this hint
             }
             
             const hint = document.getElementById('interaction-hint');
@@ -831,10 +837,12 @@
                 
                 console.log("Starting new animation at", x, y, "with size", handAnimation.size);
                 
-                // Show interaction hint after the animation starts
+                // Remove the hint display after animation
+                /* Removed hint display
                 setTimeout(() => {
                     showInteractionHint("Keep moving to interact directly");
                 }, 1000);
+                */
                 
                 // Start animation loop
                 updateHandAnimation();
@@ -1356,13 +1364,14 @@
                         }
                     }
                     
-                    // If we're moving and the hand animation is playing for a while,
-                    // show a hint about direct interaction - only if tutorial is not active
+                    // Remove "Keep moving" hint when hand animation is playing
+                    /* 
                     if (interacted && handAnimation.isPlaying && handAnimation.loopCount >= 1) {
                         if (!document.getElementById('tutorial-overlay').classList.contains('active')) {
                             showInteractionHint("Continue moving to interact directly");
                         }
                     }
+                    */
                     
                     if (interacted) {
                         return false; // Prevent default
@@ -1548,13 +1557,14 @@
                             }
                         }
                         
-                        // If we're moving and the hand animation is playing for a while,
-                        // show a hint about direct interaction - only if tutorial is not active
+                        // Remove "Keep moving" hint when hand animation is playing
+                        /*
                         if (interacted && handAnimation.isPlaying && handAnimation.loopCount >= 1) {
                             if (!document.getElementById('tutorial-overlay').classList.contains('active')) {
                                 showInteractionHint("Continue moving to interact directly");
                             }
                         }
+                        */
                         
                         if (interacted) {
                             return false; // Prevent default
