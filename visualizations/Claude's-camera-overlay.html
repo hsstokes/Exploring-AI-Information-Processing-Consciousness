@@ -17,7 +17,7 @@
             background-color: #f5f5f7;
             font-family: 'Roboto Mono', monospace;
             -webkit-text-size-adjust: 100%;
-            touch-action: none; /* Prevent browser default touch actions */
+            touch-action: none;
         }
         
         /* Landing page overlay */
@@ -153,18 +153,6 @@
             transform: rotate(45deg);
         }
         
-        /* Main visualization styles */
-        #camera-feed {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: 1;
-            display: none; /* Hidden until landing page dismissed */
-        }
-        
         /* Solid background element */
         #solid-background {
             position: fixed;
@@ -174,7 +162,7 @@
             height: 100%;
             background-color: rgb(245, 248, 250);
             z-index: 1;
-            display: none; /* Hidden initially */
+            display: block; /* Shown by default */
         }
         
         #visualization-overlay {
@@ -186,75 +174,6 @@
             z-index: 2;
             pointer-events: auto;
             display: none; /* Hidden until landing page dismissed */
-        }
-        
-        .interaction-tips {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            right: 20px;
-            background-color: rgba(255, 255, 255, 0.8);
-            border-radius: 8px;
-            padding: 15px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(32, 178, 170, 0.3);
-            z-index: 3;
-            max-width: calc(100% - 40px);
-            display: none; /* Hidden until landing page dismissed */
-        }
-        
-        .interaction-tips h3 {
-            margin-top: 0;
-            color: #20B2AA;
-            font-size: 14px;
-            font-family: 'Orator Std', 'Courier New', monospace;
-        }
-        
-        .interaction-tips ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-        
-        .interaction-tips li {
-            margin-bottom: 6px;
-            font-size: 10px;
-            color: #555555;
-            font-family: 'Orator Std', 'Courier New', monospace;
-            line-height: 1.3;
-            word-wrap: break-word;
-        }
-        
-        .controls {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 3;
-            display: none; /* Hidden until landing page dismissed */
-        }
-        
-        .controls button {
-            background-color: rgba(32, 178, 170, 0.8);
-            color: white;
-            border: none;
-            border-radius: 30px;
-            padding: 10px 20px;
-            margin-left: 10px;
-            font-family: 'Orator Std', 'Courier New', monospace;
-            cursor: pointer;
-        }
-        
-        .mode-indicator {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            background-color: rgba(32, 178, 170, 0.8);
-            color: white;
-            border-radius: 30px;
-            padding: 8px 16px;
-            font-family: 'Orator Std', 'Courier New', monospace;
-            font-size: 12px;
-            z-index: 4;
-            display: none;
         }
         
         .loading {
@@ -269,19 +188,19 @@
             justify-content: center;
             align-items: center;
             z-index: 999;
-            font-family: 'Orator Std', 'Courier New', monospace;
+            font-family: 'Roboto Mono', monospace;
             display: none; /* Hidden until landing page dismissed */
         }
         
         .sound-note {
             position: fixed;
-            top: 70px;
+            top: 20px;
             left: 20px;
             color: white;
             background-color: rgba(32, 178, 170, 0.8);
             padding: 10px 20px;
             border-radius: 30px;
-            font-family: 'Orator Std', 'Courier New', monospace;
+            font-family: 'Roboto Mono', monospace;
             font-size: 12px;
             z-index: 4;
             opacity: 1;
@@ -292,6 +211,57 @@
         .sound-note.fade {
             opacity: 0;
         }
+        
+        /* Tutorial overlay */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 9000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            padding-bottom: 80px;
+        }
+        
+        .tutorial-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .tutorial-hint {
+            background-color: rgba(32, 178, 170, 0.9);
+            padding: 12px 20px;
+            border-radius: 30px;
+            max-width: 85%;
+            text-align: center;
+            margin-bottom: 0;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            animation: pulse 2s infinite;
+         }
+
+         @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+         }
+
+         .tutorial-hint p {
+            margin: 0;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 14px;
+         }
         
         /* Touch indicator */
         .touch-indicator {
@@ -311,6 +281,13 @@
 <body>
     <!-- Touch indicator element -->
     <div id="touch-indicator" class="touch-indicator"></div>
+    
+    <!-- Tutorial overlay -->
+    <div id="tutorial-overlay" class="tutorial-overlay">
+        <div id="tutorial-hint" class="tutorial-hint">
+            <p id="tutorial-text">Tap anywhere to start</p>
+        </div>
+    </div>
     
     <!-- Landing page -->
     <div id="landing-overlay">
@@ -334,59 +311,43 @@
             </div>
             
             <div class="description">
-                <em>Tap the button below to activate your camera and explore the visualization.</em>
+                <em>Tap the button below to explore the visualization.</em>
             </div>
             
             <button id="start-button" class="button">BEGIN INTERACTION</button>
         </div>
     </div>
     
-    <!-- Loading screen (shown after landing page) -->
+    <!-- Loading screen -->
     <div class="loading" id="loading">
         <div>
-            <h2>Starting Camera...</h2>
-            <p>Please allow camera access when prompted</p>
+            <h2>Loading...</h2>
+            <p>Preparing visualization</p>
         </div>
     </div>
     
     <!-- Sound note that fades away -->
     <div class="sound-note" id="sound-note">Sound available with headphones</div>
     
-    <!-- Mode indicator -->
-    <div class="mode-indicator" id="mode-indicator">Camera Mode</div>
-    
-    <!-- Camera background -->
-    <video id="camera-feed" autoplay playsinline></video>
-    
-    <!-- Solid background for focus mode -->
+    <!-- Solid background (shown by default) -->
     <div id="solid-background"></div>
     
     <!-- p5.js visualization will be attached to this div -->
     <div id="visualization-overlay"></div>
     
-    <!-- Interaction tips -->
-    <div class="interaction-tips">
-        <h3>Interact with the Visualization:</h3>
-        <ul>
-            <li><strong>Tap anywhere:</strong> Trigger evaluation mode and show hand gesture</li>
-            <li><strong>Move finger/mouse:</strong> Attract nearby polygons</li>
-            <li><strong>Toggle button:</strong> Switch between camera/focus/hidden modes</li>
-        </ul>
-    </div>
-    
-    <!-- Controls -->
-    <div class="controls">
-        <button id="toggle-viz">Camera Mode</button>
-    </div>
-    
     <script>
         // Global reference to p5 instance
         let p5Instance = null;
         
-        // Visualization mode (0: Camera AR, 1: Focus Mode, 2: Hidden)
-        let visualizationMode = 0;
-        const MODE_NAMES = ["Camera Mode", "Focus Mode", "Hidden"];
-
+        // Tutorial state
+        let tutorialStep = 0;
+        let tutorialShown = false;
+        const tutorialSteps = [
+            "Tap anywhere to start",
+            "Continue moving to influence polygons",
+            "Tap to trigger evaluation mode"
+        ];
+        
         // Touch tracking for visualization
         let lastTouchPosition = {x: 0, y: 0, active: false, timer: 0};
         
@@ -395,20 +356,20 @@
 
         // Hand animation configuration
         const handAnimation = {
-            frameCount: 6,         // Number of hand animation frames
-            currentFrame: 0,       // Current frame being displayed
-            loopCount: 0,          // Number of completed loops
-            maxLoops: 3,           // Number of times to loop the animation
-            isPlaying: false,      // Whether animation is currently playing
-            frameDuration: 70,     // Duration each frame displays
-            fadeInDuration: 20,    // Fade in duration (ms)
-            fadeOutDuration: 40,   // Fade out duration (ms)
-            opacity: 0,            // Current opacity for fading
-            x: 0,                  // X position of animation
-            y: 0,                  // Y position of animation
-            size: 400,             // Size of hand animation display
-            frameImages: [],       // Will hold the loaded image objects
-            debugMode: false       // Enable debug visualization
+            frameCount: 6,
+            currentFrame: 0,
+            loopCount: 0,
+            maxLoops: 3,
+            isPlaying: false,
+            frameDuration: 70,
+            fadeInDuration: 20,
+            fadeOutDuration: 40,
+            opacity: 0,
+            x: 0,
+            y: 0,
+            size: 400,
+            frameImages: [],
+            debugMode: false
         };
         
         // Start the entire experience
@@ -420,16 +381,21 @@
                 startExperience();
             });
             
-            // Set up toggle visualization button handler
-            document.getElementById('toggle-viz').addEventListener('click', toggleVisualizationMode);
-            
-            // Disable default touch behaviors
-            document.addEventListener('touchmove', function(e) {
+            // Set up tutorial handler
+            document.getElementById('tutorial-hint').addEventListener('click', advanceTutorial);
+            document.getElementById('tutorial-hint').addEventListener('touchend', function(e) {
                 e.preventDefault();
+                advanceTutorial();
+            });
+            
+            // Disable default touch behaviors on the document
+            document.addEventListener('touchmove', function(e) {
+                if (!e.target.closest('button')) {
+                    e.preventDefault();
+                }
             }, { passive: false });
             
             document.addEventListener('touchstart', function(e) {
-                // Allow default only for buttons
                 if (!e.target.closest('button')) {
                     e.preventDefault();
                 }
@@ -445,55 +411,45 @@
             
             // Show main interface elements
             document.getElementById('loading').style.display = 'flex';
-            document.getElementById('camera-feed').style.display = 'block';
             document.getElementById('visualization-overlay').style.display = 'block';
             document.getElementById('sound-note').style.display = 'block';
-            document.getElementById('mode-indicator').style.display = 'block';
-            document.querySelector('.interaction-tips').style.display = 'block';
-            document.querySelector('.controls').style.display = 'block';
             
-            // Start camera
-            startCamera();
+            // Hide loading screen after a delay
+            setTimeout(function() {
+                document.getElementById('loading').style.display = 'none';
+            }, 1500);
             
             // Fade out sound note after 5 seconds
             setTimeout(function() {
                 document.getElementById('sound-note').classList.add('fade');
             }, 5000);
+            
+            // Show tutorial after a short delay
+            setTimeout(function() {
+                if (!tutorialShown) {
+                    showTutorial();
+                }
+            }, 2000);
         }
         
-        function toggleVisualizationMode() {
-            // Cycle through modes: Camera (0) -> Focus (1) -> Hidden (2) -> Camera (0)
-            visualizationMode = (visualizationMode + 1) % 3;
+        function showTutorial() {
+            tutorialStep = 0;
+            document.getElementById('tutorial-text').textContent = tutorialSteps[tutorialStep];
+            document.getElementById('tutorial-overlay').classList.add('active');
+            tutorialShown = true;
+            console.log("Tutorial shown: Step " + tutorialStep);
+        }
+        
+        function advanceTutorial() {
+            console.log("Advancing tutorial from step " + tutorialStep);
             
-            const cameraFeed = document.getElementById('camera-feed');
-            const solidBackground = document.getElementById('solid-background');
-            const vizOverlay = document.getElementById('visualization-overlay');
-            const toggleButton = document.getElementById('toggle-viz');
-            const modeIndicator = document.getElementById('mode-indicator');
-            
-            // Update button and indicator text
-            toggleButton.textContent = MODE_NAMES[visualizationMode];
-            modeIndicator.textContent = MODE_NAMES[visualizationMode];
-            
-            // Apply mode changes
-            switch(visualizationMode) {
-                case 0: // Camera Mode
-                    cameraFeed.style.display = 'block';
-                    solidBackground.style.display = 'none';
-                    vizOverlay.style.display = 'block';
-                    break;
-                    
-                case 1: // Focus Mode (solid background)
-                    cameraFeed.style.display = 'none';
-                    solidBackground.style.display = 'block';
-                    vizOverlay.style.display = 'block';
-                    break;
-                    
-                case 2: // Hidden
-                    cameraFeed.style.display = 'block';
-                    solidBackground.style.display = 'none';
-                    vizOverlay.style.display = 'none';
-                    break;
+            tutorialStep++;
+            if (tutorialStep < tutorialSteps.length) {
+                document.getElementById('tutorial-text').textContent = tutorialSteps[tutorialStep];
+                console.log("Advanced to step " + tutorialStep + ": " + tutorialSteps[tutorialStep]);
+            } else {
+                document.getElementById('tutorial-overlay').classList.remove('active');
+                console.log("Tutorial completed and hidden");
             }
         }
         
@@ -507,46 +463,6 @@
             setTimeout(() => {
                 touchIndicator.style.opacity = '0';
             }, 300);
-        }
-        
-        function startCamera() {
-            const video = document.getElementById('camera-feed');
-            const loading = document.getElementById('loading');
-            
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: 'environment',
-                        width: { ideal: window.innerWidth },
-                        height: { ideal: window.innerHeight }
-                    },
-                    audio: false
-                })
-                .then(function(stream) {
-                    video.srcObject = stream;
-                    video.onloadedmetadata = function() {
-                        loading.style.display = 'none';
-                        video.play();
-                    };
-                })
-                .catch(function(err) {
-                    console.error('Camera access error:', err);
-                    loading.innerHTML = `
-                        <div>
-                            <h2>Camera Error</h2>
-                            <p>${err.message}</p>
-                            <button onclick="window.location.reload()">Try Again</button>
-                        </div>
-                    `;
-                });
-            } else {
-                loading.innerHTML = `
-                    <div>
-                        <h2>Camera Not Supported</h2>
-                        <p>Your browser does not support camera access.</p>
-                    </div>
-                `;
-            }
         }
         
         // Create a new p5 instance specifically for the visualization overlay
@@ -592,7 +508,7 @@
                     console.log(`Attempting to load claude-hand${i}.png`);
                     try {
                         const img = p.loadImage(
-                            `claude-hand${i}.png`, // Different filename from Replika's hand images
+                            `claude-hand${i}.png`,
                             function() {
                                 console.log(`Successfully loaded claude-hand${i}.png`);
                             },
@@ -675,6 +591,9 @@
                     // Adjust hand animation for mobile
                     handAnimation.size = 300; // Larger size for mobile
                 }
+                
+                // Hide loading screen once setup is complete
+                document.getElementById('loading').style.display = 'none';
             };
             
             // Function to start hand animation at specific coordinates
@@ -758,12 +677,10 @@
                 // Advance to next frame based on timing
                 setTimeout(() => {
                     anim.currentFrame = (anim.currentFrame + 1) % anim.frameCount;
-                    console.log("Animation frame advanced to", anim.currentFrame);
                     
                     // Track completed loops
                     if (anim.currentFrame === 0) {
                         anim.loopCount++;
-                        console.log("Animation loop completed:", anim.loopCount);
                     }
                     
                     // Continue animation
@@ -1276,33 +1193,17 @@
                 }
             }
             
-            // Avoid triggering p5 events when clicking buttons
-            function isClickOnButton(x, y) {
-                const toggleBtn = document.getElementById('toggle-viz');
-                
-                const elem = document.elementFromPoint(x, y);
-                return elem === toggleBtn || elem.closest('.controls') !== null;
-            }
-            
             p.mouseMoved = function() {
                 try {
                     // Find polygons near the mouse for attraction effect
-                    let interacted = attractPolygonsToPoint(p.mouseX, p.mouseY, 200, 0.15);
-                    
-                    if (interacted) {
-                        return false; // Prevent default
-                    }
+                    attractPolygonsToPoint(p.mouseX, p.mouseY, 200, 0.15);
+                    return false; // Prevent default
                 } catch (error) {
                     console.error("Error in mouseMoved:", error);
                 }
             };
             
             p.mousePressed = function() {
-                // Check if click is on buttons - if so, return early
-                if (isClickOnButton(p.mouseX, p.mouseY)) {
-                    return;
-                }
-                
                 // First ensure audio is initialized on interaction
                 p.userStartAudio();
                 
@@ -1332,11 +1233,6 @@
                     
                     console.log("Touch detected at:", touchX, touchY);
                     
-                    // Check if touch is on buttons - if so, return early
-                    if (isClickOnButton(touchX, touchY)) {
-                        return;
-                    }
-                    
                     // First ensure audio is initialized on touch
                     p.userStartAudio();
                     
@@ -1349,6 +1245,9 @@
                         
                         // Play hand animation at touch position
                         playHandAnimation(touchX, touchY);
+                        
+                        // Show touch indicator
+                        showTouchIndicator(touchX, touchY);
                         
                         // Play sound
                         tryPlaySound();
@@ -1377,8 +1276,6 @@
                         touchY = p.touchY;
                     }
 
-                    console.log("Touch moved:", touchX, touchY);
-                    
                     // Show visual touch indicator both in p5 and with DOM element
                     lastTouchPosition = {x: touchX, y: touchY, active: true, timer: 0};
                     showTouchIndicator(touchX, touchY);
