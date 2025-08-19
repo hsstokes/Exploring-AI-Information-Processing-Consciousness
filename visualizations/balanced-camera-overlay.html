@@ -272,14 +272,15 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.1);
+            background-color: rgba(0, 0, 0, 0); /* Make background completely transparent */
             display: flex;
             justify-content: center;
-            align-items: flex-end;
+            align-items: flex-end; /* Position at bottom */
             z-index: 9000;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.5s ease;
+            padding-bottom: 80px; /* Increase from 30px to 80px to position lower */
         }
         
         .tutorial-overlay.active {
@@ -289,21 +290,28 @@
 
         .tutorial-hint {
             background-color: rgba(138, 95, 195, 0.9); /* More opaque */
-            padding: 15px 25px;
+            padding: 12px 20px;
             border-radius: 30px;
-            max-width: 80%;
+            max-width: 85%;
             text-align: center;
-            margin-bottom: 120px;
+            margin-bottom: 0; /* Remove the margin-bottom since we're using padding-bottom on the overlay */
             color: white;
             display: flex;
-            flex-direction: row; /* Ensure horizontal layout */
             align-items: center;
-            justify-content: space-between; /* Separate text and button */
+            justify-content: center; /* Center the text */
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            cursor: pointer; /* Make the entire hint clickable */
+            animation: pulse 2s infinite; /* Add a subtle pulsing animation */
+         }
+
+         @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
          }
 
          .tutorial-hint p {
-            margin: 0 15px 0 0;
+            margin: 0;
             font-family: 'Roboto Mono', monospace;
             font-size: 14px;
          }
@@ -373,9 +381,8 @@
     
     <!-- Tutorial overlay for first-time users -->
     <div id="tutorial-overlay" class="tutorial-overlay">
-        <div class="tutorial-hint">
+        <div id="tutorial-hint" class="tutorial-hint">
             <p id="tutorial-text">Tap anywhere to start</p>
-            <button id="tutorial-next">Got it</button>
         </div>
     </div>
     
@@ -495,9 +502,16 @@
             // Set up toggle visualization button handler
             document.getElementById('toggle-viz').addEventListener('click', toggleVisualizationMode);
             
-            // Set up tutorial handlers
-            document.getElementById('tutorial-next').addEventListener('click', function(e) {
-                console.log("Got it button touched!");
+            // Set up tutorial handler on the entire hint
+            document.getElementById('tutorial-hint').addEventListener('click', function(e) {
+                console.log("Tutorial hint clicked!");
+                e.preventDefault();
+                e.stopPropagation();
+                advanceTutorial();
+            });
+    
+           document.getElementById('tutorial-hint').addEventListener('touchend', function(e) {
+                console.log("Tutorial hint touched!");
                 e.preventDefault();
                 e.stopPropagation();
                 advanceTutorial();
