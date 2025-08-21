@@ -1,0 +1,2027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Gemini - Pragmatic Problem-Solving</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500&display=swap');
+        
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #f5f5f7;
+            font-family: 'Roboto Mono', monospace;
+            -webkit-text-size-adjust: 100%;
+            touch-action: none;
+        }
+        
+        /* Landing page overlay */
+        #landing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(245, 245, 247, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            box-sizing: border-box;
+            padding: 20px;
+        }
+        
+        .grid-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: linear-gradient(#445878 1px, transparent 1px),
+                              linear-gradient(90deg, #445878 1px, transparent 1px),
+                              linear-gradient(rgba(68, 88, 120, 0.3) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(68, 88, 120, 0.3) 1px, transparent 1px);
+            background-size: 20px 20px,
+                             20px 20px,
+                             5px 5px,
+                             5px 5px;
+            z-index: -1;
+        }
+        
+        .content {
+            max-width: 500px;
+            padding: 25px;
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        
+        .title {
+            font-size: 18px;
+            margin: 0 0 15px 0;
+            color: #333;
+            letter-spacing: 1px;
+        }
+        
+        .description {
+            font-size: 13px;
+            line-height: 1.4;
+            margin-bottom: 20px;
+            color: #555;
+        }
+        
+        .button {
+            padding: 12px 24px;
+            font-size: 16px;
+            background-color: #445878;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Roboto Mono', monospace;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+            -webkit-tap-highlight-color: rgba(0,0,0,0);
+            touch-action: manipulation;
+            margin: 15px 0 5px 0;
+            display: inline-block;
+            text-decoration: none;
+        }
+        
+        .button:hover {
+            background-color: #374965;
+            transform: translateY(-2px);
+        }
+        
+        .button:active {
+            transform: scale(0.98);
+        }
+        
+        .gesture-container {
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .gesture-outline {
+            width: 80px;
+            height: 80px;
+            border: 2px solid #445878;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0.8;
+        }
+        
+        /* Abstract representation of a polygon/sphere concept */
+        .gesture-icon {
+            width: 50px;
+            height: 50px;
+            position: relative;
+        }
+        
+        .gesture-icon::before,
+        .gesture-icon::after {
+            content: "";
+            position: absolute;
+            background-color: #445878;
+        }
+        
+        .gesture-icon::before {
+            width: 30px;
+            height: 30px;
+            top: 10px;
+            left: 10px;
+            border-radius: 0;
+            opacity: 0.7;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        
+        .gesture-icon::after {
+            width: 15px;
+            height: 15px;
+            top: 5px;
+            left: 25px;
+            border-radius: 0;
+            transform: rotate(45deg);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        
+        /* Solid background element */
+        #solid-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #EAECEF;
+            z-index: 1;
+            display: block; /* Shown by default */
+        }
+        
+        #visualization-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: auto;
+            display: none; /* Hidden until landing page dismissed */
+        }
+        
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            font-family: 'Roboto Mono', monospace;
+            display: none; /* Hidden until landing page dismissed */
+        }
+        
+        .sound-note {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background-color: rgba(68, 88, 120, 0.8);
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 12px;
+            z-index: 4;
+            opacity: 1;
+            transition: opacity 2s ease-in-out;
+            display: none; /* Hidden until landing page dismissed */
+        }
+        
+        .sound-note.fade {
+            opacity: 0;
+        }
+        
+        /* Tutorial overlay */
+        .tutorial-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0);
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            z-index: 9000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+            padding-bottom: 80px;
+        }
+        
+        .tutorial-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .tutorial-hint {
+            background-color: rgba(68, 88, 120, 0.9);
+            padding: 12px 20px;
+            border-radius: 30px;
+            max-width: 85%;
+            text-align: center;
+            margin-bottom: 0;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            animation: pulse 2s infinite;
+         }
+
+         @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+         }
+
+         .tutorial-hint p {
+            margin: 0;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 14px;
+         }
+        
+        /* Touch indicator */
+        .touch-indicator {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: rgba(68, 88, 120, 0.6);
+            pointer-events: none;
+            z-index: 10;
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Touch indicator element -->
+    <div id="touch-indicator" class="touch-indicator"></div>
+    
+    <!-- Tutorial overlay -->
+    <div id="tutorial-overlay" class="tutorial-overlay">
+        <div id="tutorial-hint" class="tutorial-hint">
+            <p id="tutorial-text">Tap anywhere to start</p>
+        </div>
+    </div>
+    
+    <!-- Landing page -->
+    <div id="landing-overlay">
+        <div class="grid-background"></div>
+        
+        <div class="content">
+            <div class="gesture-container">
+                <div class="gesture-outline">
+                    <div class="gesture-icon"></div>
+                </div>
+            </div>
+            
+            <div class="title">Gemini: Pragmatic Problem-Solving</div>
+            
+            <div class="description">
+                Observe Gemini's methodical information processing system. This visualization demonstrates how Gemini analyzes problems through a structured framework of interlocking hexagons, creating logical pathways to practical solutions.
+            </div>
+            
+            <div class="description">
+                Through this interactive experience, you'll witness Gemini's systematic approach to gathering, organizing and synthesizing information—prioritizing efficiency and actionable insights over theoretical exploration.
+            </div>
+            
+            <div class="description">
+                <em>Tap the button below to explore the visualization.</em>
+            </div>
+            
+            <button id="start-button" class="button">BEGIN INTERACTION</button>
+        </div>
+    </div>
+    
+    <!-- Loading screen -->
+    <div class="loading" id="loading">
+        <div>
+            <h2>Loading...</h2>
+            <p>Preparing visualization</p>
+        </div>
+    </div>
+    
+    <!-- Sound note that fades away -->
+    <div class="sound-note" id="sound-note">Sound available with headphones</div>
+    
+    <!-- Solid background (shown by default) -->
+    <div id="solid-background"></div>
+    
+    <!-- p5.js visualization will be attached to this div -->
+    <div id="visualization-overlay"></div>
+    
+    <script>
+        // Global reference to p5 instance
+        let p5Instance = null;
+        
+        // Tutorial state
+        let tutorialStep = 0;
+        let tutorialShown = false;
+        const tutorialSteps = [
+            "Tap anywhere to start",
+            "Drag to influence hexagons",
+            "Tap to trigger processing mode"
+        ];
+        
+        // Touch tracking for visualization
+        let lastTouchPosition = {x: 0, y: 0, active: false, timer: 0};
+        
+        // Touch indicator element
+        const touchIndicator = document.getElementById('touch-indicator');
+
+        // Hand animation configuration
+        const handAnimation = {
+            frameCount: 6,
+            currentFrame: 0,
+            loopCount: 0,
+            maxLoops: 3,
+            isPlaying: false,
+            frameDuration: 70,
+            fadeInDuration: 20,
+            fadeOutDuration: 40,
+            opacity: 0,
+            x: 0,
+            y: 0,
+            size: 400,
+            frameImages: [],
+            debugMode: false
+        };
+        
+        // Start the entire experience
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up the landing page button
+            document.getElementById('start-button').addEventListener('click', startExperience);
+            document.getElementById('start-button').addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                startExperience();
+            });
+            
+            // Set up tutorial handler
+            document.getElementById('tutorial-hint').addEventListener('click', advanceTutorial);
+            document.getElementById('tutorial-hint').addEventListener('touchend', function(e) {
+                e.preventDefault();
+                advanceTutorial();
+            });
+            
+            // Disable default touch behaviors on the document
+            document.addEventListener('touchmove', function(e) {
+                if (!e.target.closest('button')) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            document.addEventListener('touchstart', function(e) {
+                if (!e.target.closest('button')) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            // Preload p5 assets in the background
+            new p5(geminiSketch, 'visualization-overlay');
+        });
+        
+        function startExperience() {
+            // Hide landing page
+            document.getElementById('landing-overlay').style.display = 'none';
+            
+            // Show main interface elements
+            document.getElementById('loading').style.display = 'flex';
+            document.getElementById('visualization-overlay').style.display = 'block';
+            document.getElementById('sound-note').style.display = 'block';
+            
+            // Hide loading screen after a delay
+            setTimeout(function() {
+                document.getElementById('loading').style.display = 'none';
+            }, 1500);
+            
+            // Fade out sound note after 5 seconds
+            setTimeout(function() {
+                document.getElementById('sound-note').classList.add('fade');
+            }, 5000);
+            
+            // Show tutorial after a short delay
+            setTimeout(function() {
+                if (!tutorialShown) {
+                    showTutorial();
+                }
+            }, 2000);
+        }
+        
+        function showTutorial() {
+            tutorialStep = 0;
+            document.getElementById('tutorial-text').textContent = tutorialSteps[tutorialStep];
+            document.getElementById('tutorial-overlay').classList.add('active');
+            tutorialShown = true;
+            console.log("Tutorial shown: Step " + tutorialStep);
+        }
+        
+        function advanceTutorial() {
+            console.log("Advancing tutorial from step " + tutorialStep);
+            
+            tutorialStep++;
+            if (tutorialStep < tutorialSteps.length) {
+                document.getElementById('tutorial-text').textContent = tutorialSteps[tutorialStep];
+                console.log("Advanced to step " + tutorialStep + ": " + tutorialSteps[tutorialStep]);
+            } else {
+                document.getElementById('tutorial-overlay').classList.remove('active');
+                console.log("Tutorial completed and hidden");
+            }
+        }
+        
+        // Show touch indicator at the specified position
+        function showTouchIndicator(x, y) {
+            touchIndicator.style.left = x + 'px';
+            touchIndicator.style.top = y + 'px';
+            touchIndicator.style.opacity = '1';
+            
+            // Hide indicator after a short delay
+            setTimeout(() => {
+                touchIndicator.style.opacity = '0';
+            }, 300);
+        }
+        
+        // Create a new p5 instance specifically for the visualization overlay
+        const geminiSketch = function(p) {
+            // Store a reference to p5 instance
+            p5Instance = p;
+            
+            // Colors from Gemini's description
+            const SLATE_BLUE = [68, 88, 120]; // Main color
+            const COOL_GRAY = [234, 236, 239]; // Background color
+            const VIBRANT_TEAL = [0, 128, 128]; // Accent color
+            const LIGHT_TEAL = [40, 180, 170]; // Light accent
+            
+            // Structure elements
+            let hexGrid = [];
+            let dataCircles = [];
+            let pathways = [];
+            let particles = [];
+            let emergedSolution = null;
+            let mouseInactivityTimer = 0;
+            
+            // Central node representing core focus
+            let centralNode;
+            
+            // Grid parameters
+            const HEX_SIZE = 25;
+            const GRID_SPACING = HEX_SIZE * 1.8;
+            
+            // State management
+            let processingMode = false;
+            let processingTimer = 0;
+            let solutionPhase = false;
+            let mouseInfluence = { x: 0, y: 0, active: false };
+            
+            // Audio elements
+            let interactionSound;
+            
+            p.preload = function() {
+                console.log("Starting to load hand animation frames...");
+                
+                // Preload hand animation frames
+                handAnimation.frameImages = [];
+                for (let i = 1; i <= handAnimation.frameCount; i++) {
+                    console.log(`Attempting to load gemini-hand${i}.png`);
+                    try {
+                        const img = p.loadImage(
+                            `gemini-hand${i}.png`,
+                            function() {
+                                console.log(`Successfully loaded gemini-hand${i}.png`);
+                            },
+                            function(err) {
+                                console.error(`Failed to load gemini-hand${i}.png:`, err);
+                                // Create a placeholder image for debugging
+                                const placeholder = p.createGraphics(200, 200);
+                                placeholder.background(68, 88, 120, 100);
+                                placeholder.fill(255);
+                                placeholder.textSize(24);
+                                placeholder.textAlign(p.CENTER, p.CENTER);
+                                placeholder.text(`Hand ${i}`, 100, 100);
+                                handAnimation.frameImages[i-1] = placeholder;
+                            }
+                        );
+                        handAnimation.frameImages.push(img);
+                    } catch (e) {
+                        console.error("Error loading image:", e);
+                    }
+                }
+                
+                try {
+                    console.log("Loading sound...");
+                    p.soundFormats('wav');
+                    
+                    // Use the exact path based on your repository structure
+                    p.interactionSound = p.loadSound('pragmatic-sound',  
+                        function() {
+                            console.log("Sound loaded successfully!");
+                        },
+                        function(err) {
+                            console.error("Sound loading error:", err);
+                        }
+                    );
+                } catch (e) {
+                    console.error('Sound loading exception:', e);
+                    p.interactionSound = null;
+                }
+            };
+            
+            p.setup = function() {
+                // Create canvas inside the visualization overlay
+                let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
+                canvas.parent('visualization-overlay');
+                
+                // Initialize central node
+                centralNode = {
+                    x: p.width / 2,
+                    y: p.height / 2,
+                    baseSize: 40,
+                    size: 40,
+                    pulseAmount: 0,
+                    color: SLATE_BLUE,
+                    alpha: 250,
+                    rotation: 0,
+                    rotationSpeed: 0.005,
+                    activeConnections: []
+                };
+                
+                // Initialize hexagonal grid
+                createHexGrid();
+                
+                // Start with some initial data circles
+                for (let i = 0; i < 8; i++) {
+                    createDataCircle();
+                }
+                
+                // Auto-initialize audio
+                p.userStartAudio();
+                
+                // Special handling for iOS devices
+                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                if (isIOS) {
+                    console.log("iOS device detected - using special audio handling");
+                    document.addEventListener('touchstart', function() {
+                        if (p.getAudioContext().state !== 'running') {
+                            p.getAudioContext().resume();
+                        }
+                    }, false);
+                }
+                
+                // Log mobile detection
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                console.log("Mobile device detected:", isMobile);
+                if (isMobile) {
+                    console.log("Setting up for mobile display");
+                    // Adjust hand animation for mobile
+                    handAnimation.size = 300; // Larger size for mobile
+                }
+                
+                // Hide loading screen once setup is complete
+                document.getElementById('loading').style.display = 'none';
+            };
+            
+            // Function to start hand animation at specific coordinates
+            function playHandAnimation(x, y) {
+                console.log("Attempting to play hand animation at", x, y);
+                
+                // Don't start another animation if one is already playing
+                if (handAnimation.isPlaying) {
+                    console.log("Animation already playing, not starting new one");
+                    return;
+                }
+                
+                // Detect mobile devices
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                
+                // Set initial values
+                handAnimation.isPlaying = true;
+                handAnimation.currentFrame = 0;
+                handAnimation.loopCount = 0;
+                handAnimation.opacity = 0.5; // Start at 50% opacity for faster visibility
+                handAnimation.x = x;
+                handAnimation.y = y;
+                
+                // Adjust for mobile
+                if (isMobile) {
+                    handAnimation.size = 300; 
+                    handAnimation.frameDuration = 70;
+                }
+
+                // Make sure nearby hexagons respond to the hand position
+                for (let i = 0; i < hexGrid.length; i++) {
+                    const d = p.dist(x, y, hexGrid[i].x, hexGrid[i].y);
+                    if (d < handAnimation.size * 0.6) { // Only affect hexagons within the hand area
+                       // Gently push hexagons toward the hand center
+                       const angle = p.atan2(hexGrid[i].y - y, hexGrid[i].x - x);
+                       const force = p.map(d, 0, handAnimation.size * 0.6, 0.5, 0.1);
+            
+                       // Add a subtle movement effect
+                       hexGrid[i].rotationSpeed *= 1.5; // Increase rotation speed
+                       
+                       // Make hexagon active
+                       hexGrid[i].active = true;
+                       hexGrid[i].highlight = 80;
+                     }
+                 }
+                
+                console.log("Starting new animation at", x, y, "with size", handAnimation.size);
+                
+                // Start animation loop
+                updateHandAnimation();
+            }
+            
+            // Update animation frame
+            function updateHandAnimation() {
+                const anim = handAnimation;
+                
+                // Handle fade-in
+                if (anim.loopCount === 0 && anim.currentFrame === 0) {
+                    anim.opacity += 1 / (anim.fadeInDuration / 16.67) * 5.0; // 5x faster fade-in
+                    if (anim.opacity > 1) anim.opacity = 1;
+                }
+                
+                // Handle fade-out
+                if (anim.loopCount >= anim.maxLoops - 1 && anim.currentFrame === anim.frameCount - 1) {
+                    anim.opacity -= 1 / (anim.fadeOutDuration / 16.67) * 3.0; // 3x faster fade-out
+                    if (anim.opacity <= 0) {
+                        anim.isPlaying = false;
+                        return; // End animation
+                    }
+                }
+                
+                // Draw debug marker if in debug mode
+                if (anim.debugMode) {
+                    p.push();
+                    p.noStroke();
+                    p.fill(255, 0, 0, 100); // Semi-transparent red
+                    p.ellipse(anim.x, anim.y, 20);
+                    p.pop();
+                }
+                
+                // Advance to next frame based on timing
+                setTimeout(() => {
+                    anim.currentFrame = (anim.currentFrame + 1) % anim.frameCount;
+                    
+                    // Track completed loops
+                    if (anim.currentFrame === 0) {
+                        anim.loopCount++;
+                    }
+                    
+                    // Continue animation
+                    if (anim.isPlaying) {
+                        requestAnimationFrame(updateHandAnimation);
+                    }
+                }, anim.frameDuration);
+            }
+            
+            // Draw the current animation frame - GEMINI VERSION WITHOUT TEAL OVERLAY
+            function drawHandAnimationFrame() {
+                const anim = handAnimation;
+                
+                if (anim.frameImages[anim.currentFrame]) {
+                    // First draw a visual indicator/background to make it more visible
+                    p.push();
+                    p.noStroke();
+
+                    // Create a blurred background using multiple overlapping hexagons with decreasing opacity
+                    for (let i = 0; i < 3; i++) {
+                        const blurOpacity = anim.opacity * (100 - i * 20); 
+                        const blurSize = anim.size * (1.05 + i * 0.04);
+                        p.fill(255, 255, 255, blurOpacity);
+                        
+                        // Draw hexagon background
+                        p.beginShape();
+                        for (let j = 0; j < 6; j++) {
+                            const angle = p.TWO_PI / 6 * j;
+                            const vx = anim.x + p.cos(angle) * (blurSize/2);
+                            const vy = anim.y + p.sin(angle) * (blurSize/2);
+                            p.vertex(vx, vy);
+                        }
+                        p.endShape(p.CLOSE);
+                    }
+                    p.pop();
+                    
+                    // Get the current frame image
+                    const img = anim.frameImages[anim.currentFrame];
+                    
+                    // Calculate height while preserving aspect ratio
+                    const aspectRatio = img.height / img.width;
+                    const drawHeight = anim.size * aspectRatio;
+                    
+                    // Draw the hand without tint (natural colors)
+                    p.push();
+                    // No tint, just use the image as-is with opacity
+                    p.tint(255, 255, 255, Math.min(255, anim.opacity * 255));
+                    
+                    // Add a subtle glow effect with slate blue
+                    p.drawingContext.shadowColor = 'rgba(68, 88, 120, 0.7)';
+                    p.drawingContext.shadowBlur = 15;
+                    p.drawingContext.shadowOffsetX = 0;
+                    p.drawingContext.shadowOffsetY = 0;
+                    
+                    // Draw the current frame centered at x,y 
+                    p.image(
+                        img,
+                        anim.x - anim.size/2,
+                        anim.y - drawHeight/2, // Correct vertical centering
+                        anim.size,
+                        drawHeight
+                    );
+                    p.pop();
+                } else {
+                    console.error(`Image for frame ${anim.currentFrame} not found!`);
+                    
+                    // Draw a hexagon as fallback
+                    p.push();
+                    p.noStroke();
+                    p.fill(68, 88, 120, anim.opacity * 255);
+                    
+                    // Draw a hexagon
+                    p.beginShape();
+                    for (let i = 0; i < 6; i++) {
+                        const angle = p.TWO_PI / 6 * i;
+                        const vx = anim.x + p.cos(angle) * (anim.size * 0.25);
+                        const vy = anim.y + p.sin(angle) * (anim.size * 0.25);
+                        p.vertex(vx, vy);
+                    }
+                    p.endShape(p.CLOSE);
+                    p.pop();
+                }
+            }
+            
+            function createHexGrid() {
+                // Create hexagons in a radius around the central node
+                const maxDistance = Math.min(p.width, p.height) * 0.45;
+                
+                // Create a more organic layout around the central node
+                for (let angle = 0; angle < p.TWO_PI; angle += p.TWO_PI / 30) {
+                    for (let dist = 80; dist < maxDistance; dist += GRID_SPACING * p.random(0.8, 1.2)) {
+                        // Add some natural variation to the grid
+                        const angleVar = angle + p.random(-0.2, 0.2);
+                        const distVar = dist + p.random(-10, 10);
+                        
+                        const x = centralNode.x + Math.cos(angleVar) * distVar;
+                        const y = centralNode.y + Math.sin(angleVar) * distVar;
+                        
+                        // Skip if too close to edge
+                        if (x < 30 || x > p.width - 30 || y < 30 || y > p.height - 30) continue;
+                        
+                        // Create hexagon with properties
+                        hexGrid.push({
+                            x: x,
+                            y: y,
+                            baseX: x,
+                            baseY: y,
+                            baseSize: HEX_SIZE * p.random(0.8, 1.2), // Vary sizes slightly
+                            size: HEX_SIZE * p.random(0.8, 1.2),
+                            sides: 6, // Always 6 sides for hexagons
+                            rotation: p.random(p.TWO_PI),
+                            rotationSpeed: p.random(0.001, 0.003) * (p.random() < 0.5 ? 1 : -1),
+                            distanceFromCenter: distVar,
+                            angleFromCenter: angleVar,
+                            orbitSpeed: p.random(0.0005, 0.001) * (p.random() < 0.5 ? 1 : -1),
+                            color: [...SLATE_BLUE, p.random(120, 180)],
+                            active: false,
+                            pulseSize: 0,
+                            pulseDirection: 1,
+                            highlight: 0,
+                            wobbleAmount: p.random(0.5, 2),
+                            wobbleSpeed: p.random(0.01, 0.02),
+                            mouseInfluence: p.random(0.2, 0.5)
+                        });
+                    }
+                }
+            }
+            
+            function drawGridBackground() {
+                // Draw subtle background wave effect
+                p.noFill();
+                p.strokeWeight(0.5);
+                
+                for (let i = 0; i < 5; i++) {
+                    const yOffset = p.frameCount * 0.2 + i * 30;
+                    p.stroke(SLATE_BLUE[0], SLATE_BLUE[1], SLATE_BLUE[2], 10);
+                    
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x += 10) {
+                        const y = p.height / 2 + 
+                                 Math.sin(x * 0.01 + yOffset * 0.02) * 50 + 
+                                 Math.cos(x * 0.02 - yOffset * 0.01) * 30;
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                }
+            }
+            
+            function updateHexGrid() {
+                for (let hex of hexGrid) {
+                    // Apply mouse influence
+                    if (mouseInfluence.active) {
+                        const d = p.dist(hex.x, hex.y, mouseInfluence.x, mouseInfluence.y);
+                        const maxDist = 150;
+                        
+                        if (d < maxDist) {
+                            const force = p.map(d, 0, maxDist, 0.5, 0) * hex.mouseInfluence;
+                            const angle = Math.atan2(hex.y - mouseInfluence.y, hex.x - mouseInfluence.x);
+                            
+                            hex.x += Math.cos(angle) * force * 5;
+                            hex.y += Math.sin(angle) * force * 5;
+                        }
+                    }
+                    
+                    // Subtle orbit movement
+                    if (!hex.active) {
+                        hex.angleFromCenter += hex.orbitSpeed;
+                        const targetX = centralNode.x + Math.cos(hex.angleFromCenter) * hex.distanceFromCenter;
+                        const targetY = centralNode.y + Math.sin(hex.angleFromCenter) * hex.distanceFromCenter;
+                        
+                        // Gentle movement toward orbit position
+                        hex.x = p.lerp(hex.x, targetX, 0.01);
+                        hex.y = p.lerp(hex.y, targetY, 0.01);
+                    }
+                    
+                    // Add wobble to position
+                    const wobble = Math.sin(p.frameCount * hex.wobbleSpeed) * hex.wobbleAmount;
+                    hex.x += wobble * 0.2;
+                    hex.y += wobble * 0.2;
+                    
+                    // Update hex properties
+                    if (hex.active) {
+                        // Pulse effect for active hexagons
+                        hex.pulseSize += 0.1 * hex.pulseDirection;
+                        if (hex.pulseSize > 3 || hex.pulseSize < 0) {
+                            hex.pulseDirection *= -1;
+                        }
+                        
+                        // Gradually decrease highlight
+                        hex.highlight = Math.max(0, hex.highlight - 2);
+                        
+                        // Rotation for active hexagons
+                        hex.rotation += hex.rotationSpeed * 2;
+                    } else {
+                        // Slower rotation for inactive hexagons
+                        hex.rotation += hex.rotationSpeed * 0.5;
+                    }
+                    
+                    // Always return slowly to base size
+                    hex.size = p.lerp(hex.size, hex.baseSize + (hex.active ? hex.pulseSize : 0), 0.1);
+                }
+                
+                // Return hexagons slowly to their base positions when not under mouse influence
+                if (!mouseInfluence.active) {
+                    for (let hex of hexGrid) {
+                        const targetX = centralNode.x + Math.cos(hex.angleFromCenter) * hex.distanceFromCenter;
+                        const targetY = centralNode.y + Math.sin(hex.angleFromCenter) * hex.distanceFromCenter;
+                        
+                        hex.x = p.lerp(hex.x, targetX, 0.02);
+                        hex.y = p.lerp(hex.y, targetY, 0.02);
+                    }
+                }
+            }
+            
+            function drawHexGrid() {
+                // First draw connecting lines between active hexagons
+                drawHexConnections();
+                
+                // Then draw the hexagons
+                for (let hex of hexGrid) {
+                    p.push();
+                    p.translate(hex.x, hex.y);
+                    p.rotate(hex.rotation);
+                    
+                    // Draw hexagon
+                    p.noStroke();
+                    
+                    // Apply highlight effect if active
+                    let displayColor;
+                    if (hex.active) {
+                        displayColor = [
+                            hex.color[0] + hex.highlight,
+                            hex.color[1] + hex.highlight,
+                            hex.color[2] + hex.highlight,
+                            hex.color[3]
+                        ];
+                    } else {
+                        displayColor = hex.color;
+                    }
+                    
+                    // Draw glow for active hexagons
+                    if (hex.active) {
+                        for (let i = 3; i >= 0; i--) {
+                            const glowSize = hex.size * (1 + i * 0.15);
+                            p.fill(displayColor[0], displayColor[1], displayColor[2], 
+                                  Math.max(0, displayColor[3] * 0.3 - i * 10));
+                            drawPolygon(0, 0, glowSize, 6);
+                        }
+                    }
+                    
+                    // Main hexagon
+                    p.fill(displayColor);
+                    drawPolygon(0, 0, hex.size, 6);
+                    
+                    // Inner highlight for depth
+                    if (hex.active) {
+                        p.fill(255, 255, 255, 40);
+                        drawPolygon(0, 0, hex.size * 0.7, 6);
+                    } else {
+                        p.fill(255, 255, 255, 20);
+                        drawPolygon(0, 0, hex.size * 0.7, 6);
+                    }
+                    
+                    p.pop();
+                }
+            }
+            
+            function drawHexConnections() {
+                const activeHexes = hexGrid.filter(h => h.active);
+                
+                if (activeHexes.length < 2) return;
+                
+                // Draw connections between active hexagons
+                for (let i = 0; i < activeHexes.length; i++) {
+                    for (let j = i + 1; j < activeHexes.length; j++) {
+                        const hex1 = activeHexes[i];
+                        const hex2 = activeHexes[j];
+                        
+                        // Calculate distance
+                        const d = p.dist(hex1.x, hex1.y, hex2.x, hex2.y);
+                        
+                        // Only connect if relatively close
+                        if (d < 200) {
+                            // Calculate alpha based on distance
+                            const alpha = p.map(d, 0, 200, 100, 20);
+                            
+                            // Draw connection line
+                            p.stroke(LIGHT_TEAL[0], LIGHT_TEAL[1], LIGHT_TEAL[2], alpha);
+                            p.strokeWeight(1);
+                            p.line(hex1.x, hex1.y, hex2.x, hex2.y);
+                            
+                            // Add a small pulse moving along the connection
+                            const pulseFactor = (p.frameCount * 0.02) % 1;
+                            const pulseX = p.lerp(hex1.x, hex2.x, pulseFactor);
+                            const pulseY = p.lerp(hex1.y, hex2.y, pulseFactor);
+                            
+                            p.noStroke();
+                            p.fill(LIGHT_TEAL[0], LIGHT_TEAL[1], LIGHT_TEAL[2], 150);
+                            p.ellipse(pulseX, pulseY, 3, 3);
+                        }
+                    }
+                }
+            }
+            
+            function drawPolygon(x, y, radius, sides) {
+                p.beginShape();
+                for (let i = 0; i < sides; i++) {
+                    const angle = p.TWO_PI / sides * i;
+                    const vx = x + p.cos(angle) * radius;
+                    const vy = y + p.sin(angle) * radius;
+                    p.vertex(vx, vy);
+                }
+                p.endShape(p.CLOSE);
+            }
+            
+            function createDataCircle() {
+                // Create circle at a random angle from the central node
+                const angle = p.random(p.TWO_PI);
+                const distance = p.random(50, 300);
+                const x = centralNode.x + p.cos(angle) * distance;
+                const y = centralNode.y + p.sin(angle) * distance;
+                
+                const circle = {
+                    x: x,
+                    y: y,
+                    baseX: x,
+                    baseY: y,
+                    targetX: x,
+                    targetY: y,
+                    size: p.random(10, 25),
+                    maxSize: p.random(30, 45),
+                    pulseSpeed: p.random(0.02, 0.05),
+                    pulseAmount: 0,
+                    baseColor: SLATE_BLUE,
+                    color: [...SLATE_BLUE, 180],
+                    lifetime: 0,
+                    maxLifetime: p.random(300, 600),
+                    merging: false,
+                    mergeTarget: null,
+                    mergeProgress: 0,
+                    velocity: { x: p.random(-0.5, 0.5), y: p.random(-0.5, 0.5) },
+                    attraction: p.random(0.001, 0.003),
+                    wobbleAmount: p.random(1, 4),
+                    wobbleSpeed: p.random(0.01, 0.03),
+                    rotation: p.random(p.TWO_PI),
+                    rotationSpeed: p.random(0.01, 0.03) * (p.random() < 0.5 ? 1 : -1)
+                };
+                
+                dataCircles.push(circle);
+            }
+            
+            function updateDataCircles() {
+                for (let i = dataCircles.length - 1; i >= 0; i--) {
+                    const circle = dataCircles[i];
+                    
+                    // Update circle properties
+                    circle.lifetime++;
+                    
+                    // Pulsating effect
+                    circle.pulseAmount = p.sin(circle.lifetime * circle.pulseSpeed) * 5;
+                    
+                    // Update rotation
+                    circle.rotation += circle.rotationSpeed;
+                    
+                    // Apply mouse influence
+                    if (mouseInfluence.active) {
+                        const d = p.dist(circle.x, circle.y, mouseInfluence.x, mouseInfluence.y);
+                        const maxDist = 120;
+                        
+                        if (d < maxDist) {
+                            const force = p.map(d, 0, maxDist, 0.4, 0);
+                            const angle = Math.atan2(circle.y - mouseInfluence.y, circle.x - mouseInfluence.x);
+                            
+                            circle.velocity.x += Math.cos(angle) * force;
+                            circle.velocity.y += Math.sin(angle) * force;
+                        }
+                    }
+                    
+                    // Handle merging with hexagons
+                    if (circle.merging) {
+                        circle.mergeProgress += 0.02;
+                        
+                        // Update position to move toward target
+                        circle.x = p.lerp(circle.x, circle.mergeTarget.x, circle.mergeProgress);
+                        circle.y = p.lerp(circle.y, circle.mergeTarget.y, circle.mergeProgress);
+                        
+                        // Update size to shrink
+                        circle.size = p.lerp(circle.size, 0, circle.mergeProgress);
+                        
+                        // When fully merged, remove circle and activate hexagon
+                        if (circle.mergeProgress >= 1) {
+                            // Activate the target hexagon
+                            circle.mergeTarget.active = true;
+                            circle.mergeTarget.highlight = 80; // Bright flash
+                            
+                            // Create particles at merge point
+                            createMergeParticles(circle.mergeTarget.x, circle.mergeTarget.y, 
+                                                circle.color, 10);
+                            
+                            // Remove the circle
+                            dataCircles.splice(i, 1);
+                        }
+                    } 
+                    // If not merging, update movement
+                    else {
+                        // Natural movement - gentle attraction to central node
+                        const angleToCenter = Math.atan2(centralNode.y - circle.y, centralNode.x - circle.x);
+                        circle.velocity.x += Math.cos(angleToCenter) * circle.attraction;
+                        circle.velocity.y += Math.sin(angleToCenter) * circle.attraction;
+                        
+                        // Dampen velocity
+                        circle.velocity.x *= 0.98;
+                        circle.velocity.y *= 0.98;
+                        
+                        // Update position
+                        circle.x += circle.velocity.x;
+                        circle.y += circle.velocity.y;
+                        
+                        // Add wobble
+                        circle.x += Math.sin(p.frameCount * circle.wobbleSpeed) * circle.wobbleAmount * 0.2;
+                        circle.y += Math.cos(p.frameCount * circle.wobbleSpeed * 1.3) * circle.wobbleAmount * 0.2;
+                        
+                        // Check if it should start merging
+                        if (circle.lifetime > circle.maxLifetime * 0.6 && !processingMode) {
+                            // Find nearest inactive hexagon to merge with
+                            let nearestHex = null;
+                            let minDist = Infinity;
+                            
+                            for (let hex of hexGrid) {
+                                const d = p.dist(circle.x, circle.y, hex.x, hex.y);
+                                if (d < minDist && !hex.active) {
+                                    minDist = d;
+                                    nearestHex = hex;
+                                }
+                            }
+                            
+                            if (nearestHex && minDist < 100) {
+                                circle.merging = true;
+                                circle.mergeTarget = nearestHex;
+                            }
+                        }
+                        // If it's too old and not merging, remove it
+                        else if (circle.lifetime > circle.maxLifetime) {
+                            // Create fade-out particles
+                            createMergeParticles(circle.x, circle.y, circle.color, 5);
+                            dataCircles.splice(i, 1);
+                        }
+                    }
+                }
+            }
+            
+            function drawDataCircles() {
+                for (let circle of dataCircles) {
+                    p.push();
+                    p.translate(circle.x, circle.y);
+                    p.rotate(circle.rotation);
+                    
+                    // Draw data circle
+                    p.noStroke();
+                    
+                    // Main circle
+                    const displaySize = circle.size + circle.pulseAmount;
+                    p.fill(circle.color);
+                    p.ellipse(0, 0, displaySize, displaySize);
+                    
+                    // Inner hexagon
+                    p.fill(255, 255, 255, 30);
+                    drawPolygon(0, 0, displaySize * 0.5, 6);
+                    
+                    p.pop();
+                }
+            }
+            
+            function createPathway() {
+                // Find an active hexagon to start from
+                const activeHexes = hexGrid.filter(h => h.active);
+                
+                if (activeHexes.length > 0) {
+                    const startHex = activeHexes[Math.floor(p.random(activeHexes.length))];
+                    
+                    // Find another hexagon to connect to (preferably inactive)
+                    const inactiveHexes = hexGrid.filter(h => !h.active);
+                    let endHex;
+                    
+                    // 70% chance to connect to inactive hex, 30% to another active one
+                    if (inactiveHexes.length > 0 && p.random() < 0.7) {
+                        // Find closest inactive hex within reasonable distance
+                        let closestHex = null;
+                        let minDist = 300;
+                        
+                        for (let hex of inactiveHexes) {
+                            const d = p.dist(startHex.x, startHex.y, hex.x, hex.y);
+                            if (d < minDist) {
+                                closestHex = hex;
+                                minDist = d;
+                            }
+                        }
+                        
+                        if (closestHex) {
+                            endHex = closestHex;
+                        } else if (activeHexes.length > 1) {
+                            // Fallback to another active hex
+                            do {
+                                endHex = activeHexes[Math.floor(p.random(activeHexes.length))];
+                            } while (endHex === startHex);
+                        } else {
+                            // No suitable target found
+                            return;
+                        }
+                    } else if (activeHexes.length > 1) {
+                        // Connect to another active hex
+                        do {
+                            endHex = activeHexes[Math.floor(p.random(activeHexes.length))];
+                        } while (endHex === startHex);
+                    } else {
+                        // No suitable target found
+                        return;
+                    }
+                    
+                    // Create path with waypoints
+                    const path = {
+                        points: [
+                            { x: startHex.x, y: startHex.y },
+                            { x: endHex.x, y: endHex.y }
+                        ],
+                        startHex: startHex,
+                        endHex: endHex,
+                        particles: [],
+                        lifetime: 0,
+                        maxLifetime: p.random(120, 240),
+                        active: true,
+                        width: p.random(1, 2),
+                        color: LIGHT_TEAL
+                    };
+                    
+                    // Add waypoints for more natural paths
+                    if (p.random() < 0.6 && p.dist(startHex.x, startHex.y, endHex.x, endHex.y) > 100) {
+                        const midX = (startHex.x + endHex.x) / 2 + p.random(-40, 40);
+                        const midY = (startHex.y + endHex.y) / 2 + p.random(-40, 40);
+                        
+                        // Insert waypoint between start and end
+                        path.points.splice(1, 0, { x: midX, y: midY });
+                    }
+                    
+                    // Activate end hexagon if it's inactive
+                    if (!endHex.active) {
+                        endHex.active = true;
+                        endHex.highlight = 80;
+                    }
+                    
+                    // Add particles along the path
+                    for (let i = 0; i < Math.floor(p.random(3, 6)); i++) {
+                        createPathParticle(path, p.random());
+                    }
+                    
+                    pathways.push(path);
+                } else {
+                    // If no active hexagons, create a path from central node
+                    const randomHex = hexGrid[Math.floor(p.random(hexGrid.length))];
+                    createPathFromCentralNode(randomHex);
+                }
+            }
+            
+            function createPathFromCentralNode(targetHex) {
+                // Create a path from central node to a hexagon
+                const path = {
+                    points: [
+                        { x: centralNode.x, y: centralNode.y },
+                        { x: targetHex.x, y: targetHex.y }
+                    ],
+                    startHex: null, // No start hex, starts from central node
+                    endHex: targetHex,
+                    particles: [],
+                    lifetime: 0,
+                    maxLifetime: p.random(120, 180),
+                    active: true,
+                    width: p.random(1.5, 2.5),
+                    color: LIGHT_TEAL
+                };
+                
+                // Add waypoints for more natural paths
+                if (p.dist(centralNode.x, centralNode.y, targetHex.x, targetHex.y) > 100) {
+                    const angle = Math.atan2(targetHex.y - centralNode.y, targetHex.x - centralNode.x);
+                    const midDist = p.dist(centralNode.x, centralNode.y, targetHex.x, targetHex.y) * 0.4;
+                    
+                    const midX = centralNode.x + Math.cos(angle) * midDist + p.random(-30, 30);
+                    const midY = centralNode.y + Math.sin(angle) * midDist + p.random(-30, 30);
+                    
+                    // Insert waypoint
+                    path.points.splice(1, 0, { x: midX, y: midY });
+                }
+                
+                // Activate target hexagon
+                targetHex.active = true;
+                targetHex.highlight = 80;
+                
+                // Add particles along the path
+                for (let i = 0; i < Math.floor(p.random(4, 8)); i++) {
+                    createPathParticle(path, p.random());
+                }
+                
+                // Track connection from central node
+                centralNode.activeConnections.push({
+                    target: targetHex,
+                    active: true,
+                    alpha: 255
+                });
+                
+                pathways.push(path);
+            }
+            
+            function updateAndDrawPathways() {
+                for (let i = pathways.length - 1; i >= 0; i--) {
+                    const path = pathways[i];
+                    
+                    // Update path lifetime
+                    path.lifetime++;
+                    
+                    // Draw path
+                    if (path.active) {
+                        // Calculate alpha based on lifetime
+                        let alpha = 255;
+                        if (path.lifetime < 20) {
+                            alpha = p.map(path.lifetime, 0, 20, 0, 255);
+                        } else if (path.lifetime > path.maxLifetime - 40) {
+                            alpha = p.map(path.lifetime, path.maxLifetime - 40, path.maxLifetime, 255, 0);
+                        }
+                        
+                        // Draw line segments between points
+                        p.noFill();
+                        p.stroke(path.color[0], path.color[1], path.color[2], alpha);
+                        p.strokeWeight(path.width);
+                        
+                        p.beginShape();
+                        for (let j = 0; j < path.points.length; j++) {
+                            p.vertex(path.points[j].x, path.points[j].y);
+                        }
+                        p.endShape();
+                    }
+                    
+                    // Update and draw particles
+                    for (let j = path.particles.length - 1; j >= 0; j--) {
+                        const particle = path.particles[j];
+                        
+                        // Update particle position
+                        particle.position += particle.speed;
+                        
+                        // Loop particle if it reaches the end
+                        if (particle.position > 1) {
+                            particle.position = 0;
+                        }
+                        
+                        // Calculate current position along the path
+                        const pos = getPositionAlongPath(path, particle.position);
+                        
+                        // Draw particle
+                        p.noStroke();
+                        p.fill(path.color[0], path.color[1], path.color[2], 
+                              path.active ? 255 : p.map(path.lifetime, path.maxLifetime - 40, path.maxLifetime, 255, 0));
+                        p.ellipse(pos.x, pos.y, particle.size, particle.size);
+                    }
+                    
+                    // Add new particles occasionally
+                    if (path.active && p.random() < 0.1) {
+                        createPathParticle(path, 0);
+                    }
+                    
+                    // Remove path if it's too old
+                    if (path.lifetime >= path.maxLifetime) {
+                        pathways.splice(i, 1);
+                    }
+                }
+            }
+            
+            function getPositionAlongPath(path, t) {
+                // Get position along a multi-point path using t (0-1)
+                if (path.points.length === 2) {
+                    // Simple linear interpolation for 2-point paths
+                    return {
+                        x: p.lerp(path.points[0].x, path.points[1].x, t),
+                        y: p.lerp(path.points[0].y, path.points[1].y, t)
+                    };
+                } else {
+                    // For paths with waypoints, divide t among segments
+                    const numSegments = path.points.length - 1;
+                    const segmentT = t * numSegments;
+                    const segmentIndex = Math.floor(segmentT);
+                    const segmentPos = segmentT - segmentIndex;
+                    
+                    // Get the two points of the current segment
+                    const p1 = path.points[Math.min(segmentIndex, path.points.length - 1)];
+                    const p2 = path.points[Math.min(segmentIndex + 1, path.points.length - 1)];
+                    
+                    // Interpolate between these points
+                    return {
+                        x: p.lerp(p1.x, p2.x, segmentPos),
+                        y: p.lerp(p1.y, p2.y, segmentPos)
+                    };
+                }
+            }
+            
+            function createPathParticle(path, position) {
+                path.particles.push({
+                    position: position, // 0-1 position along the path
+                    speed: p.random(0.005, 0.02), // How fast it moves along the path
+                    size: p.random(3, 6)
+                });
+            }
+            
+            function createMergeParticles(x, y, color, count) {
+                for (let i = 0; i < count; i++) {
+                    const angle = p.random(p.TWO_PI);
+                    const speed = p.random(0.5, 2);
+                    
+                    particles.push({
+                        x: x,
+                        y: y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        size: p.random(2, 5),
+                        color: color,
+                        life: 0,
+                        maxLife: p.random(20, 40)
+                    });
+                }
+            }
+            
+            function updateAndDrawParticles() {
+                for (let i = particles.length - 1; i >= 0; i--) {
+                    const particle = particles[i];
+                    
+                    // Update particle
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    
+                    // Apply friction
+                    particle.vx *= 0.95;
+                    particle.vy *= 0.95;
+                    
+                    // Update life
+                    particle.life++;
+                    
+                    // Calculate alpha based on life
+                    const alpha = p.map(particle.life, 0, particle.maxLife, 255, 0);
+                    
+                    // Draw particle
+                    p.noStroke();
+                    p.fill(particle.color[0], particle.color[1], particle.color[2], alpha);
+                    p.ellipse(particle.x, particle.y, particle.size, particle.size);
+                    
+                    // Remove if too old
+                    if (particle.life >= particle.maxLife) {
+                        particles.splice(i, 1);
+                    }
+                }
+            }
+            
+            function updateCentralNode() {
+                // Rotate the central node
+                centralNode.rotation += centralNode.rotationSpeed;
+                
+                // Pulse effect for size
+                const pulse = Math.sin(p.frameCount * 0.05) * 5;
+                centralNode.size = centralNode.baseSize + pulse;
+                
+                // Update active connections
+                for (let i = centralNode.activeConnections.length - 1; i >= 0; i--) {
+                    const conn = centralNode.activeConnections[i];
+                    
+                    // Fade out inactive connections
+                    if (!conn.active) {
+                        conn.alpha -= 5;
+                        
+                        if (conn.alpha <= 0) {
+                            centralNode.activeConnections.splice(i, 1);
+                        }
+                    }
+                }
+                
+                // During processing mode, make central node more active
+                if (processingMode) {
+                    centralNode.rotationSpeed = 0.01;
+                    centralNode.size = centralNode.baseSize + pulse * 2;
+                } else {
+                    centralNode.rotationSpeed = 0.005;
+                }
+            }
+            
+            function drawCentralNode() {
+                // Draw connections to active hexagons
+                for (let conn of centralNode.activeConnections) {
+                    p.stroke(LIGHT_TEAL[0], LIGHT_TEAL[1], LIGHT_TEAL[2], conn.alpha);
+                    p.strokeWeight(1.5);
+                    p.line(centralNode.x, centralNode.y, conn.target.x, conn.target.y);
+                }
+                
+                p.push();
+                p.translate(centralNode.x, centralNode.y);
+                p.rotate(centralNode.rotation);
+                
+                // Draw central node (a hexagon)
+                p.noStroke();
+                
+                // Draw outer glow
+                for (let i = 3; i >= 0; i--) {
+                    const glowSize = centralNode.size * (1 + i * 0.2);
+                    p.fill(SLATE_BLUE[0], SLATE_BLUE[1], SLATE_BLUE[2], 
+                           Math.max(0, centralNode.alpha * 0.2 - i * 10));
+                    drawPolygon(0, 0, glowSize, 6);
+                }
+                
+                // Main hexagon
+                p.fill(SLATE_BLUE[0], SLATE_BLUE[1], SLATE_BLUE[2], centralNode.alpha);
+                drawPolygon(0, 0, centralNode.size, 6);
+                
+                // Inner layers for depth
+                p.fill(SLATE_BLUE[0] + 20, SLATE_BLUE[1] + 20, SLATE_BLUE[2] + 20, centralNode.alpha);
+                drawPolygon(0, 0, centralNode.size * 0.7, 6);
+                
+                p.fill(SLATE_BLUE[0] + 40, SLATE_BLUE[1] + 40, SLATE_BLUE[2] + 40, centralNode.alpha);
+                drawPolygon(0, 0, centralNode.size * 0.4, 6);
+                
+                // Center highlight
+                p.fill(255, 255, 255, 120);
+                drawPolygon(0, 0, centralNode.size * 0.2, 6);
+                
+                p.pop();
+            }
+            
+            function createSolution() {
+                // Create a solution node near the central node
+                emergedSolution = {
+                    x: centralNode.x,
+                    y: centralNode.y,
+                    targetX: centralNode.x + p.random(-80, 80),
+                    targetY: centralNode.y + p.random(-80, 80),
+                    size: 0,
+                    targetSize: 35,
+                    rotation: 0,
+                    rotationSpeed: 0.01,
+                    color: SLATE_BLUE,
+                    innerColor: LIGHT_TEAL,
+                    emergence: 0,
+                    connections: [],
+                    rays: [],
+                    lastEmitTime: 0
+                };
+                
+                // Create connections to active hexagons
+                const activeHexes = hexGrid.filter(h => h.active);
+                const selectedHexes = [];
+                
+                // Select up to 5 active hexagons
+                for (let i = 0; i < Math.min(5, activeHexes.length); i++) {
+                    // Get a random active hex that hasn't been selected yet
+                    const availableHexes = activeHexes.filter(h => !selectedHexes.includes(h));
+                    if (availableHexes.length === 0) break;
+                    
+                    const hex = availableHexes[Math.floor(p.random(availableHexes.length))];
+                    selectedHexes.push(hex);
+                    
+                    // Create connection
+                    emergedSolution.connections.push({
+                        hex: hex,
+                        alpha: 0,
+                        pulsePos: 0,
+                        pulseSpeed: p.random(0.01, 0.03)
+                    });
+                }
+                
+                // Create solution rays (light emanating from the solution)
+                for (let i = 0; i < 8; i++) {
+                    const angle = p.TWO_PI / 8 * i + p.random(-0.2, 0.2);
+                    
+                    emergedSolution.rays.push({
+                        angle: angle,
+                        length: p.random(30, 60),
+                        speed: p.random(0.2, 0.5),
+                        alpha: p.random(100, 200)
+                    });
+                }
+            }
+            
+            function updateAndDrawSolution() {
+                if (!emergedSolution) return;
+                
+                // Update emergence
+                if (emergedSolution.emergence < 1) {
+                    emergedSolution.emergence += 0.02;
+                }
+                
+                // Update position (move toward target)
+                emergedSolution.x = p.lerp(emergedSolution.x, emergedSolution.targetX, 0.05);
+                emergedSolution.y = p.lerp(emergedSolution.y, emergedSolution.targetY, 0.05);
+                
+                // Update size
+                emergedSolution.size = p.lerp(emergedSolution.size, 
+                                            emergedSolution.targetSize * emergedSolution.emergence, 0.1);
+                
+                // Update rotation
+                emergedSolution.rotation += emergedSolution.rotationSpeed;
+                
+                // Draw solution rays first
+                drawSolutionRays();
+                
+                // Draw connections to hexagons
+                drawSolutionConnections();
+                
+                // Draw the solution node
+                p.push();
+                p.translate(emergedSolution.x, emergedSolution.y);
+                p.rotate(emergedSolution.rotation);
+                
+                // Draw outer glow
+                for (let i = 3; i >= 0; i--) {
+                    const glowSize = emergedSolution.size * (1 + i * 0.15);
+                    p.noStroke();
+                    p.fill(emergedSolution.color[0], emergedSolution.color[1], emergedSolution.color[2], 
+                           Math.max(0, 80 - i * 20));
+                    drawStar(0, 0, glowSize * 0.5, glowSize, 6);
+                }
+                
+                // Main star shape
+                p.fill(emergedSolution.color[0], emergedSolution.color[1], emergedSolution.color[2], 
+                       200 * emergedSolution.emergence);
+                drawStar(0, 0, emergedSolution.size * 0.5, emergedSolution.size, 6);
+                
+                // Inner highlight
+                p.fill(emergedSolution.innerColor[0], emergedSolution.innerColor[1], emergedSolution.innerColor[2], 
+                       150 * emergedSolution.emergence);
+                drawStar(0, 0, emergedSolution.size * 0.3, emergedSolution.size * 0.6, 6);
+                
+                // Center
+                p.fill(255, 255, 255, 200 * emergedSolution.emergence);
+                p.ellipse(0, 0, emergedSolution.size * 0.3, emergedSolution.size * 0.3);
+                
+                p.pop();
+                
+                // Emit particles periodically
+                if (p.frameCount - emergedSolution.lastEmitTime > 10) {
+                    emitSolutionParticles();
+                    emergedSolution.lastEmitTime = p.frameCount;
+                }
+            }
+            
+            function drawSolutionRays() {
+                // Draw rays emanating from solution
+                p.push();
+                p.translate(emergedSolution.x, emergedSolution.y);
+                
+                for (let ray of emergedSolution.rays) {
+                    // Update ray
+                    ray.angle += 0.002;
+                    
+                    // Calculate endpoints
+                    const x2 = Math.cos(ray.angle) * ray.length;
+                    const y2 = Math.sin(ray.angle) * ray.length;
+                    
+                    // Determine alpha with pulsing effect
+                    const pulseAlpha = ray.alpha * (0.6 + 0.4 * Math.sin(p.frameCount * 0.05));
+                    
+                    // Draw ray
+                    p.stroke(emergedSolution.innerColor[0], emergedSolution.innerColor[1], 
+                            emergedSolution.innerColor[2], pulseAlpha * emergedSolution.emergence);
+                    p.strokeWeight(1);
+                    p.line(0, 0, x2, y2);
+                }
+                
+                p.pop();
+            }
+            
+            function drawSolutionConnections() {
+                // Draw connections from solution to hexagons
+                for (let conn of emergedSolution.connections) {
+                    // Update alpha
+                    if (conn.alpha < 200) {
+                        conn.alpha += 5;
+                    }
+                    
+                    // Update pulse position
+                    conn.pulsePos += conn.pulseSpeed;
+                    if (conn.pulsePos > 1) conn.pulsePos = 0;
+                    
+                    // Draw line
+                    p.stroke(emergedSolution.innerColor[0], emergedSolution.innerColor[1], 
+                            emergedSolution.innerColor[2], conn.alpha * emergedSolution.emergence);
+                    p.strokeWeight(1.5);
+                    p.line(emergedSolution.x, emergedSolution.y, conn.hex.x, conn.hex.y);
+                    
+                    // Draw pulse traveling along the line
+                    const pulseX = p.lerp(emergedSolution.x, conn.hex.x, conn.pulsePos);
+                    const pulseY = p.lerp(emergedSolution.y, conn.hex.y, conn.pulsePos);
+                    
+                    p.noStroke();
+                    p.fill(emergedSolution.innerColor[0], emergedSolution.innerColor[1], 
+                          emergedSolution.innerColor[2], 200 * emergedSolution.emergence);
+                    p.ellipse(pulseX, pulseY, 5, 5);
+                }
+            }
+            
+            function emitSolutionParticles() {
+                // Emit particles from the solution node
+                for (let i = 0; i < 2; i++) {
+                    const angle = p.random(p.TWO_PI);
+                    const speed = p.random(0.5, 2);
+                    
+                    particles.push({
+                        x: emergedSolution.x,
+                        y: emergedSolution.y,
+                        vx: Math.cos(angle) * speed,
+                        vy: Math.sin(angle) * speed,
+                        size: p.random(2, 4),
+                        color: emergedSolution.innerColor,
+                        life: 0,
+                        maxLife: p.random(20, 40)
+                    });
+                }
+            }
+            
+            function drawStar(x, y, radius1, radius2, npoints) {
+                p.beginShape();
+                for (let i = 0; i < npoints * 2; i++) {
+                    const angle = p.TWO_PI / (npoints * 2) * i;
+                    const radius = i % 2 === 0 ? radius1 : radius2;
+                    const sx = x + p.cos(angle) * radius;
+                    const sy = y + p.sin(angle) * radius;
+                    p.vertex(sx, sy);
+                }
+                p.endShape(p.CLOSE);
+            }
+            
+            function triggerProcessingMode() {
+                processingMode = true;
+                processingTimer = 0;
+                solutionPhase = false;
+                
+                // Reset any existing solution
+                emergedSolution = null;
+                
+                console.log("Processing mode triggered");
+            }
+            
+            function resetProcessing() {
+                processingMode = false;
+                processingTimer = 0;
+                
+                // Reset active hexagons
+                for (let hex of hexGrid) {
+                    if (p.random() < 0.7) {
+                        hex.active = false;
+                    }
+                }
+                
+                console.log("Processing mode reset");
+            }
+            
+            // Draw touch indicator
+            function drawTouchFeedback() {
+                if (lastTouchPosition.active) {
+                    p.noStroke();
+                    p.fill(68, 88, 120, 80);
+                    p.ellipse(lastTouchPosition.x, lastTouchPosition.y, 40, 40);
+                    
+                    // Draw ripple effect
+                    p.noFill();
+                    p.stroke(68, 88, 120, 60 - lastTouchPosition.timer);
+                    p.strokeWeight(2);
+                    p.ellipse(lastTouchPosition.x, lastTouchPosition.y, 40 + lastTouchPosition.timer, 40 + lastTouchPosition.timer);
+                    
+                    lastTouchPosition.timer++;
+                    if (lastTouchPosition.timer > 20) {
+                        lastTouchPosition.active = false;
+                    }
+                }
+            }
+            
+            // Play sound with better mobile handling
+            function tryPlaySound() {
+                if (!p.interactionSound) {
+                    console.log("No sound available");
+                    return;
+                }
+                
+                console.log("Trying to play sound...");
+                
+                // First ensure audio context is running
+                if (p.getAudioContext().state !== 'running') {
+                    console.log("Audio context not running, trying to start...");
+                    
+                    p.userStartAudio()
+                    .then(() => {
+                        console.log("Audio context started, now playing sound");
+                        
+                        if (!p.interactionSound.isPlaying()) {
+                            p.interactionSound.play();
+                        }
+                    })
+                    .catch(e => {
+                        console.error("Could not start audio context:", e);
+                    });
+                } else {
+                    // Audio context is running, play directly
+                    console.log("Audio context already running, playing sound directly");
+                    
+                    if (!p.interactionSound.isPlaying()) {
+                        p.interactionSound.play();
+                    }
+                }
+            }
+            
+            p.draw = function() {
+                // Make sure we're completely clearing the canvas
+                p.clear();
+                p.background(COOL_GRAY[0], COOL_GRAY[1], COOL_GRAY[2], 25);
+                
+                // Handle processing mode timing
+                if (processingMode) {
+                    processingTimer++;
+                    
+                    // Create new pathways periodically during processing
+                    if (processingTimer % 10 === 0 && pathways.length < 25) {
+                        createPathway();
+                    }
+                    
+                    // After a certain time, enter solution phase
+                    if (processingTimer > 180 && !solutionPhase) { // 3 seconds at 60fps
+                        solutionPhase = true;
+                        createSolution();
+                    }
+                    
+                    // End processing mode after solution emerges and is displayed
+                    if (processingTimer > 360) { // 6 seconds total
+                        resetProcessing();
+                    }
+                }
+                
+                // Draw grid background effects
+                drawGridBackground();
+                
+                // Draw and update connections/pathways
+                updateAndDrawPathways();
+                
+                // Draw and update data circles
+                updateDataCircles();
+                drawDataCircles();
+                
+                // Draw and update the hexagonal grid
+                updateHexGrid();
+                drawHexGrid();
+                
+                // Draw and update particles
+                updateAndDrawParticles();
+                
+                // Update and draw central node
+                updateCentralNode();
+                drawCentralNode();
+                
+                // Draw touch feedback
+                drawTouchFeedback();
+                
+                // Draw solution if it exists
+                if (emergedSolution) {
+                    updateAndDrawSolution();
+                }
+                
+                // Periodically trigger processing mode
+                if (!processingMode && p.frameCount % 300 === 0) {
+                    triggerProcessingMode();
+                }
+                
+                // Occasionally add new data circles
+                if (p.frameCount % 45 === 0 && !processingMode && dataCircles.length < 12) {
+                    createDataCircle();
+                }
+                
+                // Monitor mouse activity
+                if (mouseInfluence.active) {
+                    mouseInactivityTimer++;
+    
+                    // If mouse hasn't moved for a while but is still "active", 
+                    // keep updating its position to the current mouse position
+                    if (mouseInactivityTimer > 60) { // 1 second at 60fps
+                        mouseInfluence.x = p.mouseX;
+                        mouseInfluence.y = p.mouseY;
+                    }
+    
+                    // If mouse has been inactive for too long, deactivate influence
+                    if (mouseInactivityTimer > 300) { // 5 seconds
+                        // Only deactivate if mouse is outside the canvas
+                        if (p.mouseX < 0 || p.mouseX > p.width || p.mouseY < 0 || p.mouseY > p.height) {
+                            mouseInfluence.active = false;
+                        }
+                    }
+                }
+                
+                // If hand animation is playing, draw the current frame (last to be on top)
+                if (handAnimation.isPlaying) {
+                    drawHandAnimationFrame();
+                }
+            };
+            
+            p.mouseMoved = function() {
+                try {
+                    // Find hexagons near the mouse for attraction effect
+                    if (mouseInfluence.active) {
+                        mouseInfluence.x = p.mouseX;
+                        mouseInfluence.y = p.mouseY;
+                        mouseInactivityTimer = 0;
+                    }
+                    return false; // Prevent default
+                } catch (error) {
+                    console.error("Error in mouseMoved:", error);
+                }
+            };
+            
+            p.mousePressed = function() {
+                // First ensure audio is initialized on interaction
+                p.userStartAudio();
+                
+                // Add interactivity when clicking
+                if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
+                    // Set mouse influence
+                    mouseInfluence.x = p.mouseX;
+                    mouseInfluence.y = p.mouseY;
+                    mouseInfluence.active = true;
+                    mouseInactivityTimer = 0;
+                    
+                    // Play hand animation at click position
+                    playHandAnimation(p.mouseX, p.mouseY);
+                    
+                    // Trigger processing mode
+                    if (!processingMode) {
+                        triggerProcessingMode();
+                    }
+                    
+                    // Play sound
+                    tryPlaySound();
+                    
+                    return false;
+                }
+            };
+            
+            // Add touch support for mobile
+            p.touchStarted = function() {
+                if (p.touches.length > 0) {
+                    // Get more accurate touch coordinates
+                    const touchX = p.touches[0].clientX || p.touches[0].x;
+                    const touchY = p.touches[0].clientY || p.touches[0].y;
+                    
+                    console.log("Touch detected at:", touchX, touchY);
+                    
+                    // First ensure audio is initialized on touch
+                    p.userStartAudio();
+                    
+                    // Make sure touch coordinates are within canvas
+                    if (touchX > 0 && touchX < p.width && touchY > 0 && touchY < p.height) {
+                        // Set mouse influence
+                        mouseInfluence.x = touchX;
+                        mouseInfluence.y = touchY;
+                        mouseInfluence.active = true;
+                        mouseInactivityTimer = 0;
+                        
+                        // Play hand animation at touch position
+                        playHandAnimation(touchX, touchY);
+                        
+                        // Show touch indicator
+                        showTouchIndicator(touchX, touchY);
+                        
+                        // Play sound
+                        tryPlaySound();
+                        
+                        // Trigger processing mode
+                        if (!processingMode) {
+                            triggerProcessingMode();
+                        }
+                    }
+                }
+                
+                // Always return false to prevent default behavior
+                return false;
+            };
+            
+            p.touchMoved = function() {
+                if (p.touches.length > 0) {
+                    // Get touch coordinates with fallbacks
+                    let touchX, touchY;
+                    
+                    // Try different ways to get touch coordinates
+                    if (p.touches[0].clientX !== undefined) {
+                        touchX = p.touches[0].clientX;
+                        touchY = p.touches[0].clientY;
+                    } else if (p.touches[0].x !== undefined) {
+                        touchX = p.touches[0].x;
+                        touchY = p.touches[0].y;
+                    } else {
+                        // Use the canvas-relative touch position
+                        touchX = p.touchX;
+                        touchY = p.touchY;
+                    }
+
+                    // Show visual touch indicator both in p5 and with DOM element
+                    lastTouchPosition = {x: touchX, y: touchY, active: true, timer: 0};
+                    showTouchIndicator(touchX, touchY);
+                    
+                    // Update mouse influence for touch dragging
+                    if (mouseInfluence.active) {
+                        mouseInfluence.x = touchX;
+                        mouseInfluence.y = touchY;
+                        mouseInactivityTimer = 0;
+                    }
+                }
+                        
+                // Always prevent default to avoid page scrolling
+                return false;  
+            };
+            
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+                
+                // Update central node position
+                centralNode.x = p.width / 2;
+                centralNode.y = p.height / 2;
+                
+                // Update hexagon base positions
+                for (let hex of hexGrid) {
+                    // Calculate new position based on angle and distance from center
+                    hex.baseX = centralNode.x + Math.cos(hex.angleFromCenter) * hex.distanceFromCenter;
+                    hex.baseY = centralNode.y + Math.sin(hex.angleFromCenter) * hex.distanceFromCenter;
+                }
+            };
+        };
+    </script>
+</body>
+</html>
