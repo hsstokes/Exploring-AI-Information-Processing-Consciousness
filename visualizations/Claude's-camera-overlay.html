@@ -359,7 +359,7 @@
             frameCount: 6,
             currentFrame: 0,
             frameDuration: 70,
-            opacity: 0.35,
+            opacity: 0.65,
             x: 0,
             y: 0,
             size: 250,
@@ -701,8 +701,15 @@
                 if (anim.frameImages[anim.currentFrame]) {
                     // First draw a visual indicator/background to make it more visible
                     p.push();
-                    p.noStroke();
 
+                    // Apply gentle rotation around center
+                    p.translate(anim.x, anim.y);
+                    p.rotate(anim.rotationOffset);
+                    p.translate(-anim.x, -anim.y);
+        
+                    // First draw a visual indicator/background to make it more visible
+                    p.noStroke();
+                  
                     // Create a blurred background using multiple overlapping circles with decreasing opacity
                     for (let i = 0; i < 3; i++) {
                         const blurOpacity = anim.opacity * (100 - i * 20); 
@@ -723,12 +730,6 @@
                     p.push();
                     // No tint, just use the image as-is with opacity
                     p.tint(255, 255, 255, Math.min(255, anim.opacity * 255));
-                    
-                    // Add a subtle glow effect
-                    p.drawingContext.shadowColor = 'rgba(255, 255, 255, 0.7)';
-                    p.drawingContext.shadowBlur = 15;
-                    p.drawingContext.shadowOffsetX = 0;
-                    p.drawingContext.shadowOffsetY = 0;
                     
                     // Draw the current frame centered at x,y 
                     p.image(
