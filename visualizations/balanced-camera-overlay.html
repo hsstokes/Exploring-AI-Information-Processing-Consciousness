@@ -351,19 +351,34 @@
         const handAnimation = {
             frameCount: 6,
             currentFrame: 0,
-            loopCount: 0,
-            maxLoops: 3,
-            isPlaying: false,
-            frameDuration: 70,
-            fadeInDuration: 20,
-            fadeOutDuration: 40,
-            opacity: 0,
+            frameDuration: 100,
+            opacity: 0.85,
             x: 0,
             y: 0,
-            size: 400,
+            size: 250,
             frameImages: [],
-            debugMode: false
+            isPlaying: true, // Always playing
+            rotationOffset: 0, // Add gentle rotation
+            rotationSpeed: 0.001, // Very slow rotation
+            lastFrameTime: 0 // For timing frames
         };
+        
+        // Function for continuous hand animation (defined globally)
+        function updateHandAnimationContinuous() {
+            const now = Date.now();
+            const elapsed = now - handAnimation.lastFrameTime;
+            
+            if (elapsed > handAnimation.frameDuration) {
+                handAnimation.currentFrame = (handAnimation.currentFrame + 1) % handAnimation.frameCount;
+                handAnimation.lastFrameTime = now;
+                
+                // Update rotation for gentle movement
+                handAnimation.rotationOffset += handAnimation.rotationSpeed;
+            }
+            
+            // Always request next frame
+            requestAnimationFrame(updateHandAnimationContinuous);
+        }
         
         // Start the entire experience
         document.addEventListener('DOMContentLoaded', function() {
@@ -538,6 +553,14 @@
                 // Create canvas inside the visualization overlay
                 let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
                 canvas.parent('visualization-overlay');
+
+                // Position hand animation at center of canvas
+                handAnimation.x = p.width / 2;
+                handAnimation.y = p.height / 2;
+                handAnimation.lastFrameTime = Date.now();
+    
+                // Start continuous animation immediately
+                requestAnimationFrame(updateHandAnimationContinuous);
                 
                 // Create initial spheres
                 for (let i = 0; i < NUM_SPHERES; i++) {
@@ -573,34 +596,29 @@
                 // Hide loading screen once setup is complete
                 document.getElementById('loading').style.display = 'none';
             };
+
             
             // Function to start hand animation at specific coordinates
             function playHandAnimation(x, y) {
-                console.log("Attempting to play hand animation at", x, y);
+                console.log("Note: Hand animation is now continuous and centered. This function is deprecated.");
                 
-                // Don't start another animation if one is already playing
-                if (handAnimation.isPlaying) {
-                    console.log("Animation already playing, not starting new one");
-                    return;
+                // No longer need to check if animation is playing since it's always playing
+                
+                // We can still allow sphere interactions with the current hand position
+                for (let i = 0; i < spheres.length; i++) {
+                    const d = p.dist(handAnimation.x, handAnimation.y, spheres[i].x, spheres[i].y);
+                    if (d < handAnimation.size * 0.6) {
+                        // Gently push spheres toward the hand center
+                        const angle = p.atan2(spheres[i].y - handAnimation.y, spheres[i].x - handAnimation.x);
+                        const force = p.map(d, 0, handAnimation.size * 0.6, 0.5, 0.1);
+    
+                        // Add a subtle movement effect
+                        spheres[i].speedX += p.cos(angle) * force * -0.5; // Pull toward hand
+                        spheres[i].speedY += p.sin(angle) * force * -0.5;
+                        spheres[i].pulseRate *= 1.05; // Make them pulse a bit faster
+                    }
                 }
                 
-                // Detect mobile devices
-                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                
-                // Set initial values
-                handAnimation.isPlaying = true;
-                handAnimation.currentFrame = 0;
-                handAnimation.loopCount = 0;
-                handAnimation.opacity = 0.5; // Start at 50% opacity for faster visibility
-                handAnimation.x = x;
-                handAnimation.y = y;
-                
-                // Adjust for mobile
-                if (isMobile) {
-                    handAnimation.size = 300; 
-                    handAnimation.frameDuration = 70;
-                }
-
                 // Make sure nearby bubbles respond to the hand position
                 for (let i = 0; i < spheres.length; i++) {
                     const d = p.dist(x, y, spheres[i].x, spheres[i].y);
@@ -613,57 +631,8 @@
                        spheres[i].speedX += p.cos(angle) * force * -0.5; // Pull toward hand
                        spheres[i].speedY += p.sin(angle) * force * -0.5;
                        spheres[i].pulseRate *= 1.05; // Make them pulse a bit faster
-                     }
-                 }
-                
-                console.log("Starting new animation at", x, y, "with size", handAnimation.size);
-                
-                // Start animation loop
-                updateHandAnimation();
-            }
-            
-            // Update animation frame
-            function updateHandAnimation() {
-                const anim = handAnimation;
-                
-                // Handle fade-in
-                if (anim.loopCount === 0 && anim.currentFrame === 0) {
-                    anim.opacity += 1 / (anim.fadeInDuration / 16.67) * 5.0;
-                    if (anim.opacity > 1) anim.opacity = 1;
-                }
-                
-                // Handle fade-out
-                if (anim.loopCount >= anim.maxLoops - 1 && anim.currentFrame === anim.frameCount - 1) {
-                    anim.opacity -= 1 / (anim.fadeOutDuration / 16.67) * 3.0;
-                    if (anim.opacity <= 0) {
-                        anim.isPlaying = false;
-                        return; // End animation
                     }
                 }
-                
-                // Draw debug marker if in debug mode
-                if (anim.debugMode) {
-                    p.push();
-                    p.noStroke();
-                    p.fill(255, 0, 0, 100);
-                    p.ellipse(anim.x, anim.y, 20);
-                    p.pop();
-                }
-                
-                // Advance to next frame based on timing
-                setTimeout(() => {
-                    anim.currentFrame = (anim.currentFrame + 1) % anim.frameCount;
-                    
-                    // Track completed loops
-                    if (anim.currentFrame === 0) {
-                        anim.loopCount++;
-                    }
-                    
-                    // Continue animation
-                    if (anim.isPlaying) {
-                        requestAnimationFrame(updateHandAnimation);
-                    }
-                }, anim.frameDuration);
             }
             
             // Draw the current animation frame
@@ -686,6 +655,11 @@
                     
                     // Save current drawing settings
                     p.push();
+                    
+                    // Apply rotation for gentle movement
+                    p.translate(anim.x, anim.y);
+                    p.rotate(anim.rotationOffset);
+                    p.translate(-anim.x, -anim.y);
                     
                     // Set transparency
                     p.tint(0, 0, 0, Math.min(255, anim.opacity * 950));
@@ -901,10 +875,8 @@
                         updateConnections();
                     }
                     
-                    // If hand animation is playing, draw the current frame (last to be on top)
-                    if (handAnimation.isPlaying) {
-                        drawHandAnimationFrame();
-                    }
+                    // Always draw the hand animation frame (last to be on top)
+                    drawHandAnimationFrame();
                     
                 } catch (error) {
                     console.error("Error in draw:", error);
@@ -1061,6 +1033,10 @@
             
             p.windowResized = function() {
                 p.resizeCanvas(p.windowWidth, p.windowHeight);
+                
+                // Keep hand animation centered when window resizes
+                handAnimation.x = p.width / 2;
+                handAnimation.y = p.height / 2;
             };
             
             // Play sound with better mobile handling
@@ -1185,7 +1161,8 @@
                     // Update connections with the new sphere
                     updateConnections();
                     
-                    // Play hand animation at click position
+                    // We no longer call playHandAnimation since the animation is continuous
+                    // But we still need to interact with spheres near the mouse
                     playHandAnimation(p.mouseX, p.mouseY);
 
                     // Play sound using the more robust function
@@ -1253,7 +1230,8 @@
                         // Update connections
                         updateConnections();
                         
-                        // Play hand animation at touch position
+                        // We no longer call playHandAnimation since the animation is continuous
+                        // But we still need to interact with spheres near the touch
                         playHandAnimation(touchX, touchY);
                         
                         // Show touch indicator
