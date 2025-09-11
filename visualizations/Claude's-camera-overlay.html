@@ -358,18 +358,15 @@
         const handAnimation = {
             frameCount: 6,
             currentFrame: 0,
-            loopCount: 0,
-            maxLoops: 3,
-            isPlaying: false,
             frameDuration: 70,
-            fadeInDuration: 20,
-            fadeOutDuration: 40,
-            opacity: 0,
+            opacity: 0.35,
             x: 0,
             y: 0,
-            size: 400,
+            size: 250,
             frameImages: [],
-            debugMode: false
+            isPlaying: true, // Always playing
+            rotationOffset: 0, // Add gentle rotation
+            rotationSpeed: 0.001 // Very slow rotation
         };
         
         // Start the entire experience
@@ -563,7 +560,14 @@
                     pulseDir: 1,
                     color: [70, 130, 180, 255]  // Steel blue
                 };
-                
+
+                // Position the hand animation at the center
+                handAnimation.x = centralSphere.x;
+                handAnimation.y = centralSphere.y;
+    
+                // Start the continuous hand animation
+                updateHandAnimation();
+    
                 // Create initial polygons
                 for (let i = 0; i < NUM_POLYGONS; i++) {
                     createPolygon();
@@ -1111,6 +1115,10 @@
                 // Update central sphere position
                 centralSphere.x = p.width / 2;
                 centralSphere.y = p.height / 2;
+
+                // Update hand animation position to match central sphere
+                handAnimation.x = centralSphere.x;
+                handAnimation.y = centralSphere.y;
                 
                 // Update polygon base positions
                 for (let polygon of polygons) {
@@ -1199,9 +1207,6 @@
                     if (!evaluationMode) {
                         triggerEvaluationMode();
                     }
-                    
-                    // Play hand animation at click position
-                    playHandAnimation(p.mouseX, p.mouseY);
 
                     // Play sound
                     tryPlaySound();
@@ -1228,9 +1233,6 @@
                         if (!evaluationMode) {
                             triggerEvaluationMode();
                         }
-                        
-                        // Play hand animation at touch position
-                        playHandAnimation(touchX, touchY);
                         
                         // Show touch indicator
                         showTouchIndicator(touchX, touchY);
