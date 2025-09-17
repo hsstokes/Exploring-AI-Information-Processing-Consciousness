@@ -356,14 +356,14 @@
         // Touch indicator element
         const touchIndicator = document.getElementById('touch-indicator');
 
-        // Hand animation configuration
+        // Hand animation configuration - FIXED SYNTAX WITH PROPER COMMAS
         const handAnimation = {
             frameCount: 6,
             currentFrame: 0,
             loopCount: 0,
             maxLoops: 3,
             isPlaying: false,
-            frameDuration: 120,
+            frameDuration: 200, // Slowed down for smoother animation
             fadeInDuration: 20,
             fadeOutDuration: 40,
             opacity: 0,
@@ -371,10 +371,11 @@
             y: 0,
             size: 160,
             frameImages: [],
-            debugMode: false, // No Missing comma 
-            continuous: true, // Add continuous mode flag
-            permanentlyVisible: true, // Keep hand visible at all times, added missing comma
-            lastFrameTime: Date.now() // Initialize this with the current timestamp
+            debugMode: false,
+            continuous: true,
+            permanentlyVisible: true,
+            lastFrameTime: Date.now(), // Initialize this with the current timestamp
+            initialized: false // Flag to track if animation has been initialized
         };
         
         // Start the entire experience
@@ -505,6 +506,9 @@
             // Audio elements
             let interactionSound;
             
+            // Animation loop ID for proper management
+            let animationLoopId = null;
+            
             p.preload = function() {
                 console.log("Starting to load hand animation frames...");
                 
@@ -583,13 +587,7 @@
                 }
 
                 // Initialize hand animation at center of canvas
-                handAnimation.x = p.width / 2;
-                handAnimation.y = p.height / 2;
-                handAnimation.isPlaying = true;
-                handAnimation.opacity = 0.7;
-    
-                // Start continuous animation
-                requestAnimationFrame(updateHandAnimation);
+                initializeHandAnimation();
                 
                 // Auto-initialize audio
                 p.userStartAudio();
@@ -618,30 +616,35 @@
                 document.getElementById('loading').style.display = 'none';
             };
             
-            // Function to start hand animation at specific coordinates
-            function playHandAnimation(x, y) {
-                console.log("Attempting to play hand animation at", x, y);
+            // Initialize hand animation ONCE
+            function initializeHandAnimation() {
+                if (handAnimation.initialized) return;
                 
-                // Always center the hand animation in the canvas
+                console.log("Initializing hand animation");
+                
+                // Set position to center of canvas
                 handAnimation.x = p.width / 2;
                 handAnimation.y = p.height / 2;
-
+                
                 // Set initial values
                 handAnimation.isPlaying = true;
-                handAnimation.currentFrame = 0;
-                handAnimation.loopCount = 0;
-                handAnimation.opacity = 0.7; // Higher starting opacity
-
-                // Detect mobile devices
-                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                handAnimation.opacity = 0.7;
+                handAnimation.lastFrameTime = Date.now();
+                handAnimation.initialized = true;
                 
-                // Adjust for mobile
-                if (isMobile) {
-                    handAnimation.size = 120; 
-                    handAnimation.frameDuration = 70;
+                // Start animation loop only once
+                if (animationLoopId === null) {
+                    animationLoopId = requestAnimationFrame(updateHandAnimation);
                 }
-
-                // Make sure hexagons respond to the touch position (not the hand position)
+                
+                console.log("Hand animation initialized at center with size", handAnimation.size);
+            }
+            
+            // Function to affect hexagons at specific coordinates WITHOUT affecting animation
+            function affectHexagonsAt(x, y) {
+                console.log("Affecting hexagons at", x, y);
+                
+                // Make sure hexagons respond to the touch position
                 for (let i = 0; i < hexGrid.length; i++) {
                     const d = p.dist(x, y, hexGrid[i].x, hexGrid[i].y);
                     if (d < 100) { // Affect hexagons near the touch point
@@ -657,23 +660,17 @@
                        hexGrid[i].highlight = 80;
                      }
                  }
-                
-                console.log("Starting new animation at center with size", handAnimation.size);
-                
-                // Start animation loop
-                updateHandAnimation();
             }
             
-            // Update animation frame
+            // Update animation frame - independent from interaction
             function updateHandAnimation() {
                 const anim = handAnimation;
                 const now = Date.now();
 
                 // Ensure minimum time has elapsed between frames
                 if (now - anim.lastFrameTime < anim.frameDuration) {
-                    requestAnimationFrame(updateHandAnimation);
+                    animationLoopId = requestAnimationFrame(updateHandAnimation);
                     return;
-                    
                 }
                 
                 // Handle fade-in
@@ -700,23 +697,21 @@
                     p.pop();
                 }
                 
-                // Advance to next frame based on timing
-                setTimeout(() => {
-                    anim.currentFrame = (anim.currentFrame + 1) % anim.frameCount;
-                    
-                    // Track completed loops
-                    if (anim.currentFrame === 0) {
-                        anim.loopCount++;
-                    }
-                    
-                    // Update the last frame time
-                    anim.lastFrameTime = now;
-                    
-                    // Continue animation if playing
-                    if (anim.continuous || anim.isPlaying) {
-                        requestAnimationFrame(updateHandAnimation);
-                    }
-                }, anim.frameDuration);
+                // Advance to next frame
+                anim.currentFrame = (anim.currentFrame + 1) % anim.frameCount;
+                
+                // Track completed loops
+                if (anim.currentFrame === 0) {
+                    anim.loopCount++;
+                }
+                
+                // Update the last frame time
+                anim.lastFrameTime = now;
+                
+                // Continue animation if playing
+                if (anim.continuous || anim.isPlaying) {
+                    animationLoopId = requestAnimationFrame(updateHandAnimation);
+                }
             }
             
             // Draw the current animation frame - GEMINI VERSION WITHOUT TEAL OVERLAY
@@ -1909,7 +1904,7 @@
                 }
                 
                 // If hand animation is playing, draw the current frame (last to be on top)
-                if (handAnimation.isPlaying) {
+                if (handAnimation.isPlaying || handAnimation.permanentlyVisible) {
                     drawHandAnimationFrame();
                 }
             };
@@ -1940,8 +1935,8 @@
                     mouseInfluence.active = true;
                     mouseInactivityTimer = 0;
                     
-                    // Play hand animation at center of screen (but affect hexagons at click position)
-                    playHandAnimation(p.mouseX, p.mouseY);
+                    // Affect hexagons at click position WITHOUT affecting hand animation
+                    affectHexagonsAt(p.mouseX, p.mouseY);
                     
                     // Trigger processing mode
                     if (!processingMode) {
@@ -1975,8 +1970,8 @@
                         mouseInfluence.active = true;
                         mouseInactivityTimer = 0;
                         
-                        // Play hand animation at center of screen (but affect hexagons at touch position)
-                        playHandAnimation(touchX, touchY);
+                        // Affect hexagons at touch position WITHOUT affecting animation
+                        affectHexagonsAt(touchX, touchY);
                         
                         // Show touch indicator
                         showTouchIndicator(touchX, touchY);
@@ -2035,6 +2030,10 @@
                 // Update central node position
                 centralNode.x = p.width / 2;
                 centralNode.y = p.height / 2;
+                
+                // Update hand animation position
+                handAnimation.x = p.width / 2;
+                handAnimation.y = p.height / 2;
                 
                 // Update hexagon base positions
                 for (let hex of hexGrid) {
