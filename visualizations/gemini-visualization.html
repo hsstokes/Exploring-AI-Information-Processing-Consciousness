@@ -369,9 +369,11 @@
             opacity: 0,
             x: 0,
             y: 0,
-            size: 400,
+            size: 160,
             frameImages: [],
-            debugMode: false
+            debugMode: false, // No Missing comma 
+            continuous: true, // Add continuous mode flag
+            permanentlyVisible: true // Keep hand visible at all times
         };
         
         // Start the entire experience
@@ -578,6 +580,15 @@
                 for (let i = 0; i < 8; i++) {
                     createDataCircle();
                 }
+
+                // Initialize hand animation at center of canvas
+                handAnimation.x = p.width / 2;
+                handAnimation.y = p.height / 2;
+                handAnimation.isPlaying = true;
+                handAnimation.opacity = 0.7;
+    
+                // Start continuous animation
+                requestAnimationFrame(updateHandAnimation);
                 
                 // Auto-initialize audio
                 p.userStartAudio();
@@ -599,7 +610,7 @@
                 if (isMobile) {
                     console.log("Setting up for mobile display");
                     // Adjust hand animation for mobile
-                    handAnimation.size = 300; // Larger size for mobile
+                    handAnimation.size = 120; // smaller size for mobile
                 }
                 
                 // Hide loading screen once setup is complete
@@ -610,28 +621,22 @@
             function playHandAnimation(x, y) {
                 console.log("Attempting to play hand animation at", x, y);
                 
-                // Don't start another animation if one is already playing
-                if (handAnimation.isPlaying) {
-                    console.log("Animation already playing, not starting new one");
-                    return;
-                }
-                
-                // Detect mobile devices
-                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                
+                // Always center the hand animation in the canvas
+                handAnimation.x = p.width / 2;
+                handAnimation.y = p.height / 2;
+
                 // Set initial values
                 handAnimation.isPlaying = true;
                 handAnimation.currentFrame = 0;
                 handAnimation.loopCount = 0;
-                handAnimation.opacity = 0.5; // Start at 50% opacity for faster visibility
-                
-                // Always center the hand animation in the canvas
-                handAnimation.x = p.width / 2;
-                handAnimation.y = p.height / 2;
+                handAnimation.opacity = 0.7; // Higher starting opacity
+
+                // Detect mobile devices
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                 
                 // Adjust for mobile
                 if (isMobile) {
-                    handAnimation.size = 300; 
+                    handAnimation.size = 120; 
                     handAnimation.frameDuration = 70;
                 }
 
@@ -668,8 +673,8 @@
                     if (anim.opacity > 1) anim.opacity = 1;
                 }
                 
-                // Handle fade-out
-                if (anim.loopCount >= anim.maxLoops - 1 && anim.currentFrame === anim.frameCount - 1) {
+                // Handle fade-out (only if not in continuous mode)
+                if (!anim.continuous && anim.loopCount >= anim.maxLoops - 1 && anim.currentFrame === anim.frameCount - 1) {
                     anim.opacity -= 1 / (anim.fadeOutDuration / 16.67) * 3.0; // 3x faster fade-out
                     if (anim.opacity <= 0) {
                         anim.isPlaying = false;
@@ -695,8 +700,8 @@
                         anim.loopCount++;
                     }
                     
-                    // Continue animation
-                    if (anim.isPlaying) {
+                    // Continue animation if playing
+                    if (anim.continuous || anim.isPlaying) {
                         requestAnimationFrame(updateHandAnimation);
                     }
                 }, anim.frameDuration);
@@ -705,6 +710,9 @@
             // Draw the current animation frame - GEMINI VERSION WITHOUT TEAL OVERLAY
             function drawHandAnimationFrame() {
                 const anim = handAnimation;
+
+                // If animation is not playing and not permanent, don't draw
+                if (!anim.isPlaying && !anim.permanentlyVisible) return;
                 
                 if (anim.frameImages[anim.currentFrame]) {
                     // First draw a visual indicator/background to make it more visible
