@@ -374,6 +374,7 @@
             debugMode: false, // No Missing comma 
             continuous: true, // Add continuous mode flag
             permanentlyVisible: true // Keep hand visible at all times
+            lastFrameTime: Date.now() // Initialize this with the current timestamp
         };
         
         // Start the entire experience
@@ -666,6 +667,14 @@
             // Update animation frame
             function updateHandAnimation() {
                 const anim = handAnimation;
+                const now = Date.now();
+
+                // Ensure minimum time has elapsed between frames
+                if (now - anim.lastFrameTime < anim.frameDuration) {
+                    requestAnimationFrame(updateHandAnimation);
+                    return;
+                    
+                }
                 
                 // Handle fade-in
                 if (anim.loopCount === 0 && anim.currentFrame === 0) {
@@ -699,6 +708,9 @@
                     if (anim.currentFrame === 0) {
                         anim.loopCount++;
                     }
+                    
+                    // Update the last frame time
+                    anim.lastFrameTime = now;
                     
                     // Continue animation if playing
                     if (anim.continuous || anim.isPlaying) {
