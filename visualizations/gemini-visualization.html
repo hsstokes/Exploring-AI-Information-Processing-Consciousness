@@ -309,7 +309,7 @@
             </div>
             
             <div class="description">
-                Through this interactive experience, you'll witness Gemini's systematic approach to gathering, organizing and synthesizing information—prioritizing efficiency and actionable insights over theoretical exploration.
+                Through this interactive experience, you'll witness Gemini's systematic approach to gathering, organizing and synthesizing information--prioritizing efficiency and actionable insights over theoretical exploration.
             </div>
             
             <div class="description">
@@ -624,8 +624,10 @@
                 handAnimation.currentFrame = 0;
                 handAnimation.loopCount = 0;
                 handAnimation.opacity = 0.5; // Start at 50% opacity for faster visibility
-                handAnimation.x = x;
-                handAnimation.y = y;
+                
+                // Always center the hand animation in the canvas
+                handAnimation.x = p.width / 2;
+                handAnimation.y = p.height / 2;
                 
                 // Adjust for mobile
                 if (isMobile) {
@@ -633,13 +635,13 @@
                     handAnimation.frameDuration = 70;
                 }
 
-                // Make sure nearby hexagons respond to the hand position
+                // Make sure hexagons respond to the touch position (not the hand position)
                 for (let i = 0; i < hexGrid.length; i++) {
                     const d = p.dist(x, y, hexGrid[i].x, hexGrid[i].y);
-                    if (d < handAnimation.size * 0.6) { // Only affect hexagons within the hand area
-                       // Gently push hexagons toward the hand center
+                    if (d < 100) { // Affect hexagons near the touch point
+                       // Gently push hexagons toward the touch point
                        const angle = p.atan2(hexGrid[i].y - y, hexGrid[i].x - x);
-                       const force = p.map(d, 0, handAnimation.size * 0.6, 0.5, 0.1);
+                       const force = p.map(d, 0, 100, 0.5, 0.1);
             
                        // Add a subtle movement effect
                        hexGrid[i].rotationSpeed *= 1.5; // Increase rotation speed
@@ -650,7 +652,7 @@
                      }
                  }
                 
-                console.log("Starting new animation at", x, y, "with size", handAnimation.size);
+                console.log("Starting new animation at center with size", handAnimation.size);
                 
                 // Start animation loop
                 updateHandAnimation();
@@ -1918,7 +1920,7 @@
                     mouseInfluence.active = true;
                     mouseInactivityTimer = 0;
                     
-                    // Play hand animation at click position
+                    // Play hand animation at center of screen (but affect hexagons at click position)
                     playHandAnimation(p.mouseX, p.mouseY);
                     
                     // Trigger processing mode
@@ -1953,7 +1955,7 @@
                         mouseInfluence.active = true;
                         mouseInactivityTimer = 0;
                         
-                        // Play hand animation at touch position
+                        // Play hand animation at center of screen (but affect hexagons at touch position)
                         playHandAnimation(touchX, touchY);
                         
                         // Show touch indicator
