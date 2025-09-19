@@ -285,29 +285,10 @@
             opacity: 0;
             transition: opacity 0.3s ease;
         }
-
-        /* Debug panel */
-        #debug-panel {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 12px;
-            z-index: 10000;
-            max-width: 300px;
-            max-height: 200px;
-            overflow: auto;
-        }
+        
     </style>
 </head>
 <body>
-    <!-- Debug panel -->
-    <div id="debug-panel"></div>
-
     <!-- Touch indicator element -->
     <div id="touch-indicator" class="touch-indicator"></div>
     
@@ -336,7 +317,7 @@
             </div>
             
             <div class="description">
-                Through this interactive experience, you'll witness Evi's empathetic approach to gathering, recognizing, and synthesizing emotional information—prioritizing meaningful connections and insightful patterns.
+                Through this interactive experience, you'll witness Evi's empathetic approach to gathering, recognizing, and synthesizing emotional information--prioritizing meaningful connections and insightful patterns.
             </div>
             
             <div class="description">
@@ -368,10 +349,6 @@
         // Debug helper function
         function debugLog(message) {
             console.log(message);
-            const debugPanel = document.getElementById('debug-panel');
-            const timestamp = new Date().toLocaleTimeString();
-            debugPanel.innerHTML += `<div>[${timestamp}] ${message}</div>`;
-            debugPanel.scrollTop = debugPanel.scrollHeight;
         }
 
         // Global error handler
@@ -580,6 +557,7 @@
             let sadSound = null;      
             let surpriseSound = null;  
             let confusionSound = null; 
+            let lastSoundTime = 0;     // Track when last sound was played
             
             // Color palettes - teal and pink theme
             const INTENSE_COLOR = [255, 182, 193];   // Light pink (#FFB6C1)
@@ -592,23 +570,82 @@
                 // Create placeholder for hand animation frames
                 handAnimation.frameImages = [];
                 
+                // Try to load hand animation frames
+                try {
+                    debugLog("Loading hand animation frames");
+                    for (let i = 1; i <= handAnimation.frameCount; i++) {
+                        const framePath = `evi-hand${i}.png`;
+                        p.loadImage(framePath, 
+                            img => {
+                                handAnimation.frameImages[i-1] = img;
+                                debugLog(`Loaded frame ${i}`);
+                            },
+                            () => debugLog(`Failed to load frame ${i}`)
+                        );
+                    }
+                } catch(e) {
+                    debugLog(`Hand animation preload error: ${e.message}`);
+                }
+                
                 // Only attempt to load sound files if they exist
                 // We wrap this in a try-catch to prevent crashing if sound files don't exist
                 try {
-                    debugLog("Attempting to preload sounds (skipping if files don't exist)");
+                    debugLog("Attempting to preload sounds");
                     p.soundFormats('wav', 'mp3');
                     
-                    // Skip sound loading for now, but keep the structure
-                    happySound = null;
-                    sadSound = null;
-                    surpriseSound = null;
-                    confusionSound = null;
+                    // Load sound files directly without subdirectory
+                    happySound = p.loadSound('evi-happy-sound.wav', 
+                        () => debugLog("Loaded happy sound"), 
+                        (e) => debugLog("Failed to load happy sound: " + e.message));
+                        
+                    sadSound = p.loadSound('evi-sad-sound.wav',
+                        () => debugLog("Loaded sad sound"), 
+                        (e) => debugLog("Failed to load sad sound: " + e.message));
+                        
+                    surpriseSound = p.loadSound('evi-surprise-sound.wav',
+                        () => debugLog("Loaded surprise sound"), 
+                        (e) => debugLog("Failed to load surprise sound: " + e.message));
+                        
+                    confusionSound = p.loadSound('evi-confusion-sound.wav',
+                        () => debugLog("Loaded confusion sound"), 
+                        (e) => debugLog("Failed to load confusion sound: " + e.message));
                 } catch(e) {
                     debugLog(`Audio preload error: ${e.message}`);
                 }
                 
                 debugLog("p5 preload() completed");
             };
+            
+            // Function to play emotional sounds
+            function playEmotionalSound(emotionalState) {
+                try {
+                    // Don't play sounds too frequently
+                    if (!lastSoundTime || Date.now() - lastSoundTime > 3000) { // 3 second cooldown
+                        let soundToPlay = null;
+                        
+                        // Determine which sound to play based on emotional state
+                        if (emotionalState === 'happy' && happySound) {
+                            soundToPlay = happySound;
+                        } else if (emotionalState === 'sad' && sadSound) {
+                            soundToPlay = sadSound;
+                        } else if (emotionalState === 'surprise' && surpriseSound) {
+                            soundToPlay = surpriseSound;
+                        } else if (emotionalState === 'confusion' && confusionSound) {
+                            soundToPlay = confusionSound;
+                        }
+                        
+                        // Play the sound if one was selected
+                        if (soundToPlay && soundToPlay.isLoaded()) {
+                            soundToPlay.setVolume(0.5); // Set to 50% volume
+                            soundToPlay.play();
+                            lastSoundTime = Date.now();
+                            debugLog(`Playing ${emotionalState} sound`);
+                        }
+                    }
+                } catch (error) {
+                    debugLog(`Error playing sound: ${error.message}`);
+                }
+            }
             
             p.setup = function() {
                 debugLog("p5 setup() starting");
@@ -1106,6 +1143,9 @@
                         // Interact with nearby centers
                         interactWithNearbyCenters(p.mouseX, p.mouseY, 200, 0.8);
                         
+                        // Play happy sound
+                        playEmotionalSound('happy');
+                        
                         return false; // Prevent default
                     }
                 } catch (error) {
@@ -1132,6 +1172,14 @@
                             maxLifetime: p.random(60, 120),
                             color: centerColor
                         });
+                        
+                        // Occasionally play sounds during drag
+                        if (p.frameCount % 30 === 0) { // Every ~0.5 seconds during drag
+                            // Pick a random emotional state
+                            const emotions = ['happy', 'surprise', 'confusion'];
+                            const randomEmotion = emotions[Math.floor(p.random(emotions.length))];
+                            playEmotionalSound(randomEmotion);
+                        }
                     }
                     
                     // Interact with nearby centers
@@ -1154,6 +1202,9 @@
                     emotionalCenters = [];
                     intensityLevel = 0.5;
                     thoughtfulness = 0.5;
+                    
+                    // Play surprise sound on reset
+                    playEmotionalSound('surprise');
                     
                     return false; // Prevent default
                 } catch (error) {
@@ -1190,6 +1241,9 @@
                             // Show touch indicator
                             showTouchIndicator(touchX, touchY);
                             lastTouchPosition = {x: touchX, y: touchY, active: true, timer: 0};
+                            
+                            // Play happy sound on touch
+                            playEmotionalSound('happy');
                         }
                     }
                     
@@ -1250,6 +1304,14 @@
                             
                             // Increase intensity when dragging
                             intensityLevel = Math.min(1, intensityLevel + 0.02);
+                            
+                            // Occasionally play sounds during touch drag
+                            if (p.frameCount % 30 === 0) {
+                                // Pick a random emotional state for variation
+                                const emotions = ['happy', 'surprise', 'confusion'];
+                                const randomEmotion = emotions[Math.floor(p.random(emotions.length))];
+                                playEmotionalSound(randomEmotion);
+                            }
                         }
                     }
                             
@@ -1257,6 +1319,20 @@
                     return false;
                 } catch (error) {
                     debugLog(`Error in touchMoved: ${error.message}`);
+                    return false;
+                }
+            };
+            
+            // Add touch ended to play a sound when touch is released
+            p.touchEnded = function() {
+                try {
+                    // Play a random sound when touch ends
+                    if (p.random() < 0.5) { // 50% chance
+                        playEmotionalSound('sad');
+                    }
+                    return false;
+                } catch (error) {
+                    debugLog(`Error in touchEnded: ${error.message}`);
                     return false;
                 }
             };
