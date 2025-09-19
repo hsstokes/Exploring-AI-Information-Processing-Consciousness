@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Evi: Emotional Pattern Analysis</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>Evi's Emotional Pattern Analysis</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/addons/p5.sound.min.js"></script>
     <style>
@@ -14,31 +13,29 @@
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-color: #f5f5f7;
+            background-color: rgb(240, 245, 250);
             font-family: 'Roboto Mono', monospace;
             -webkit-text-size-adjust: 100%;
             touch-action: none;
         }
         
-        /* Landing page overlay */
-        #landing-overlay {
+        /* Landing page */
+        #landing-page {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(245, 245, 247, 0.95);
+            background-color: white;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 9999;
-            box-sizing: border-box;
-            padding: 20px;
+            z-index: 100;
         }
         
+        /* Grid background */
         .grid-background {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
@@ -49,8 +46,6 @@
                               linear-gradient(90deg, #FFB6C1 1px, transparent 1px),
                               linear-gradient(rgba(32, 178, 170, 0.3) 1px, transparent 1px),
                               linear-gradient(90deg, rgba(32, 178, 170, 0.3) 1px, transparent 1px);
-
-            /* Different sizes for each grid layer */
             background-size: 20px 20px,
                              20px 20px,
                              100px 100px,
@@ -60,53 +55,52 @@
             z-index: -1;
         }
         
-        .content {
+        /* Content box */
+        .content-box {
             max-width: 500px;
             padding: 25px;
             background-color: rgba(255, 255, 255, 0.85);
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             text-align: center;
+            z-index: 1;
         }
         
         .title {
-            font-size: 18px;
-            margin: 0 0 15px 0;
             color: #FFB6C1;
+            margin-bottom: 15px;
+            font-size: 20px;
+            font-weight: 500;
             letter-spacing: 1px;
         }
         
         .description {
-            font-size: 13px;
-            line-height: 1.4;
-            margin-bottom: 20px;
-            color: #555;
+            color: #444;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            font-size: 14px;
         }
         
-        .button {
+        .start-button {
             padding: 12px 24px;
-            font-size: 16px;
             background-color: #20B2AA;
             color: white;
             border: none;
             border-radius: 20px;
             cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
             font-family: 'Roboto Mono', monospace;
             transition: all 0.3s ease;
             letter-spacing: 0.5px;
-            -webkit-tap-highlight-color: rgba(0,0,0,0);
-            touch-action: manipulation;
-            margin: 15px 0 5px 0;
-            display: inline-block;
-            text-decoration: none;
         }
         
-        .button:hover {
+        .start-button:hover {
             background-color: #FFB6C1;
             transform: translateY(-2px);
         }
         
-        .button:active {
+        .start-button:active {
             transform: scale(0.98);
         }
         
@@ -162,1380 +156,508 @@
             transform: rotate(-2deg);
         }
         
-        /* Solid background element */
-        #solid-background {
+        /* Loading indicator - CRITICAL CHANGES HERE */
+        #loading-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-color: rgb(240, 245, 250);
-            z-index: 1;
-            display: block; /* Shown by default */
-        }
-        
-        #visualization-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-            pointer-events: auto;
-            display: none; /* Hidden until landing page dismissed */
-        }
-        
-        .loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgb(240, 245, 250);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            display: none;
+            font-family: 'Roboto Mono', monospace;
             color: #20B2AA;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 999;
-            font-family: 'Roboto Mono', monospace;
-            display: none;
         }
         
-        .sound-note {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            color: white;
-            background-color: rgba(255, 182, 193, 0.8);
-            padding: 10px 20px;
-            border-radius: 30px;
-            font-family: 'Roboto Mono', monospace;
-            font-size: 12px;
-            z-index: 4;
-            opacity: 1;
-            transition: opacity 2s ease-in-out;
-            display: none;
-        }
-        
-        .sound-note.fade {
-            opacity: 0;
-        }
-        
-        /* Tutorial overlay */
-        .tutorial-overlay {
+        /* Visualization container */
+        #visualization-container {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0);
-            display: flex;
-            justify-content: center;
-            align-items: flex-end;
-            z-index: 9000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.5s ease;
-            padding-bottom: 80px;
+            z-index: 1;
+            display: none; /* Initially hidden */
         }
         
-        .tutorial-overlay.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .tutorial-hint {
-            background-color: rgba(255, 182, 193, 0.9);
-            padding: 12px 20px;
-            border-radius: 30px;
-            max-width: 85%;
-            text-align: center;
-            margin-bottom: 0;
+        /* Help message at the bottom */
+        .help-message {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 182, 193, 0.8);
             color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-            cursor: pointer;
-            animation: pulse 2s infinite;
-         }
-
-         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
-         }
-
-         .tutorial-hint p {
-            margin: 0;
+            padding: 10px 20px;
+            border-radius: 20px;
             font-family: 'Roboto Mono', monospace;
             font-size: 14px;
-         }
-        
-        /* Touch indicator */
-        .touch-indicator {
-            position: fixed;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background-color: rgba(255, 182, 193, 0.6);
+            z-index: 200;
+            text-align: center;
             pointer-events: none;
-            z-index: 10;
-            transform: translate(-50%, -50%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
         }
-        
-        /* Debug sound panel */
-        #debug-sound {
-            position: fixed;
-            bottom: 10px;
-            right: 10px;
-            z-index: 9999;
-            background: rgba(0,0,0,0.5);
-            padding: 10px;
-            border-radius: 5px;
-            display: none;
-            color: white;
-        }
-        
-        #debug-sound button {
-            background: #FFB6C1;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
-            color: white;
-            cursor: pointer;
-        }
-        
-        #sound-status {
-            font-size: 12px;
-            margin-top: 5px;
-            font-family: monospace;
-        }
-        
     </style>
 </head>
 <body>
-    <!-- Touch indicator element -->
-    <div id="touch-indicator" class="touch-indicator"></div>
-    
-    <!-- Tutorial overlay -->
-    <div id="tutorial-overlay" class="tutorial-overlay">
-        <div id="tutorial-hint" class="tutorial-hint">
-            <p id="tutorial-text">Tap anywhere to start</p>
-        </div>
-    </div>
-    
     <!-- Landing page -->
-    <div id="landing-overlay">
+    <div id="landing-page">
         <div class="grid-background"></div>
         
-        <div class="content">
+        <div class="content-box">
             <div class="gesture-container">
                 <div class="gesture-outline">
                     <div class="gesture-icon"></div>
                 </div>
             </div>
             
-            <div class="title">Evi: Emotional Pattern Analysis</div>
+            <h1 class="title">Evi: Emotional Pattern Analysis</h1>
             
-            <div class="description">
+            <p class="description">
                 Observe Evi's emotional information processing system. This visualization demonstrates how Evi analyzes patterns through waves of emotional resonance, creating intuitive connections between emotional centers.
-            </div>
+            </p>
             
-            <div class="description">
+            <p class="description">
                 Through this interactive experience, you'll witness Evi's empathetic approach to gathering, recognizing, and synthesizing emotional information--prioritizing meaningful connections and insightful patterns.
-            </div>
+            </p>
             
-            <div class="description">
-                <em>Tap the button below to explore the visualization.</em>
-            </div>
-            
-            <button id="start-button" class="button">BEGIN INTERACTION</button>
+            <button id="start-button" class="start-button">BEGIN INTERACTION</button>
         </div>
     </div>
     
     <!-- Loading screen -->
-    <div class="loading" id="loading">
-        <div>
-            <h2>Loading...</h2>
-            <p>Preparing visualization</p>
-        </div>
+    <div id="loading-screen">
+        <h2>Loading...</h2>
+        <p>Preparing visualization</p>
     </div>
     
-    <!-- Sound note that fades away -->
-    <div class="sound-note" id="sound-note">Sound available with headphones</div>
-    
-    <!-- Solid background (shown by default) -->
-    <div id="solid-background"></div>
-    
-    <!-- p5.js visualization will be attached to this div -->
-    <div id="visualization-overlay"></div>
-    
-    <!-- Debug sound panel -->
-    <div id="debug-sound">
-        <button id="test-sound-btn">Test Sound</button>
-        <div id="sound-status">Sound Status: Unknown</div>
-    </div>
+    <!-- Visualization container -->
+    <div id="visualization-container"></div>
     
     <script>
-        // Debug helper function
-        function debugLog(message) {
-            console.log(message);
-            // Update debug panel if it exists
-            const debugPanel = document.getElementById('debug-panel-log');
-            if (debugPanel) {
-                const entry = document.createElement('div');
-                entry.textContent = message;
-                debugPanel.appendChild(entry);
-                // Keep only last 10 messages
-                while (debugPanel.children.length > 10) {
-                    debugPanel.removeChild(debugPanel.firstChild);
-                }
-            }
-        }
-
-        // Global error handler
-        window.onerror = function(message, source, lineno, colno, error) {
-            debugLog(`ERROR: ${message} (line ${lineno})`);
-            return false;
-        };
-
-        debugLog("Page loaded, initializing...");
-        
-        // Global reference to p5 instance
+        // Global variables
         let p5Instance = null;
         
-        // Tutorial state
-        let tutorialStep = 0;
-        let tutorialShown = false;
-        const tutorialSteps = [
-            "Tap anywhere to create an emotional center",
-            "Drag to create a stream of emotional energy",
-            "Double-tap to reset the visualization"
-        ];
+        // Start button event listener
+        document.getElementById('start-button').addEventListener('click', startExperience);
         
-        // Touch tracking for visualization
-        let lastTouchPosition = {x: 0, y: 0, active: false, timer: 0};
-        
-        // Touch indicator element
-        const touchIndicator = document.getElementById('touch-indicator');
-
-        // Hand animation configuration
-        const handAnimation = {
-            frameCount: 6,
-            currentFrame: 0,
-            frameDuration: 100,
-            opacity: 0.85,
-            x: 0,
-            y: 0,
-            size: 250,
-            frameImages: [],
-            isPlaying: true, // Always playing
-            rotationOffset: 0, // Add gentle rotation
-            rotationSpeed: 0.001, // Very slow rotation
-            lastFrameTime: 0 // For timing frames
-        };
-        
-        // Function for continuous hand animation
-        function updateHandAnimationContinuous() {
-            try {
-                const now = Date.now();
-                const elapsed = now - handAnimation.lastFrameTime;
-                
-                if (elapsed > handAnimation.frameDuration) {
-                    handAnimation.currentFrame = (handAnimation.currentFrame + 1) % handAnimation.frameCount;
-                    handAnimation.lastFrameTime = now;
-                    
-                    // Update rotation for gentle movement
-                    handAnimation.rotationOffset += handAnimation.rotationSpeed;
-                }
-                
-                // Always request next frame
-                requestAnimationFrame(updateHandAnimationContinuous);
-            } catch (error) {
-                debugLog(`Animation error: ${error.message}`);
-            }
-        }
-        
-        // Start the entire experience
-        document.addEventListener('DOMContentLoaded', function() {
-            debugLog("DOM loaded, setting up event listeners");
-            
-            // Set up the landing page button
-            document.getElementById('start-button').addEventListener('click', startExperience);
-            document.getElementById('start-button').addEventListener('touchstart', function(e) {
-                e.preventDefault();
-                startExperience();
-            });
-            
-            // Set up tutorial handler
-            document.getElementById('tutorial-hint').addEventListener('click', advanceTutorial);
-            document.getElementById('tutorial-hint').addEventListener('touchend', function(e) {
-                e.preventDefault();
-                advanceTutorial();
-            });
-            
-            // Disable default touch behaviors on the document
-            document.addEventListener('touchmove', function(e) {
-                if (!e.target.closest('button')) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
-            
-            document.addEventListener('touchstart', function(e) {
-                if (!e.target.closest('button')) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
-            
-            // Initialize p5.js sketch
-            debugLog("Initializing p5.js sketch");
-            try {
-                new p5(eviSketch, 'visualization-overlay');
-            } catch (error) {
-                debugLog(`Failed to initialize p5: ${error.message}`);
-            }
-            
-            // Set up debug sound button
-            document.getElementById('test-sound-btn').addEventListener('click', function() {
-                debugLog("Test sound button clicked");
-                if (p5Instance) {
-                    p5Instance.userStartAudio().then(() => {
-                        debugLog("Audio context started from test button: " + p5Instance.getAudioContext().state);
-                        if (p5Instance.happySound && p5Instance.happySound.isLoaded()) {
-                            p5Instance.happySound.play();
-                            debugLog("Playing happy sound from test button");
-                        } else {
-                            debugLog("Happy sound not loaded or not available");
-                        }
-                        
-                        // Update sound status display
-                        updateSoundStatus();
-                    }).catch(err => {
-                        debugLog("Failed to start audio from test button: " + err.message);
-                    });
-                }
-            });
-            
-            // Show debug panel if URL has debug parameter
-            if (window.location.search.includes('debug=true')) {
-                document.getElementById('debug-sound').style.display = 'block';
-            }
-            
-            debugLog("Initialization complete");
-        });
-        
-        // Update sound status in debug panel
-        function updateSoundStatus() {
-            if (!p5Instance) return;
-            
-            let statusText = "Sound Status:<br>";
-            statusText += `Audio Context: ${p5Instance.getAudioContext().state}<br>`;
-            
-            if (p5Instance.happySound) {
-                statusText += `Happy sound loaded: ${p5Instance.happySound.isLoaded()}<br>`;
-            } else {
-                statusText += "Happy sound not found<br>";
-            }
-            
-            if (p5Instance.sadSound) {
-                statusText += `Sad sound loaded: ${p5Instance.sadSound.isLoaded()}<br>`;
-            } else {
-                statusText += "Sad sound not found<br>";
-            }
-            
-            if (p5Instance.surpriseSound) {
-                statusText += `Surprise sound loaded: ${p5Instance.surpriseSound.isLoaded()}<br>`;
-            } else {
-                statusText += "Surprise sound not found<br>";
-            }
-            
-            if (p5Instance.confusionSound) {
-                statusText += `Confusion sound loaded: ${p5Instance.confusionSound.isLoaded()}<br>`;
-            } else {
-                statusText += "Confusion sound not found<br>";
-            }
-            
-            document.getElementById('sound-status').innerHTML = statusText;
-        }
-        
+        // Function to start the experience
         function startExperience() {
-            debugLog("Starting experience");
+            console.log("Starting experience...");
             
-            try {
-                // Hide landing page
-                document.getElementById('landing-overlay').style.display = 'none';
+            // CRITICAL: First hide landing page completely
+            document.getElementById('landing-page').style.display = 'none';
+            
+            // Then show loading screen
+            document.getElementById('loading-screen').style.display = 'flex';
+            
+            // After a delay, initialize visualization and show container
+            setTimeout(function() {
+                // Show visualization container
+                document.getElementById('visualization-container').style.display = 'block';
                 
-                // Show main interface elements
-                document.getElementById('loading').style.display = 'flex';
-                document.getElementById('visualization-overlay').style.display = 'block';
-                document.getElementById('sound-note').style.display = 'block';
-                
-                // CRITICAL: Initialize audio context with user gesture
-                if (p5Instance) {
-                    p5Instance.userStartAudio().then(() => {
-                        debugLog("Audio context started successfully: " + p5Instance.getAudioContext().state);
-                        // Update debug status if shown
-                        updateSoundStatus();
-                    }).catch(e => {
-                        debugLog("Audio start error: " + e.message);
-                    });
+                // Initialize the p5 sketch
+                try {
+                    console.log("Initializing p5 sketch...");
+                    new p5(eviSketch, 'visualization-container');
+                } catch (error) {
+                    console.error("Error initializing p5:", error);
+                    // Hide loading screen if there's an error
+                    document.getElementById('loading-screen').style.display = 'none';
                 }
-                
-                // Hide loading screen after a delay
-                setTimeout(function() {
-                    document.getElementById('loading').style.display = 'none';
-                    debugLog("Loading screen hidden");
-                }, 1500);
-                
-                // Fade out sound note after 5 seconds
-                setTimeout(function() {
-                    document.getElementById('sound-note').classList.add('fade');
-                }, 5000);
-                
-                // Show tutorial after a short delay
-                setTimeout(function() {
-                    if (!tutorialShown) {
-                        showTutorial();
-                    }
-                }, 2000);
-                
-                debugLog("Experience started");
-            } catch (error) {
-                debugLog(`Error starting experience: ${error.message}`);
-            }
+            }, 500);
+            
+            // Backup timeout to force hide loading screen after 5 seconds
+            setTimeout(function() {
+                document.getElementById('loading-screen').style.display = 'none';
+                console.log("Force hiding loading screen after timeout");
+            }, 5000);
         }
         
-        function showTutorial() {
-            try {
-                tutorialStep = 0;
-                document.getElementById('tutorial-text').textContent = tutorialSteps[tutorialStep];
-                document.getElementById('tutorial-overlay').classList.add('active');
-                tutorialShown = true;
-                debugLog("Tutorial shown: Step " + tutorialStep);
-            } catch (error) {
-                debugLog(`Error showing tutorial: ${error.message}`);
-            }
-        }
-        
-        function advanceTutorial() {
-            try {
-                debugLog("Advancing tutorial from step " + tutorialStep);
-                
-                tutorialStep++;
-                if (tutorialStep < tutorialSteps.length) {
-                    document.getElementById('tutorial-text').textContent = tutorialSteps[tutorialStep];
-                    debugLog("Advanced to step " + tutorialStep + ": " + tutorialSteps[tutorialStep]);
-                } else {
-                    document.getElementById('tutorial-overlay').classList.remove('active');
-                    debugLog("Tutorial completed and hidden");
-                }
-            } catch (error) {
-                debugLog(`Error advancing tutorial: ${error.message}`);
-            }
-        }
-        
-        // Show touch indicator at the specified position
-        function showTouchIndicator(x, y) {
-            try {
-                touchIndicator.style.left = x + 'px';
-                touchIndicator.style.top = y + 'px';
-                touchIndicator.style.opacity = '1';
-                
-                // Hide indicator after a short delay
-                setTimeout(() => {
-                    touchIndicator.style.opacity = '0';
-                }, 300);
-            } catch (error) {
-                debugLog(`Touch indicator error: ${error.message}`);
-            }
-        }
-        
-        // Create a new p5 instance for the Evi visualization
+        // Evi's visualization sketch
         const eviSketch = function(p) {
-            debugLog("Initializing eviSketch");
-            
-            // Store a reference to p5 instance
+            // Store reference to the p5 instance
             p5Instance = p;
             
-            // Core elements
-            let waves = [];          // Array of wave objects
-            let emotionalCenters = []; // Points of emotional intensity
-            let flowParticles = [];  // Particles that move along connections
-            let moodColor = [143, 188, 187];  // Default neutral color
-            let intensityLevel = 0.5;  // Current intensity (0-1)
-            let thoughtfulness = 0.5;  // Current thoughtfulness level (0-1)
+            // Visualization elements
+            let waves = [];
+            let emotionalCenters = [];
+            let flowParticles = [];
+            let moodColor;
+            let intensityLevel = 0.5;
+            let thoughtfulness = 0.5;
             
-            // Sound elements - initialize as null so we can check if they exist
-            let happySound = null;     
-            let sadSound = null;      
-            let surpriseSound = null;  
-            let confusionSound = null;
-            let overEmphaticSound = null;
-            let lastSoundTime = 0;     // Track when last sound was played
-            
-            // Color palettes - teal and pink theme
+            // Color palettes
             const INTENSE_COLOR = [255, 182, 193];   // Light pink (#FFB6C1)
             const CALM_COLOR = [32, 178, 170];      // Light sea green (#20B2AA)
             const NEUTRAL_COLOR = [143, 188, 187];  // Blend of the two colors
-
-            p.preload = function() {
-                debugLog("p5 preload() starting");
-                
-                // Create placeholder for hand animation frames
-                handAnimation.frameImages = [];
-                
-                // Try to load hand animation frames
-                try {
-                    debugLog("Loading hand animation frames");
-                    for (let i = 1; i <= handAnimation.frameCount; i++) {
-                        const framePath = `evi-hand${i}.png`;
-                        p.loadImage(framePath, 
-                            img => {
-                                handAnimation.frameImages[i-1] = img;
-                                debugLog(`Loaded frame ${i}`);
-                            },
-                            () => debugLog(`Failed to load frame ${i}`)
-                        );
-                    }
-                } catch(e) {
-                    debugLog(`Hand animation preload error: ${e.message}`);
-                }
-                
-                // Only attempt to load sound files if they exist
-                // We wrap this in a try-catch to prevent crashing if sound files don't exist
-                try {
-                    debugLog("Attempting to preload sounds");
-                    p.soundFormats('mp3', 'wav');
-                    
-                    // Load sound files - try both MP3 and WAV formats
-                    happySound = p.loadSound('evi-happy-sound', 
-                        () => debugLog("Loaded happy sound"), 
-                        (e) => debugLog("Failed to load happy sound: " + e.message));
-                        
-                    sadSound = p.loadSound('evi-sad-sound',
-                        () => debugLog("Loaded sad sound"), 
-                        (e) => debugLog("Failed to load sad sound: " + e.message));
-                        
-                    surpriseSound = p.loadSound('evi-surprise-sound',
-                        () => debugLog("Loaded surprise sound"), 
-                        (e) => debugLog("Failed to load surprise sound: " + e.message));
-                        
-                    confusionSound = p.loadSound('evi-confusion-sound',
-                        () => debugLog("Loaded confusion sound"), 
-                        (e) => debugLog("Failed to load confusion sound: " + e.message));
-                        
-                    overEmphaticSound = p.loadSound('evi-over-empathetic-sound',
-                        () => debugLog("Loaded over-empathetic sound"), 
-                        (e) => debugLog("Failed to load over-empathetic sound: " + e.message));
-                        
-                    // Expose sounds to the p5 instance for debug access
-                    p.happySound = happySound;
-                    p.sadSound = sadSound;
-                    p.surpriseSound = surpriseSound;
-                    p.confusionSound = confusionSound;
-                    p.overEmphaticSound = overEmphaticSound;
-                    
-                } catch(e) {
-                    debugLog(`Audio preload error: ${e.message}`);
-                }
-                
-                debugLog("p5 preload() completed");
-            };
             
-            // Improved function to play emotional sounds
-            function playEmotionalSound(emotionalState) {
-                try {
-                    // Don't play sounds too frequently
-                    if (!lastSoundTime || Date.now() - lastSoundTime > 2000) { // 2 second cooldown
-                        let soundToPlay = null;
-                        
-                        // First ensure audio context is running
-                        if (p.getAudioContext().state !== 'running') {
-                            debugLog("Audio context not running, attempting to resume");
-                            p.userStartAudio().then(() => {
-                                debugLog("Audio context resumed successfully");
-                            }).catch(e => {
-                                debugLog("Failed to resume audio context: " + e.message);
-                            });
-                        }
-                        
-                        // Determine which sound to play based on emotional state
-                        if (emotionalState === 'happy' && happySound && happySound.isLoaded()) {
-                            soundToPlay = happySound;
-                            debugLog("Selected happy sound to play");
-                        } else if (emotionalState === 'sad' && sadSound && sadSound.isLoaded()) {
-                            soundToPlay = sadSound;
-                            debugLog("Selected sad sound to play");
-                        } else if (emotionalState === 'surprise' && surpriseSound && surpriseSound.isLoaded()) {
-                            soundToPlay = surpriseSound;
-                            debugLog("Selected surprise sound to play");
-                        } else if (emotionalState === 'confusion' && confusionSound && confusionSound.isLoaded()) {
-                            soundToPlay = confusionSound;
-                            debugLog("Selected confusion sound to play");
-                        } else if (emotionalState === 'over-empathetic' && overEmphaticSound && overEmphaticSound.isLoaded()) {
-                            soundToPlay = overEmphaticSound;
-                            debugLog("Selected over-empathetic sound to play");
-                        } else {
-                            debugLog(`No sound available for ${emotionalState} or sound not loaded`);
-                        }
-                        
-                        // Play the sound if one was selected
-                        if (soundToPlay) {
-                            debugLog(`Attempting to play ${emotionalState} sound`);
-                            soundToPlay.setVolume(0.5); // Set to 50% volume
-                            soundToPlay.play();
-                            lastSoundTime = Date.now();
-                            debugLog(`Playing ${emotionalState} sound successfully`);
-                            return true;
-                        }
-                    } else {
-                        debugLog("Sound cooldown active - waiting before playing next sound");
-                    }
-                    return false;
-                } catch (error) {
-                    debugLog(`Error playing sound: ${error.message}`);
-                    return false;
-                }
-            }
+            // Help messages
+            let helpMessages = [
+                "Tap anywhere to create an emotional center",
+                "Drag to create a stream of emotional energy"
+            ];
+            let activeHelpMessageIndex = 0;
             
             p.setup = function() {
-                debugLog("p5 setup() starting");
+                console.log("p5 setup starting...");
                 
-                try {
-                    // Create canvas inside the visualization overlay
-                    debugLog("Creating canvas");
-                    p.createCanvas(p.windowWidth, p.windowHeight);
-                    
-                    // Initialize waves
-                    debugLog("Initializing waves");
-                    for (let i = 0; i < 8; i++) {
-                        waves.push(createWave(i));
-                    }
-                    
-                    // Position hand animation at center of canvas
-                    handAnimation.x = p.width / 2;
-                    handAnimation.y = p.height / 2;
-                    handAnimation.lastFrameTime = Date.now();
-                    
-                    // Special handling for iOS devices
-                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-                    if (isIOS) {
-                        debugLog("iOS device detected - adding special audio handling");
-                        document.addEventListener('touchstart', function() {
-                            if (p.getAudioContext().state !== 'running') {
-                                debugLog("iOS: trying to resume audio context on touch");
-                                p.getAudioContext().resume();
-                            }
-                        }, {once: true});
-                    }
-        
-                    // Start continuous animation immediately
-                    debugLog("Starting hand animation");
-                    requestAnimationFrame(updateHandAnimationContinuous);
-                    
-                    // Create placeholder hand animation frames if none were loaded
-                    if (handAnimation.frameImages.length === 0) {
-                        debugLog("Creating placeholder hand animation frames");
-                        for (let i = 0; i < handAnimation.frameCount; i++) {
-                            const placeholder = p.createGraphics(200, 200);
-                            placeholder.background(255, 255, 255, 0); // Transparent background
-                            placeholder.fill(32, 178, 170, 180);
-                            placeholder.noStroke();
-                            placeholder.ellipse(100, 100, 150 + i*10, 150 + i*10); // Different sizes for different frames
-                            handAnimation.frameImages.push(placeholder);
-                        }
-                    }
-                    
-                    // Create a few initial emotional centers
-                    debugLog("Creating initial emotional centers");
-                    for (let i = 0; i < 3; i++) {
-                        createEmotionalCenter();
-                    }
-                    
-                    // Try to initialize audio, but don't crash if it fails
-                    try {
-                        debugLog("Initializing audio context");
-                        p.userStartAudio().then(() => {
-                            debugLog("Audio context started successfully in setup");
-                            updateSoundStatus();
-                        }).catch(e => {
-                            debugLog(`Could not start audio context in setup: ${e.message}`);
-                        });
-                    } catch (e) {
-                        debugLog(`Error initializing audio: ${e.message}`);
-                    }
-                    
-                    debugLog("p5 setup() completed");
-                } catch (error) {
-                    debugLog(`Setup error: ${error.message}`);
+                // Create canvas
+                p.createCanvas(p.windowWidth, p.windowHeight);
+                
+                // Initialize waves
+                for (let i = 0; i < 8; i++) {
+                    waves.push({
+                        baseHeight: p.height * (0.3 + i * 0.05),
+                        amplitude: p.random(20, 50),
+                        frequency: p.random(0.005, 0.02),
+                        speed: p.random(0.01, 0.03),
+                        phase: i * 0.5,
+                        color: [...NEUTRAL_COLOR, 180],
+                        thickness: p.random(1, 3)
+                    });
                 }
+                
+                // Start with neutral mood
+                moodColor = NEUTRAL_COLOR;
+                
+                // Create a few initial emotional centers
+                for (let i = 0; i < 3; i++) {
+                    emotionalCenters.push({
+                        x: p.random(p.width * 0.2, p.width * 0.8),
+                        y: p.random(p.height * 0.3, p.height * 0.7),
+                        size: p.random(20, 60),
+                        intensity: p.random(0.5, 1),
+                        lifetime: 0,
+                        maxLifetime: p.random(120, 240),
+                        color: [...NEUTRAL_COLOR, 150]
+                    });
+                }
+                
+                // CRITICAL: Create help message elements
+                createHelpMessages();
+                
+                // CRITICAL: Hide loading screen now that setup is complete
+                document.getElementById('loading-screen').style.display = 'none';
+                
+                console.log("p5 setup complete");
             };
             
-            // Function to create a wave
-            function createWave(index) {
-                return {
-                    baseHeight: p.height * (0.3 + index * 0.05),
-                    amplitude: p.random(20, 50),
-                    frequency: p.random(0.005, 0.02),
-                    speed: p.random(0.01, 0.03),
-                    phase: index * 0.5,
-                    color: [NEUTRAL_COLOR[0], NEUTRAL_COLOR[1], NEUTRAL_COLOR[2], 180],
-                    thickness: p.random(1, 3)
-                };
-            }
-            
-            // Function to create an emotional center
-            function createEmotionalCenter() {
-                // Always ensure moodColor is defined
-                const currentColor = Array.isArray(moodColor) && moodColor.length >= 3 ? 
-                                     moodColor : NEUTRAL_COLOR;
+            // Create help messages
+            function createHelpMessages() {
+                // Remove any existing help messages
+                const existingMessages = document.querySelectorAll('.help-message');
+                existingMessages.forEach(msg => msg.remove());
                 
-                emotionalCenters.push({
-                    x: p.random(p.width * 0.2, p.width * 0.8),
-                    y: p.random(p.height * 0.3, p.height * 0.7),
-                    size: p.random(20, 60),
-                    intensity: p.random(0.5, 1),
-                    lifetime: 0,
-                    maxLifetime: p.random(120, 240),
-                    color: [currentColor[0], currentColor[1], currentColor[2], 150]
+                // Create new help messages
+                helpMessages.forEach((text, index) => {
+                    const msgElement = document.createElement('div');
+                    msgElement.className = 'help-message';
+                    msgElement.textContent = text;
+                    msgElement.style.display = index === activeHelpMessageIndex ? 'block' : 'none';
+                    document.body.appendChild(msgElement);
                 });
             }
             
-            // Draw the current animation frame
-            function drawHandAnimationFrame() {
-                try {
-                    const anim = handAnimation;
+            // Change the active help message
+            function changeHelpMessage() {
+                const messages = document.querySelectorAll('.help-message');
+                if (messages.length > 0) {
+                    messages.forEach((msg, index) => {
+                        msg.style.display = index === activeHelpMessageIndex ? 'block' : 'none';
+                    });
                     
-                    if (anim.frameImages.length > 0 && anim.currentFrame < anim.frameImages.length) {
-                        // First draw a visual indicator/background to make it more visible
-                        p.push();
+                    // Cycle to next message
+                    activeHelpMessageIndex = (activeHelpMessageIndex + 1) % helpMessages.length;
+                }
+            }
+            
+            p.draw = function() {
+                // Semi-transparent background for trail effect
+                p.background(240, 245, 250, 20);
+                
+                // Update emotional state
+                intensityLevel = 0.5 + 0.4 * Math.sin(p.frameCount * 0.01);
+                thoughtfulness = 0.5 + 0.4 * Math.sin(p.frameCount * 0.007 + 1);
+                
+                // Update mood color
+                moodColor = [
+                    p.lerp(CALM_COLOR[0], INTENSE_COLOR[0], intensityLevel),
+                    p.lerp(CALM_COLOR[1], INTENSE_COLOR[1], intensityLevel),
+                    p.lerp(CALM_COLOR[2], INTENSE_COLOR[2], intensityLevel)
+                ];
+                
+                // Occasionally create new emotional centers
+                if (p.frameCount % 60 === 0 && p.random() < 0.3) {
+                    emotionalCenters.push({
+                        x: p.random(p.width * 0.2, p.width * 0.8),
+                        y: p.random(p.height * 0.3, p.height * 0.7),
+                        size: p.random(20, 60),
+                        intensity: p.random(0.5, 1),
+                        lifetime: 0,
+                        maxLifetime: p.random(120, 240),
+                        color: [...moodColor, 150]
+                    });
+                }
+                
+                // Update and draw waves
+                for (let wave of waves) {
+                    // Update wave properties
+                    wave.phase += wave.speed * (0.5 + intensityLevel * 1.5);
+                    wave.currentAmplitude = wave.amplitude * (0.8 + intensityLevel * 0.8);
+                    wave.color = [...moodColor, 180 * (0.7 + 0.3 * (1 - thoughtfulness))];
+                    wave.currentThickness = wave.thickness * (0.8 + 0.8 * (1 - thoughtfulness));
+                    
+                    // Draw wave
+                    p.stroke(wave.color);
+                    p.strokeWeight(wave.currentThickness);
+                    p.noFill();
+                    p.beginShape();
+                    for (let x = 0; x < p.width; x += 5) {
+                        const y = wave.baseHeight + 
+                                wave.currentAmplitude * Math.sin(x * wave.frequency + wave.phase) +
+                                wave.currentAmplitude * 0.5 * Math.sin(x * wave.frequency * 2 + wave.phase * 1.5);
+                        p.vertex(x, y);
+                    }
+                    p.endShape();
+                }
+                
+                // Update and draw emotional centers
+                for (let i = emotionalCenters.length - 1; i >= 0; i--) {
+                    const center = emotionalCenters[i];
+                    
+                    // Update lifetime
+                    center.lifetime++;
+                    
+                    // Calculate opacity based on lifetime
+                    const opacity = center.lifetime < center.maxLifetime * 0.2 
+                        ? p.map(center.lifetime, 0, center.maxLifetime * 0.2, 0, 150)
+                        : p.map(center.lifetime, center.maxLifetime * 0.2, center.maxLifetime, 150, 0);
+                    
+                    // Pulsating effect
+                    const pulseSize = center.size * (0.8 + 0.4 * Math.sin(center.lifetime * 0.05));
+                    
+                    // Draw glow
+                    for (let j = 3; j >= 0; j--) {
+                        p.fill(center.color[0], center.color[1], center.color[2], opacity * (0.3 - j * 0.07));
                         p.noStroke();
-
-                        // Create a blurred background using multiple overlapping circles
-                        for (let i = 0; i < 3; i++) {
-                            const blurOpacity = anim.opacity * (80 - i * 20);
-                            const blurSize = anim.size * (1.05 + i * 0.04);
-                            p.fill(255, 255, 255, blurOpacity);
-                            p.ellipse(anim.x, anim.y, blurSize);
-                        }
-                        p.pop();
-                        
-                        // Save current drawing settings
-                        p.push();
-                        
-                        // Apply rotation for gentle movement
-                        p.translate(anim.x, anim.y);
-                        p.rotate(anim.rotationOffset);
-                        p.translate(-anim.x, -anim.y);
-                        
-                        // Get the current frame image
-                        const img = anim.frameImages[anim.currentFrame];
-                        
-                        if (img) {
-                            // Set transparency
-                            p.tint(0, 0, 0, Math.min(255, anim.opacity * 950));
-        
-                            // Calculate height while preserving aspect ratio
-                            const aspectRatio = img.height / img.width || 1; // Default to 1 if undefined
-                            const drawHeight = anim.size * aspectRatio;
-                            
-                            // Draw the current frame centered at x,y 
-                            p.image(
-                                img,
-                                anim.x - anim.size/2,
-                                anim.y - drawHeight/2, // Correct vertical centering
-                                anim.size,
-                                drawHeight
-                            );
-        
-                            // Draw a second time with different color to create contrast
-                            p.tint(255, 255, 255, Math.min(255, anim.opacity * 400));
-                            
-                            p.image(
-                                img,
-                                anim.x - anim.size/2,
-                                anim.y - drawHeight/2,
-                                anim.size,
-                                drawHeight
-                            );
-                        } else {
-                            // Fallback if image is null
-                            p.fill(0, 0, 0, anim.opacity * 255);
-                            p.ellipse(anim.x, anim.y, anim.size * 0.5);
-                        }
-                        
-                        // Restore drawing settings
-                        p.pop();
-                    } else {
-                        // Fallback if no images are loaded
-                        p.push();
-                        p.noStroke();
-                        p.fill(0, 0, 0, anim.opacity * 255);
-                        p.ellipse(anim.x, anim.y, anim.size * 0.5);
-                        p.pop();
+                        p.ellipse(center.x, center.y, pulseSize * (1.2 + j * 0.2), pulseSize * (1.2 + j * 0.2));
                     }
-                } catch (error) {
-                    debugLog(`Hand animation error: ${error.message}`);
                     
-                    // Simple fallback
-                    p.push();
-                    p.noStroke();
-                    p.fill(0, 0, 0, 150);
-                    p.ellipse(handAnimation.x, handAnimation.y, 100);
-                    p.pop();
-                }
-            }
-            
-            function updateEmotionalState() {
-                try {
-                    // This would ideally be driven by real input analysis
-                    // For demo, we'll use a sine wave to simulate changing emotions
-                    intensityLevel = 0.5 + 0.4 * Math.sin(p.frameCount * 0.01);
-                    thoughtfulness = 0.5 + 0.4 * Math.sin(p.frameCount * 0.007 + 1);
+                    // Draw core
+                    p.fill(center.color[0], center.color[1], center.color[2], opacity);
+                    p.ellipse(center.x, center.y, pulseSize, pulseSize);
                     
-                    // Update color based on emotional state - ensure arrays are defined
-                    moodColor = [
-                        p.lerp(CALM_COLOR[0], INTENSE_COLOR[0], intensityLevel),
-                        p.lerp(CALM_COLOR[1], INTENSE_COLOR[1], intensityLevel),
-                        p.lerp(CALM_COLOR[2], INTENSE_COLOR[2], intensityLevel)
-                    ];
-                    
-                    // Occasionally create new emotional centers
-                    if (p.frameCount % 60 === 0 && p.random() < 0.3) {
-                        createEmotionalCenter();
+                    // Remove if expired
+                    if (center.lifetime >= center.maxLifetime) {
+                        emotionalCenters.splice(i, 1);
                     }
-                } catch (error) {
-                    debugLog(`Error in updateEmotionalState: ${error.message}`);
                 }
-            }
-            
-            function updateWaves() {
-                try {
-                    for (let wave of waves) {
-                        // Wave speed changes with intensity
-                        wave.phase += wave.speed * (0.5 + intensityLevel * 1.5);
-                        
-                        // Wave amplitude affected by intensity
-                        wave.currentAmplitude = wave.amplitude * (0.8 + intensityLevel * 0.8);
-                        
-                        // Wave color influenced by mood - ensure moodColor is valid
-                        if (Array.isArray(moodColor) && moodColor.length >= 3) {
-                            wave.color = [
-                                moodColor[0],
-                                moodColor[1],
-                                moodColor[2],
-                                180 * (0.7 + 0.3 * (1 - thoughtfulness)) // More transparent when thoughtful
-                            ];
-                        }
-                        
-                        // Wave thickness influenced by thoughtfulness
-                        wave.currentThickness = wave.thickness * (0.8 + 0.8 * (1 - thoughtfulness));
-                    }
-                } catch (error) {
-                    debugLog(`Error in updateWaves: ${error.message}`);
-                }
-            }
-            
-            function drawWaves() {
-                try {
-                    for (let i = 0; i < waves.length; i++) {
-                        const wave = waves[i];
-                        
-                        p.stroke(wave.color);
-                        p.strokeWeight(wave.currentThickness);
-                        p.noFill();
-                        
-                        p.beginShape();
-                        for (let x = 0; x < p.width; x += 5) {
-                            // Calculate y position with multiple sine waves for complexity
-                            const y = wave.baseHeight + 
-                                    wave.currentAmplitude * Math.sin(x * wave.frequency + wave.phase) +
-                                    wave.currentAmplitude * 0.5 * Math.sin(x * wave.frequency * 2 + wave.phase * 1.5);
+                
+                // Draw connections between emotional centers
+                if (emotionalCenters.length > 1) {
+                    for (let i = 0; i < emotionalCenters.length; i++) {
+                        for (let j = i + 1; j < emotionalCenters.length; j++) {
+                            const c1 = emotionalCenters[i];
+                            const c2 = emotionalCenters[j];
                             
-                            p.vertex(x, y);
-                        }
-                        p.endShape();
-                    }
-                } catch (error) {
-                    debugLog(`Error in drawWaves: ${error.message}`);
-                }
-            }
-            
-            function drawEmotionalCenters() {
-                try {
-                    // Update and draw emotional centers
-                    for (let i = emotionalCenters.length - 1; i >= 0; i--) {
-                        const center = emotionalCenters[i];
-                        
-                        // Update lifetime
-                        center.lifetime++;
-                        
-                        // Calculate opacity based on lifetime
-                        const opacity = center.lifetime < center.maxLifetime * 0.2 
-                            ? p.map(center.lifetime, 0, center.maxLifetime * 0.2, 0, 150)
-                            : p.map(center.lifetime, center.maxLifetime * 0.2, center.maxLifetime, 150, 0);
-                        
-                        // Pulsating effect
-                        const pulseSize = center.size * (0.8 + 0.4 * Math.sin(center.lifetime * 0.05));
-                        
-                        // Draw glow
-                        for (let j = 3; j >= 0; j--) {
-                            p.fill(center.color[0], center.color[1], center.color[2], opacity * (0.3 - j * 0.07));
-                            p.noStroke();
-                            p.ellipse(center.x, center.y, pulseSize * (1.2 + j * 0.2), pulseSize * (1.2 + j * 0.2));
-                        }
-                        
-                        // Draw core
-                        p.fill(center.color[0], center.color[1], center.color[2], opacity);
-                        p.ellipse(center.x, center.y, pulseSize, pulseSize);
-                        
-                        // Remove if expired
-                        if (center.lifetime >= center.maxLifetime) {
-                            emotionalCenters.splice(i, 1);
-                        }
-                    }
-                } catch (error) {
-                    debugLog(`Error in drawEmotionalCenters: ${error.message}`);
-                }
-            }
-            
-            function drawPatternRecognition() {
-                try {
-                    // Draw connections between emotional centers to represent pattern recognition
-                    if (emotionalCenters.length > 1) {
-                        for (let i = 0; i < emotionalCenters.length; i++) {
-                            for (let j = i + 1; j < emotionalCenters.length; j++) {
-                                const c1 = emotionalCenters[i];
-                                const c2 = emotionalCenters[j];
+                            // Calculate distance
+                            const d = p.dist(c1.x, c1.y, c2.x, c2.y);
+                            
+                            // Only connect if not too far
+                            if (d < p.width * 0.4) {
+                                // Calculate connection strength based on distance
+                                const strength = p.map(d, 0, p.width * 0.4, 0.8, 0);
                                 
-                                // Calculate distance
-                                const d = p.dist(c1.x, c1.y, c2.x, c2.y);
+                                // Draw connection with varying opacity
+                                p.stroke(moodColor[0], moodColor[1], moodColor[2], 100 * strength);
+                                p.strokeWeight(1 + 2 * strength);
                                 
-                                // Only connect if not too far
-                                if (d < p.width * 0.4) {
-                                    // Calculate connection strength based on distance
-                                    const strength = p.map(d, 0, p.width * 0.4, 0.8, 0);
+                                // Draw curved line with flowing animation
+                                p.noFill();
+                                p.beginShape();
+                                const steps = 20;
+                                for (let t = 0; t <= steps; t++) {
+                                    const progress = t / steps;
                                     
-                                    // Ensure moodColor is valid
-                                    if (Array.isArray(moodColor) && moodColor.length >= 3) {
-                                        // Draw connection with varying opacity
-                                        p.stroke(moodColor[0], moodColor[1], moodColor[2], 100 * strength);
-                                        p.strokeWeight(1 + 2 * strength);
-                                        
-                                        // Draw curved line with flowing animation
-                                        p.noFill();
-                                        p.beginShape();
-                                        const steps = 20;
-                                        for (let t = 0; t <= steps; t++) {
-                                            const progress = t / steps;
-                                            
-                                            // Calculate point along curve with some vertical displacement
-                                            const x = p.lerp(c1.x, c2.x, progress);
-                                            const displacement = Math.sin(progress * Math.PI) * 30 * 
-                                                              Math.sin(p.frameCount * 0.05 + i * 0.5 + j * 0.5);
-                                            const y = p.lerp(c1.y, c2.y, progress) + displacement;
-                                            
-                                            p.vertex(x, y);
-                                        }
-                                        p.endShape();
-                                        
-                                        // Add moving particles along the connection for energy flow
-                                        if (p.frameCount % 10 === 0 && p.random() < 0.3 * intensityLevel) {
-                                            addFlowingParticle(c1, c2);
-                                        }
-                                    }
+                                    // Calculate point along curve with some vertical displacement
+                                    const x = p.lerp(c1.x, c2.x, progress);
+                                    const displacement = Math.sin(progress * Math.PI) * 30 * 
+                                                      Math.sin(p.frameCount * 0.05 + i * 0.5 + j * 0.5);
+                                    const y = p.lerp(c1.y, c2.y, progress) + displacement;
+                                    
+                                    p.vertex(x, y);
+                                }
+                                p.endShape();
+                                
+                                // Add moving particles along the connection
+                                if (p.frameCount % 10 === 0 && p.random() < 0.3 * intensityLevel) {
+                                    flowParticles.push({
+                                        startX: c1.x,
+                                        startY: c1.y,
+                                        endX: c2.x,
+                                        endY: c2.y,
+                                        progress: 0,
+                                        speed: p.random(0.01, 0.03) * (0.5 + intensityLevel),
+                                        size: p.random(3, 6),
+                                        color: [...moodColor, 200]
+                                    });
                                 }
                             }
                         }
                     }
-                } catch (error) {
-                    debugLog(`Error in drawPatternRecognition: ${error.message}`);
                 }
-            }
-            
-            function addFlowingParticle(start, end) {
-                // Make sure moodColor is valid
-                const particleColor = Array.isArray(moodColor) && moodColor.length >= 3 ?
-                                     [moodColor[0], moodColor[1], moodColor[2], 200] :
-                                     [NEUTRAL_COLOR[0], NEUTRAL_COLOR[1], NEUTRAL_COLOR[2], 200];
                 
-                flowParticles.push({
-                    startX: start.x,
-                    startY: start.y,
-                    endX: end.x,
-                    endY: end.y,
-                    progress: 0,
-                    speed: p.random(0.01, 0.03) * (0.5 + intensityLevel),
-                    size: p.random(3, 6),
-                    color: particleColor
-                });
-            }
-            
-            function updateAndDrawFlowParticles() {
-                try {
-                    for (let i = flowParticles.length - 1; i >= 0; i--) {
-                        const particle = flowParticles[i];
-                        
-                        // Update progress
-                        particle.progress += particle.speed;
-                        
-                        // Calculate current position
-                        const x = p.lerp(particle.startX, particle.endX, particle.progress);
-                        const y = p.lerp(particle.startY, particle.endY, particle.progress);
-                        
-                        // Draw particle
-                        p.noStroke();
-                        p.fill(particle.color);
-                        p.ellipse(x, y, particle.size, particle.size);
-                        
-                        // Remove if completed journey
-                        if (particle.progress >= 1) {
-                            flowParticles.splice(i, 1);
-                        }
+                // Update and draw flow particles
+                for (let i = flowParticles.length - 1; i >= 0; i--) {
+                    const particle = flowParticles[i];
+                    
+                    // Update progress
+                    particle.progress += particle.speed;
+                    
+                    // Calculate current position
+                    const x = p.lerp(particle.startX, particle.endX, particle.progress);
+                    const y = p.lerp(particle.startY, particle.endY, particle.progress);
+                    
+                    // Draw particle
+                    p.noStroke();
+                    p.fill(particle.color);
+                    p.ellipse(x, y, particle.size, particle.size);
+                    
+                    // Remove if completed journey
+                    if (particle.progress >= 1) {
+                        flowParticles.splice(i, 1);
                     }
-                } catch (error) {
-                    debugLog(`Error in updateAndDrawFlowParticles: ${error.message}`);
                 }
-            }
-            
-            // Draw touch feedback
-            function drawTouchFeedback() {
-                try {
-                    if (lastTouchPosition.active) {
-                        p.noStroke();
-                        p.fill(255, 182, 193, 80);
-                        p.ellipse(lastTouchPosition.x, lastTouchPosition.y, 40, 40);
-                        
-                        // Draw ripple effect
-                        p.noFill();
-                        p.stroke(255, 182, 193, 60 - lastTouchPosition.timer);
-                        p.strokeWeight(2);
-                        p.ellipse(lastTouchPosition.x, lastTouchPosition.y, 40 + lastTouchPosition.timer, 40 + lastTouchPosition.timer);
-                        
-                        lastTouchPosition.timer++;
-                        if (lastTouchPosition.timer > 20) {
-                            lastTouchPosition.active = false;
-                        }
-                    }
-                } catch (error) {
-                    debugLog(`Error in drawTouchFeedback: ${error.message}`);
-                }
-            }
-            
-            // Function to make nearby emotional centers respond to hand or interaction
-            function interactWithNearbyCenters(x, y, radius, intensity) {
-                try {
-                    for (let i = 0; i < emotionalCenters.length; i++) {
-                        const center = emotionalCenters[i];
-                        const d = p.dist(x, y, center.x, center.y);
-                        
-                        if (d < radius) {
-                            // Move center slightly toward the interaction point
-                            const angle = p.atan2(center.y - y, center.x - x);
-                            const force = p.map(d, 0, radius, 0.05, 0.01);
-                            
-                            center.x -= p.cos(angle) * force * d;
-                            center.y -= p.sin(angle) * force * d;
-                            
-                            // Increase intensity based on proximity
-                            center.intensity = p.min(1, center.intensity + 0.05);
-                        }
-                    }
-                } catch (error) {
-                    debugLog(`Error in interactWithNearbyCenters: ${error.message}`);
-                }
-            }
-            
-            // Main draw function
-            p.draw = function() {
-                try {
-                    // Track draw calls for debugging
-                    if (p.frameCount % 60 === 0) {
-                        debugLog(`Draw running, frame ${p.frameCount}`);
-                    }
-                    
-                    // Semi-transparent background for trail effect
-                    p.background(240, 245, 250, 20);
-                    
-                    // Simulate changing emotional intensity
-                    updateEmotionalState();
-                    
-                    // Update wave properties based on emotional state
-                    updateWaves();
-                    
-                    // Draw all waves
-                    drawWaves();
-                    
-                    // Draw emotional centers (points of focus)
-                    drawEmotionalCenters();
-                    
-                    // Draw pattern recognition visualization
-                    drawPatternRecognition();
-                    
-                    // Update and draw flow particles
-                    updateAndDrawFlowParticles();
-                    
-                    // Draw touch feedback
-                    drawTouchFeedback();
-                    
-                    // Draw hand animation on top
-                    drawHandAnimationFrame();
-                } catch (error) {
-                    debugLog(`Error in draw: ${error.message}`);
+                
+                // Occasionally change help message
+                if (p.frameCount % 300 === 0) {
+                    changeHelpMessage();
                 }
             };
             
-            // Mouse interactions
+            // Mouse/touch interaction
             p.mousePressed = function() {
-                try {
-                    if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
-                        debugLog(`Mouse pressed at ${p.mouseX}, ${p.mouseY}`);
-                        
-                        // Always try to resume audio context on user interaction
-                        p.userStartAudio().then(() => {
-                            debugLog("Audio context started on mouse press");
-                        }).catch(e => {
-                            debugLog("Failed to start audio on mouse press: " + e.message);
-                        });
-                        
-                        // Create an emotional center at mouse position
-                        // Make sure we create a valid color array
-                        const newCenter = {
-                            x: p.mouseX,
-                            y: p.mouseY,
-                            size: p.random(30, 70),
-                            intensity: 1.0,
-                            lifetime: 0,
-                            maxLifetime: p.random(180, 300),
-                            color: [INTENSE_COLOR[0], INTENSE_COLOR[1], INTENSE_COLOR[2], 180] // Use constants directly
-                        };
-                        emotionalCenters.push(newCenter);
-                        
-                        // Interact with nearby centers
-                        interactWithNearbyCenters(p.mouseX, p.mouseY, 200, 0.8);
-                        
-                        // Play happy sound
-                        playEmotionalSound('happy');
-                        
-                        return false; // Prevent default
-                    }
-                } catch (error) {
-                    debugLog(`Error in mousePressed: ${error.message}`);
+                if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
+                    // Create an emotional center at mouse position
+                    emotionalCenters.push({
+                        x: p.mouseX,
+                        y: p.mouseY,
+                        size: p.random(30, 70),
+                        intensity: 1.0,
+                        lifetime: 0,
+                        maxLifetime: p.random(180, 300),
+                        color: [...INTENSE_COLOR, 180]
+                    });
+                    
+                    return false; // Prevent default
                 }
             };
             
             p.mouseDragged = function() {
-                try {
-                    if (p.frameCount % 5 === 0) { // Limit creation rate
-                        debugLog(`Mouse dragged at ${p.mouseX}, ${p.mouseY}`);
-                        
-                        // Make sure we have a valid color array
-                        const centerColor = Array.isArray(moodColor) && moodColor.length >= 3 ? 
-                                          [moodColor[0], moodColor[1], moodColor[2], 150] : 
-                                          [NEUTRAL_COLOR[0], NEUTRAL_COLOR[1], NEUTRAL_COLOR[2], 150];
-                        
+                if (p.frameCount % 5 === 0) { // Limit creation rate
+                    emotionalCenters.push({
+                        x: p.mouseX,
+                        y: p.mouseY,
+                        size: p.random(15, 40),
+                        intensity: 0.7,
+                        lifetime: 0,
+                        maxLifetime: p.random(60, 120),
+                        color: [...moodColor, 150]
+                    });
+                }
+                
+                // Increase intensity when dragging
+                intensityLevel = Math.min(1, intensityLevel + 0.02);
+                
+                return false; // Prevent default
+            };
+            
+            p.doubleClicked = function() {
+                // Reset visualization
+                emotionalCenters = [];
+                intensityLevel = 0.5;
+                thoughtfulness = 0.5;
+                return false; // Prevent default
+            };
+            
+            p.windowResized = function() {
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
+                
+                // Adjust wave base heights
+                for (let i = 0; i < waves.length; i++) {
+                    waves[i].baseHeight = p.height * (0.3 + i * 0.05);
+                }
+            };
+            
+            // Touch support for mobile
+            p.touchStarted = function() {
+                if (p.touches.length > 0 && p.touches[0]) {
+                    // Get touch coordinates
+                    const touchX = p.touches[0].x || p.touches[0].clientX || 0;
+                    const touchY = p.touches[0].y || p.touches[0].clientY || 0;
+                    
+                    // Create an emotional center
+                    if (touchX > 0 && touchX < p.width && touchY > 0 && touchY < p.height) {
                         emotionalCenters.push({
-                            x: p.mouseX,
-                            y: p.mouseY,
+                            x: touchX,
+                            y: touchY,
+                            size: p.random(30, 70),
+                            intensity: 1.0,
+                            lifetime: 0,
+                            maxLifetime: p.random(180, 300),
+                            color: [...INTENSE_COLOR, 180]
+                        });
+                    }
+                }
+                
+                return false; // Prevent default
+            };
+            
+            p.touchMoved = function() {
+                if (p.touches.length > 0 && p.touches[0]) {
+                    // Get touch coordinates
+                    const touchX = p.touches[0].x || p.touches[0].clientX || 0;
+                    const touchY = p.touches[0].y || p.touches[0].clientY || 0;
+                    
+                    // Add emotional centers along the drag path (but not too many)
+                    if (p.frameCount % 5 === 0) {
+                        emotionalCenters.push({
+                            x: touchX,
+                            y: touchY,
                             size: p.random(15, 40),
                             intensity: 0.7,
                             lifetime: 0,
                             maxLifetime: p.random(60, 120),
-                            color: centerColor
+                            color: [...moodColor, 150]
                         });
                         
-                        // Occasionally play sounds during drag
-                        if (p.frameCount % 30 === 0) { // Every ~0.5 seconds during drag
-                            // Pick a random emotional state
-                            const emotions = ['happy', 'surprise', 'confusion', 'over-empathetic'];
-                            const randomEmotion = emotions[Math.floor(p.random(emotions.length))];
-                            playEmotionalSound(randomEmotion);
-                        }
+                        // Increase intensity when dragging
+                        intensityLevel = Math.min(1, intensityLevel + 0.02);
                     }
-                    
-                    // Interact with nearby centers
-                    interactWithNearbyCenters(p.mouseX, p.mouseY, 150, 0.5);
-                    
-                    // Increase intensity when dragging
-                    intensityLevel = Math.min(1, intensityLevel + 0.02);
-                    
-                    return false; // Prevent default
-                } catch (error) {
-                    debugLog(`Error in mouseDragged: ${error.message}`);
                 }
-            };
-            
-            p.doubleClicked = function() {
-                try {
-                    debugLog("Double-click detected - resetting visualization");
-                    
-                    // Reset visualization
-                    emotionalCenters = [];
-                    intensityLevel = 0.5;
-                    thoughtfulness = 0.5;
-                    
-                    // Play surprise sound on reset
-                    playEmotionalSound('surprise');
-                    
-                    return false; // Prevent default
-                } catch (error) {
-                    debugLog(`Error in doubleClicked: ${error.message}`);
-                }
-            };
-            
-            // Add touch support for mobile
-            p.touchStarted = function() {
-                try {
-                    if (p.touches.length > 0) {
-                        // Always try to resume audio context on user interaction
-                        p.userStartAudio().then(() => {
-                            debugLog("Audio context started on touch");
-                        }).catch(e => {
-                            debugLog("Failed to start audio on touch: " + e.message);
-                        });
-                        
-                        // Get more accurate touch coordinates
-                        const touchX = p.touches[0].clientX || p.touches[0].x || 0;
-                        const touchY = p.touches[0].clientY || p.touches[0].y || 0;
-                        
-                        debugLog(`Touch started at ${touchX}, ${touchY}`);
-                        
-                        // Make sure touch coordinates are within canvas
-                        if (touchX > 0 && touchX < p.width && touchY > 0 && touchY < p.height) {
-                            // Create an emotional center with a valid color array
-                            emotionalCenters.push({
-                                x: touchX,
-                                y: touchY,
-                                size: p.random(30, 70),
-                                intensity: 1.0,
-                                lifetime: 0,
-                                maxLifetime: p.random(180, 300),
-                                color: [INTENSE_COLOR[0], INTENSE_COLOR[1], INTENSE_COLOR[2], 180]
-                            });
-                            
-                            // Interact with nearby centers
-                            interactWithNearbyCenters(touchX, touchY, 200, 0.8);
-                            
-                            // Show touch indicator
-                            showTouchIndicator(touchX, touchY);
-                            lastTouchPosition = {x: touchX, y: touchY, active: true, timer: 0};
-                            
-                            // Play happy sound on touch
-                            playEmotionalSound('happy');
-                        }
-                    }
-                    
-                    // Always return false to prevent default behavior
-                    return false;
-                } catch (error) {
-                    debugLog(`Error in touchStarted: ${error.message}`);
-                    return false;
-                }
-            };
-            
-            p.touchMoved = function() {
-                try {
-                    if (p.touches.length > 0) {
-                        // Get touch coordinates with fallbacks
-                        let touchX = 0, touchY = 0;
-                        
-                        // Try different ways to get touch coordinates
-                        if (p.touches[0].clientX !== undefined) {
-                            touchX = p.touches[0].clientX;
-                            touchY = p.touches[0].clientY;
-                        } else if (p.touches[0].x !== undefined) {
-                            touchX = p.touches[0].x;
-                            touchY = p.touches[0].y;
-                        } else {
-                            // Use the canvas-relative touch position
-                            touchX = p.touchX || 0;
-                            touchY = p.touchY || 0;
-                        }
-                        
-                        if (p.frameCount % 30 === 0) {
-                            debugLog(`Touch moved to ${touchX}, ${touchY}`);
-                        }
-
-                        // Show visual touch indicator
-                        lastTouchPosition = {x: touchX, y: touchY, active: true, timer: 0};
-                        showTouchIndicator(touchX, touchY);
-                        
-                        // Add emotional centers along the drag path (but not too many)
-                        if (p.frameCount % 5 === 0) {
-                            // Make sure we have a valid color array
-                            const centerColor = Array.isArray(moodColor) && moodColor.length >= 3 ? 
-                                          [moodColor[0], moodColor[1], moodColor[2], 150] : 
-                                          [NEUTRAL_COLOR[0], NEUTRAL_COLOR[1], NEUTRAL_COLOR[2], 150];
-                            
-                            emotionalCenters.push({
-                                x: touchX,
-                                y: touchY,
-                                size: p.random(15, 40),
-                                intensity: 0.7,
-                                lifetime: 0,
-                                maxLifetime: p.random(60, 120),
-                                color: centerColor
-                            });
-                            
-                            // Interact with nearby centers
-                            interactWithNearbyCenters(touchX, touchY, 150, 0.5);
-                            
-                            // Increase intensity when dragging
-                            intensityLevel = Math.min(1, intensityLevel + 0.02);
-                            
-                            // Occasionally play sounds during touch drag
-                            if (p.frameCount % 30 === 0) {
-                                // Pick a random emotional state for variation
-                                const emotions = ['happy', 'surprise', 'confusion', 'over-empathetic'];
-                                const randomEmotion = emotions[Math.floor(p.random(emotions.length))];
-                                playEmotionalSound(randomEmotion);
-                            }
-                        }
-                    }
-                            
-                    // Always prevent default to avoid page scrolling
-                    return false;
-                } catch (error) {
-                    debugLog(`Error in touchMoved: ${error.message}`);
-                    return false;
-                }
-            };
-            
-            // Add touch ended to play a sound when touch is released
-            p.touchEnded = function() {
-                try {
-                    // Play a random sound when touch ends
-                    if (p.random() < 0.5) { // 50% chance
-                        playEmotionalSound('sad');
-                    }
-                    return false;
-                } catch (error) {
-                    debugLog(`Error in touchEnded: ${error.message}`);
-                    return false;
-                }
-            };
-            
-            p.windowResized = function() {
-                try {
-                    debugLog("Window resized");
-                    p.resizeCanvas(p.windowWidth, p.windowHeight);
-                    
-                    // Adjust wave base heights
-                    for (let i = 0; i < waves.length; i++) {
-                        waves[i].baseHeight = p.height * (0.3 + i * 0.05);
-                    }
-                    
-                    // Keep hand animation centered when window resizes
-                    handAnimation.x = p.width / 2;
-                    handAnimation.y = p.height / 2;
-                } catch (error) {
-                    debugLog(`Error in windowResized: ${error.message}`);
-                }
+                
+                return false; // Prevent default
             };
         };
+        
+        // Prevent default touch behaviors ONLY after landing page is dismissed
+        document.addEventListener('touchmove', function(e) {
+            if (document.getElementById('landing-page').style.display === 'none') {
+                e.preventDefault();
+            }
+        }, { passive: false });
+        
+        document.addEventListener('touchstart', function(e) {
+            if (document.getElementById('landing-page').style.display === 'none' && 
+                !e.target.closest('#start-button')) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     </script>
 </body>
 </html>
