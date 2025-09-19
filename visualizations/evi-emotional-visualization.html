@@ -242,6 +242,22 @@
         // Global variables
         let p5Instance = null;
         
+        // Hand animation configuration
+        const handAnimation = {
+            frameCount: 6,
+            currentFrame: 0,
+            frameDuration: 100,
+            opacity: 0.85,
+            x: 0,
+            y: 0,
+            size: 250,
+            frameImages: [],
+            isPlaying: true,
+            rotationOffset: 0,
+            rotationSpeed: 0.001,
+            lastFrameTime: 0
+        };
+        
         // Start button event listener
         document.getElementById('start-button').addEventListener('click', startExperience);
         
@@ -278,6 +294,25 @@
             }, 5000);
         }
         
+        // Function to update hand animation frames
+        function updateHandAnimation() {
+            const anim = handAnimation;
+            
+            // Update rotation for gentle movement
+            anim.rotationOffset += anim.rotationSpeed;
+            
+            // Advance to next frame based on timing
+            setTimeout(() => {
+                anim.currentFrame = (anim.currentFrame + 1) % anim.frameCount;
+                
+                // Continue animation
+                requestAnimationFrame(updateHandAnimation);
+            }, anim.frameDuration);
+        }
+        
+        // Start animation loop
+        updateHandAnimation();
+        
         // Evi's visualization sketch
         const eviSketch = function(p) {
             // Store reference to the p5 instance
@@ -291,6 +326,10 @@
             let intensityLevel = 0.5;
             let thoughtfulness = 0.5;
             
+            // Sound elements
+            let interactionSound = null;
+            let lastSoundTime = 0;
+            
             // Color palettes
             const INTENSE_COLOR = [255, 182, 193];   // Light pink (#FFB6C1)
             const CALM_COLOR = [32, 178, 170];      // Light sea green (#20B2AA)
@@ -302,6 +341,148 @@
                 "Drag to create a stream of emotional energy"
             ];
             let activeHelpMessageIndex = 0;
+            
+            p.preload = function() {
+                console.log("Preloading assets...");
+                
+                // Try to load hand animation frames - NON-BLOCKING
+                try {
+                    for (let i = 1; i <= handAnimation.frameCount; i++) {
+                        // Load animation frames but don't wait for them
+                        p.loadImage(
+                            `evi-hand${i}.png`,
+                            img => {
+                                handAnimation.frameImages[i-1] = img;
+                                console.log(`Loaded hand frame ${i}`);
+                            },
+                            () => {
+                                console.log(`Failed to load hand frame ${i}, creating placeholder`);
+                                // Create placeholder image
+                                const placeholder = p.createGraphics(200, 200);
+                                placeholder.background(255, 255, 255, 0);
+                                placeholder.fill(255, 182, 193, 100);
+                                placeholder.noStroke();
+                                placeholder.ellipse(100, 100, 150, 150);
+                                handAnimation.frameImages[i-1] = placeholder;
+                            }
+                        );
+                    }
+                } catch(e) {
+                    console.log("Error loading animation frames:", e);
+                    // Create empty placeholders
+                    for (let i = 0; i < handAnimation.frameCount; i++) {
+                        const placeholder = p.createGraphics(200, 200);
+                        placeholder.background(255, 255, 255, 0);
+                        placeholder.fill(255, 182, 193, 100);
+                        placeholder.noStroke();
+                        placeholder.ellipse(100, 100, 150, 150);
+                        handAnimation.frameImages.push(placeholder);
+                    }
+                }
+                
+                // Try to load sound - NON-BLOCKING
+                try {
+                    p.soundFormats('mp3', 'wav');
+                    p.loadSound(
+                        'evi-over-empathetic-sound',
+                        sound => {
+                            interactionSound = sound;
+                            console.log("Sound loaded successfully");
+                        },
+                        err => {
+                            console.log("Error loading sound:", err);
+                        }
+                    );
+                } catch(e) {
+                    console.log("Error in sound preload:", e);
+                }
+            };
+            
+            // Helper function to play sound - with robust error handling
+            function playSound() {
+                try {
+                    // Only play sound if enough time has passed since last play
+                    if (!lastSoundTime || Date.now() - lastSoundTime > 2000) {
+                        if (interactionSound && interactionSound.isLoaded()) {
+                            // Make sure audio context is running
+                            p.userStartAudio().then(() => {
+                                interactionSound.setVolume(0.5);
+                                interactionSound.play();
+                                lastSoundTime = Date.now();
+                                console.log("Sound played");
+                            }).catch(e => {
+                                console.log("Error starting audio:", e);
+                            });
+                        }
+                    }
+                } catch(e) {
+                    console.log("Error playing sound:", e);
+                }
+            }
+            
+            // Draw hand animation frame
+            function drawHandAnimationFrame() {
+                try {
+                    const anim = handAnimation;
+                    
+                    if (anim.frameImages.length > 0 && anim.frameImages[anim.currentFrame]) {
+                        p.push();
+                        
+                        // Apply gentle rotation around center
+                        p.translate(anim.x, anim.y);
+                        p.rotate(anim.rotationOffset);
+                        p.translate(-anim.x, -anim.y);
+                        
+                        // First draw a visual indicator/background
+                        p.noStroke();
+                        
+                        // Create a blurred background for better visibility
+                        for (let i = 0; i < 3; i++) {
+                            const blurOpacity = anim.opacity * (100 - i * 20);
+                            const blurSize = anim.size * (1.05 + i * 0.04);
+                            p.fill(255, 255, 255, blurOpacity);
+                            p.ellipse(anim.x, anim.y, blurSize);
+                        }
+                        
+                        // Get the current frame image
+                        const img = anim.frameImages[anim.currentFrame];
+                        
+                        if (img) {
+                            // Calculate height preserving aspect ratio
+                            const aspectRatio = img.height / img.width || 1;
+                            const drawHeight = anim.size * aspectRatio;
+                            
+                            // Draw the image
+                            p.tint(255, 255, 255, Math.min(255, anim.opacity * 255));
+                            p.image(
+                                img,
+                                anim.x - anim.size/2,
+                                anim.y - drawHeight/2,
+                                anim.size,
+                                drawHeight
+                            );
+                        }
+                        
+                        p.pop();
+                    } else {
+                        // Draw fallback if no image is available
+                        p.push();
+                        p.noStroke();
+                        p.fill(255, 182, 193, 100);
+                        p.ellipse(anim.x, anim.y, 150);
+                        p.pop();
+                    }
+                } catch(e) {
+                    console.log("Error drawing animation frame:", e);
+                    
+                    // Simple fallback
+                    p.push();
+                    p.noStroke();
+                    p.fill(255, 182, 193, 100);
+                    p.ellipse(handAnimation.x, handAnimation.y, 150);
+                    p.pop();
+                }
+            }
             
             p.setup = function() {
                 console.log("p5 setup starting...");
@@ -338,8 +519,21 @@
                     });
                 }
                 
+                // Set hand animation position to center of canvas
+                handAnimation.x = p.width / 2;
+                handAnimation.y = p.height / 2;
+                
                 // CRITICAL: Create help message elements
                 createHelpMessages();
+                
+                // Try to initialize audio context
+                try {
+                    p.userStartAudio().catch(e => {
+                        console.log("Audio will be initialized on user interaction");
+                    });
+                } catch(e) {
+                    console.log("Audio initialization error:", e);
+                }
                 
                 // CRITICAL: Hide loading screen now that setup is complete
                 document.getElementById('loading-screen').style.display = 'none';
@@ -534,6 +728,9 @@
                     }
                 }
                 
+                // Draw hand animation in the center
+                drawHandAnimationFrame();
+                
                 // Occasionally change help message
                 if (p.frameCount % 300 === 0) {
                     changeHelpMessage();
@@ -553,6 +750,9 @@
                         maxLifetime: p.random(180, 300),
                         color: [...INTENSE_COLOR, 180]
                     });
+                    
+                    // Try to play sound
+                    playSound();
                     
                     return false; // Prevent default
                 }
@@ -592,53 +792,76 @@
                 for (let i = 0; i < waves.length; i++) {
                     waves[i].baseHeight = p.height * (0.3 + i * 0.05);
                 }
+                
+                // Update hand animation position
+                handAnimation.x = p.width / 2;
+                handAnimation.y = p.height / 2;
             };
             
             // Touch support for mobile
             p.touchStarted = function() {
-                if (p.touches.length > 0 && p.touches[0]) {
-                    // Get touch coordinates
-                    const touchX = p.touches[0].x || p.touches[0].clientX || 0;
-                    const touchY = p.touches[0].y || p.touches[0].clientY || 0;
-                    
-                    // Create an emotional center
-                    if (touchX > 0 && touchX < p.width && touchY > 0 && touchY < p.height) {
-                        emotionalCenters.push({
-                            x: touchX,
-                            y: touchY,
-                            size: p.random(30, 70),
-                            intensity: 1.0,
-                            lifetime: 0,
-                            maxLifetime: p.random(180, 300),
-                            color: [...INTENSE_COLOR, 180]
-                        });
+                try {
+                    if (p.touches.length > 0 && p.touches[0]) {
+                        // Try to initialize audio on first touch
+                        p.userStartAudio();
+                        
+                        // Get touch coordinates
+                        const touchX = p.touches[0].x || p.touches[0].clientX || 0;
+                        const touchY = p.touches[0].y || p.touches[0].clientY || 0;
+                        
+                        // Create an emotional center
+                        if (touchX > 0 && touchX < p.width && touchY > 0 && touchY < p.height) {
+                            emotionalCenters.push({
+                                x: touchX,
+                                y: touchY,
+                                size: p.random(30, 70),
+                                intensity: 1.0,
+                                lifetime: 0,
+                                maxLifetime: p.random(180, 300),
+                                color: [...INTENSE_COLOR, 180]
+                            });
+                            
+                            // Try to play sound
+                            playSound();
+                        }
                     }
+                } catch(e) {
+                    console.log("Error in touchStarted:", e);
                 }
                 
                 return false; // Prevent default
             };
             
             p.touchMoved = function() {
-                if (p.touches.length > 0 && p.touches[0]) {
-                    // Get touch coordinates
-                    const touchX = p.touches[0].x || p.touches[0].clientX || 0;
-                    const touchY = p.touches[0].y || p.touches[0].clientY || 0;
-                    
-                    // Add emotional centers along the drag path (but not too many)
-                    if (p.frameCount % 5 === 0) {
-                        emotionalCenters.push({
-                            x: touchX,
-                            y: touchY,
-                            size: p.random(15, 40),
-                            intensity: 0.7,
-                            lifetime: 0,
-                            maxLifetime: p.random(60, 120),
-                            color: [...moodColor, 150]
-                        });
+                try {
+                    if (p.touches.length > 0 && p.touches[0]) {
+                        // Get touch coordinates
+                        const touchX = p.touches[0].x || p.touches[0].clientX || 0;
+                        const touchY = p.touches[0].y || p.touches[0].clientY || 0;
                         
-                        // Increase intensity when dragging
-                        intensityLevel = Math.min(1, intensityLevel + 0.02);
+                        // Add emotional centers along the drag path (but not too many)
+                        if (p.frameCount % 5 === 0) {
+                            emotionalCenters.push({
+                                x: touchX,
+                                y: touchY,
+                                size: p.random(15, 40),
+                                intensity: 0.7,
+                                lifetime: 0,
+                                maxLifetime: p.random(60, 120),
+                                color: [...moodColor, 150]
+                            });
+                            
+                            // Increase intensity when dragging
+                            intensityLevel = Math.min(1, intensityLevel + 0.02);
+                            
+                            // Occasionally play sound during dragging
+                            if (p.frameCount % 30 === 0) {
+                                playSound();
+                            }
+                        }
                     }
+                } catch(e) {
+                    console.log("Error in touchMoved:", e);
                 }
                 
                 return false; // Prevent default
