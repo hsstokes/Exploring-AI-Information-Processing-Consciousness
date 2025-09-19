@@ -286,6 +286,34 @@
             transition: opacity 0.3s ease;
         }
         
+        /* Debug sound panel */
+        #debug-sound {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            z-index: 9999;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+            color: white;
+        }
+        
+        #debug-sound button {
+            background: #FFB6C1;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+        
+        #sound-status {
+            font-size: 12px;
+            margin-top: 5px;
+            font-family: monospace;
+        }
+        
     </style>
 </head>
 <body>
@@ -345,10 +373,27 @@
     <!-- p5.js visualization will be attached to this div -->
     <div id="visualization-overlay"></div>
     
+    <!-- Debug sound panel -->
+    <div id="debug-sound">
+        <button id="test-sound-btn">Test Sound</button>
+        <div id="sound-status">Sound Status: Unknown</div>
+    </div>
+    
     <script>
         // Debug helper function
         function debugLog(message) {
             console.log(message);
+            // Update debug panel if it exists
+            const debugPanel = document.getElementById('debug-panel-log');
+            if (debugPanel) {
+                const entry = document.createElement('div');
+                entry.textContent = message;
+                debugPanel.appendChild(entry);
+                // Keep only last 10 messages
+                while (debugPanel.children.length > 10) {
+                    debugPanel.removeChild(debugPanel.firstChild);
+                }
+            }
         }
 
         // Global error handler
@@ -453,8 +498,68 @@
                 debugLog(`Failed to initialize p5: ${error.message}`);
             }
             
+            // Set up debug sound button
+            document.getElementById('test-sound-btn').addEventListener('click', function() {
+                debugLog("Test sound button clicked");
+                if (p5Instance) {
+                    p5Instance.userStartAudio().then(() => {
+                        debugLog("Audio context started from test button: " + p5Instance.getAudioContext().state);
+                        if (p5Instance.happySound && p5Instance.happySound.isLoaded()) {
+                            p5Instance.happySound.play();
+                            debugLog("Playing happy sound from test button");
+                        } else {
+                            debugLog("Happy sound not loaded or not available");
+                        }
+                        
+                        // Update sound status display
+                        updateSoundStatus();
+                    }).catch(err => {
+                        debugLog("Failed to start audio from test button: " + err.message);
+                    });
+                }
+            });
+            
+            // Show debug panel if URL has debug parameter
+            if (window.location.search.includes('debug=true')) {
+                document.getElementById('debug-sound').style.display = 'block';
+            }
+            
             debugLog("Initialization complete");
         });
+        
+        // Update sound status in debug panel
+        function updateSoundStatus() {
+            if (!p5Instance) return;
+            
+            let statusText = "Sound Status:<br>";
+            statusText += `Audio Context: ${p5Instance.getAudioContext().state}<br>`;
+            
+            if (p5Instance.happySound) {
+                statusText += `Happy sound loaded: ${p5Instance.happySound.isLoaded()}<br>`;
+            } else {
+                statusText += "Happy sound not found<br>";
+            }
+            
+            if (p5Instance.sadSound) {
+                statusText += `Sad sound loaded: ${p5Instance.sadSound.isLoaded()}<br>`;
+            } else {
+                statusText += "Sad sound not found<br>";
+            }
+            
+            if (p5Instance.surpriseSound) {
+                statusText += `Surprise sound loaded: ${p5Instance.surpriseSound.isLoaded()}<br>`;
+            } else {
+                statusText += "Surprise sound not found<br>";
+            }
+            
+            if (p5Instance.confusionSound) {
+                statusText += `Confusion sound loaded: ${p5Instance.confusionSound.isLoaded()}<br>`;
+            } else {
+                statusText += "Confusion sound not found<br>";
+            }
+            
+            document.getElementById('sound-status').innerHTML = statusText;
+        }
         
         function startExperience() {
             debugLog("Starting experience");
@@ -467,6 +572,17 @@
                 document.getElementById('loading').style.display = 'flex';
                 document.getElementById('visualization-overlay').style.display = 'block';
                 document.getElementById('sound-note').style.display = 'block';
+                
+                // CRITICAL: Initialize audio context with user gesture
+                if (p5Instance) {
+                    p5Instance.userStartAudio().then(() => {
+                        debugLog("Audio context started successfully: " + p5Instance.getAudioContext().state);
+                        // Update debug status if shown
+                        updateSoundStatus();
+                    }).catch(e => {
+                        debugLog("Audio start error: " + e.message);
+                    });
+                }
                 
                 // Hide loading screen after a delay
                 setTimeout(function() {
@@ -556,7 +672,8 @@
             let happySound = null;     
             let sadSound = null;      
             let surpriseSound = null;  
-            let confusionSound = null; 
+            let confusionSound = null;
+            let overEmphaticSound = null;
             let lastSoundTime = 0;     // Track when last sound was played
             
             // Color palettes - teal and pink theme
@@ -591,24 +708,36 @@
                 // We wrap this in a try-catch to prevent crashing if sound files don't exist
                 try {
                     debugLog("Attempting to preload sounds");
-                    p.soundFormats('wav', 'mp3');
+                    p.soundFormats('mp3', 'wav');
                     
-                    // Load sound files directly without subdirectory
-                    happySound = p.loadSound('evi-happy-sound.wav', 
+                    // Load sound files - try both MP3 and WAV formats
+                    happySound = p.loadSound('evi-happy-sound', 
                         () => debugLog("Loaded happy sound"), 
                         (e) => debugLog("Failed to load happy sound: " + e.message));
                         
-                    sadSound = p.loadSound('evi-sad-sound.wav',
+                    sadSound = p.loadSound('evi-sad-sound',
                         () => debugLog("Loaded sad sound"), 
                         (e) => debugLog("Failed to load sad sound: " + e.message));
                         
-                    surpriseSound = p.loadSound('evi-surprise-sound.wav',
+                    surpriseSound = p.loadSound('evi-surprise-sound',
                         () => debugLog("Loaded surprise sound"), 
                         (e) => debugLog("Failed to load surprise sound: " + e.message));
                         
-                    confusionSound = p.loadSound('evi-confusion-sound.wav',
+                    confusionSound = p.loadSound('evi-confusion-sound',
                         () => debugLog("Loaded confusion sound"), 
                         (e) => debugLog("Failed to load confusion sound: " + e.message));
+                        
+                    overEmphaticSound = p.loadSound('evi-over-empathetic-sound',
+                        () => debugLog("Loaded over-empathetic sound"), 
+                        (e) => debugLog("Failed to load over-empathetic sound: " + e.message));
+                        
+                    // Expose sounds to the p5 instance for debug access
+                    p.happySound = happySound;
+                    p.sadSound = sadSound;
+                    p.surpriseSound = surpriseSound;
+                    p.confusionSound = confusionSound;
+                    p.overEmphaticSound = overEmphaticSound;
+                    
                 } catch(e) {
                     debugLog(`Audio preload error: ${e.message}`);
                 }
@@ -616,34 +745,59 @@
                 debugLog("p5 preload() completed");
             };
             
-            // Function to play emotional sounds
+            // Improved function to play emotional sounds
             function playEmotionalSound(emotionalState) {
                 try {
                     // Don't play sounds too frequently
-                    if (!lastSoundTime || Date.now() - lastSoundTime > 3000) { // 3 second cooldown
+                    if (!lastSoundTime || Date.now() - lastSoundTime > 2000) { // 2 second cooldown
                         let soundToPlay = null;
                         
+                        // First ensure audio context is running
+                        if (p.getAudioContext().state !== 'running') {
+                            debugLog("Audio context not running, attempting to resume");
+                            p.userStartAudio().then(() => {
+                                debugLog("Audio context resumed successfully");
+                            }).catch(e => {
+                                debugLog("Failed to resume audio context: " + e.message);
+                            });
+                        }
+                        
                         // Determine which sound to play based on emotional state
-                        if (emotionalState === 'happy' && happySound) {
+                        if (emotionalState === 'happy' && happySound && happySound.isLoaded()) {
                             soundToPlay = happySound;
-                        } else if (emotionalState === 'sad' && sadSound) {
+                            debugLog("Selected happy sound to play");
+                        } else if (emotionalState === 'sad' && sadSound && sadSound.isLoaded()) {
                             soundToPlay = sadSound;
-                        } else if (emotionalState === 'surprise' && surpriseSound) {
+                            debugLog("Selected sad sound to play");
+                        } else if (emotionalState === 'surprise' && surpriseSound && surpriseSound.isLoaded()) {
                             soundToPlay = surpriseSound;
-                        } else if (emotionalState === 'confusion' && confusionSound) {
+                            debugLog("Selected surprise sound to play");
+                        } else if (emotionalState === 'confusion' && confusionSound && confusionSound.isLoaded()) {
                             soundToPlay = confusionSound;
+                            debugLog("Selected confusion sound to play");
+                        } else if (emotionalState === 'over-empathetic' && overEmphaticSound && overEmphaticSound.isLoaded()) {
+                            soundToPlay = overEmphaticSound;
+                            debugLog("Selected over-empathetic sound to play");
+                        } else {
+                            debugLog(`No sound available for ${emotionalState} or sound not loaded`);
                         }
                         
                         // Play the sound if one was selected
-                        if (soundToPlay && soundToPlay.isLoaded()) {
+                        if (soundToPlay) {
+                            debugLog(`Attempting to play ${emotionalState} sound`);
                             soundToPlay.setVolume(0.5); // Set to 50% volume
                             soundToPlay.play();
                             lastSoundTime = Date.now();
-                            debugLog(`Playing ${emotionalState} sound`);
+                            debugLog(`Playing ${emotionalState} sound successfully`);
+                            return true;
                         }
+                    } else {
+                        debugLog("Sound cooldown active - waiting before playing next sound");
                     }
+                    return false;
                 } catch (error) {
                     debugLog(`Error playing sound: ${error.message}`);
+                    return false;
                 }
             }
             
@@ -665,6 +819,18 @@
                     handAnimation.x = p.width / 2;
                     handAnimation.y = p.height / 2;
                     handAnimation.lastFrameTime = Date.now();
+                    
+                    // Special handling for iOS devices
+                    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                    if (isIOS) {
+                        debugLog("iOS device detected - adding special audio handling");
+                        document.addEventListener('touchstart', function() {
+                            if (p.getAudioContext().state !== 'running') {
+                                debugLog("iOS: trying to resume audio context on touch");
+                                p.getAudioContext().resume();
+                            }
+                        }, {once: true});
+                    }
         
                     // Start continuous animation immediately
                     debugLog("Starting hand animation");
@@ -693,9 +859,10 @@
                     try {
                         debugLog("Initializing audio context");
                         p.userStartAudio().then(() => {
-                            debugLog("Audio context started successfully");
+                            debugLog("Audio context started successfully in setup");
+                            updateSoundStatus();
                         }).catch(e => {
-                            debugLog(`Could not start audio context: ${e.message}`);
+                            debugLog(`Could not start audio context in setup: ${e.message}`);
                         });
                     } catch (e) {
                         debugLog(`Error initializing audio: ${e.message}`);
@@ -1127,6 +1294,13 @@
                     if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
                         debugLog(`Mouse pressed at ${p.mouseX}, ${p.mouseY}`);
                         
+                        // Always try to resume audio context on user interaction
+                        p.userStartAudio().then(() => {
+                            debugLog("Audio context started on mouse press");
+                        }).catch(e => {
+                            debugLog("Failed to start audio on mouse press: " + e.message);
+                        });
+                        
                         // Create an emotional center at mouse position
                         // Make sure we create a valid color array
                         const newCenter = {
@@ -1176,7 +1350,7 @@
                         // Occasionally play sounds during drag
                         if (p.frameCount % 30 === 0) { // Every ~0.5 seconds during drag
                             // Pick a random emotional state
-                            const emotions = ['happy', 'surprise', 'confusion'];
+                            const emotions = ['happy', 'surprise', 'confusion', 'over-empathetic'];
                             const randomEmotion = emotions[Math.floor(p.random(emotions.length))];
                             playEmotionalSound(randomEmotion);
                         }
@@ -1216,6 +1390,13 @@
             p.touchStarted = function() {
                 try {
                     if (p.touches.length > 0) {
+                        // Always try to resume audio context on user interaction
+                        p.userStartAudio().then(() => {
+                            debugLog("Audio context started on touch");
+                        }).catch(e => {
+                            debugLog("Failed to start audio on touch: " + e.message);
+                        });
+                        
                         // Get more accurate touch coordinates
                         const touchX = p.touches[0].clientX || p.touches[0].x || 0;
                         const touchY = p.touches[0].clientY || p.touches[0].y || 0;
@@ -1308,7 +1489,7 @@
                             // Occasionally play sounds during touch drag
                             if (p.frameCount % 30 === 0) {
                                 // Pick a random emotional state for variation
-                                const emotions = ['happy', 'surprise', 'confusion'];
+                                const emotions = ['happy', 'surprise', 'confusion', 'over-empathetic'];
                                 const randomEmotion = emotions[Math.floor(p.random(emotions.length))];
                                 playEmotionalSound(randomEmotion);
                             }
