@@ -373,10 +373,9 @@
                 // Try to load sound - SIMPLIFIED PATH
                 try {
                     console.log("Loading sound...");
-                    p.soundFormats('mp3', 'wav');
+                    p.soundFormats('mp3');  // Only specify mp3 if that's what you're using
                     
-                    interactionSound = p.loadSound(
-                        ''../over-empathetic-sound.mp3',  
+                    p.interactionSound = p.loadSound('over-empathetic-sound',  // Match Claude's approach (no extension) 
                         function() {
                             console.log("Sound loaded successfully!");
                         },
