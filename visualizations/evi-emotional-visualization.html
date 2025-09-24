@@ -320,8 +320,7 @@
             let intensityLevel = 0.5;
             let thoughtfulness = 0.5;
             
-            // Sound elements
-            let interactionSound = null;
+            // Sound elements - FIXED: Declare interactionSound on p
             let lastSoundTime = 0;
             
             // Color palettes
@@ -370,12 +369,14 @@
                     );
                 }
                 
-                // Try to load sound - SIMPLIFIED PATH
+                // Try to load sound - FIXED VERSION
                 try {
                     console.log("Loading sound...");
-                    p.soundFormats('mp3');  // Only specify mp3 if that's what you're using
+                    p.soundFormats('mp3', 'wav');
                     
-                    p.interactionSound = p.loadSound('over-empathetic-sound',  // Match Claude's approach (no extension) 
+                    // FIXED: Use over-empathetic-sound.mp3 with full filename
+                    p.interactionSound = p.loadSound(
+                        'over-empathetic-sound.mp3',  
                         function() {
                             console.log("Sound loaded successfully!");
                         },
@@ -385,22 +386,25 @@
                     );
                 } catch (e) {
                     console.error('Sound loading exception:', e);
-                    interactionSound = null;
+                    p.interactionSound = null;
                 }
             };
             
-            // Helper function to play sound - IMPROVED VERSION
+            // Helper function to play sound - FIXED VERSION
             function playSound() {
                 try {
                     // Only play sound if enough time has passed
                     if (!lastSoundTime || Date.now() - lastSoundTime > 2000) {
                         // First ensure audio context is running
                         p.userStartAudio().then(() => {
-                            if (interactionSound && interactionSound.isLoaded() && !interactionSound.isPlaying()) {
-                                interactionSound.setVolume(0.5);
-                                interactionSound.play();
+                            // FIXED: Use p.interactionSound instead of interactionSound
+                            if (p.interactionSound && p.interactionSound.isLoaded() && !p.interactionSound.isPlaying()) {
+                                p.interactionSound.setVolume(0.5);
+                                p.interactionSound.play();
                                 lastSoundTime = Date.now();
                                 console.log("Sound played");
+                            } else {
+                                console.log("Sound not ready or already playing");
                             }
                         }).catch(e => {
                             console.log("Error starting audio:", e);
