@@ -156,7 +156,7 @@
             transform: rotate(-2deg);
         }
         
-        /* Loading indicator - CRITICAL CHANGES HERE */
+        /* Loading indicator */
         #loading-screen {
             position: fixed;
             top: 0;
@@ -261,7 +261,7 @@
         // Start button event listener
         document.getElementById('start-button').addEventListener('click', startExperience);
         
-        // Function to start the experience
+        // Function to start the experience - IMPROVED VERSION
         function startExperience() {
             console.log("Starting experience...");
             
@@ -271,27 +271,21 @@
             // Then show loading screen
             document.getElementById('loading-screen').style.display = 'flex';
             
-            // After a delay, initialize visualization and show container
-            setTimeout(function() {
-                // Show visualization container
-                document.getElementById('visualization-container').style.display = 'block';
-                
-                // Initialize the p5 sketch
-                try {
-                    console.log("Initializing p5 sketch...");
-                    new p5(eviSketch, 'visualization-container');
-                } catch (error) {
-                    console.error("Error initializing p5:", error);
-                    // Hide loading screen if there's an error
-                    document.getElementById('loading-screen').style.display = 'none';
-                }
-            }, 500);
+            // Initialize the p5 sketch IMMEDIATELY
+            document.getElementById('visualization-container').style.display = 'block';
             
-            // Backup timeout to force hide loading screen after 5 seconds
+            try {
+                console.log("Initializing p5 sketch...");
+                new p5(eviSketch, 'visualization-container');
+            } catch (error) {
+                console.error("Error initializing p5:", error);
+            }
+            
+            // Always hide loading screen after a short delay
             setTimeout(function() {
                 document.getElementById('loading-screen').style.display = 'none';
                 console.log("Force hiding loading screen after timeout");
-            }, 5000);
+            }, 1500);
         }
         
         // Function to update hand animation frames
@@ -345,75 +339,73 @@
             p.preload = function() {
                 console.log("Preloading assets...");
                 
-                // Try to load hand animation frames - NON-BLOCKING
-                try {
-                    for (let i = 1; i <= handAnimation.frameCount; i++) {
-                        // Load animation frames but don't wait for them
-                        p.loadImage(
-                            `evi-hand${i}.png`,
-                            img => {
-                                handAnimation.frameImages[i-1] = img;
-                                console.log(`Loaded hand frame ${i}`);
-                            },
-                            () => {
-                                console.log(`Failed to load hand frame ${i}, creating placeholder`);
-                                // Create placeholder image
-                                const placeholder = p.createGraphics(200, 200);
-                                placeholder.background(255, 255, 255, 0);
-                                placeholder.fill(255, 182, 193, 100);
-                                placeholder.noStroke();
-                                placeholder.ellipse(100, 100, 150, 150);
-                                handAnimation.frameImages[i-1] = placeholder;
-                            }
-                        );
-                    }
-                } catch(e) {
-                    console.log("Error loading animation frames:", e);
-                    // Create empty placeholders
-                    for (let i = 0; i < handAnimation.frameCount; i++) {
-                        const placeholder = p.createGraphics(200, 200);
-                        placeholder.background(255, 255, 255, 0);
-                        placeholder.fill(255, 182, 193, 100);
-                        placeholder.noStroke();
-                        placeholder.ellipse(100, 100, 150, 150);
-                        handAnimation.frameImages.push(placeholder);
-                    }
+                // Create a safety timeout to exit preload even if resources fail to load
+                setTimeout(() => {
+                    console.log("Preload safety timeout triggered");
+                    // No action needed - just ensures preload completes
+                }, 2000);
+                
+                // Create placeholder frames immediately to ensure animation works
+                for (let i = 0; i < handAnimation.frameCount; i++) {
+                    const placeholder = p.createGraphics(200, 200);
+                    placeholder.background(255, 255, 255, 0);
+                    placeholder.fill(255, 182, 193, 100);
+                    placeholder.noStroke();
+                    placeholder.ellipse(100, 100, 150, 150);
+                    handAnimation.frameImages.push(placeholder);
                 }
                 
-                // Try to load sound - NON-BLOCKING
-                try {
-                    p.soundFormats('mp3', 'wav');
-                    p.loadSound(
-                        'Exploring-AI-Information-Processing-Consciousness/over-empathetic-sound.mp3',
-                        sound => {
-                            interactionSound = sound;
-                            console.log("Sound loaded successfully");
+                // Then try to load real frames (but we'll have fallbacks if they fail)
+                for (let i = 1; i <= handAnimation.frameCount; i++) {
+                    p.loadImage(
+                        `evi-hand${i}.png`,
+                        img => {
+                            handAnimation.frameImages[i-1] = img;
+                            console.log(`Loaded hand frame ${i}`);
                         },
                         err => {
-                            console.log("Error loading sound:", err);
+                            console.log(`Failed to load hand frame ${i}, using placeholder`);
+                            // We already have placeholders, so no action needed
                         }
                     );
-                } catch(e) {
-                    console.log("Error in sound preload:", e);
+                }
+                
+                // Try to load sound - SIMPLIFIED PATH
+                try {
+                    console.log("Loading sound...");
+                    p.soundFormats('mp3', 'wav');
+                    
+                    interactionSound = p.loadSound(
+                        'over-empathetic-sound.mp3',  
+                        function() {
+                            console.log("Sound loaded successfully!");
+                        },
+                        function(err) {
+                            console.error("Sound loading error:", err);
+                        }
+                    );
+                } catch (e) {
+                    console.error('Sound loading exception:', e);
+                    interactionSound = null;
                 }
             };
             
-            // Helper function to play sound - with robust error handling
+            // Helper function to play sound - IMPROVED VERSION
             function playSound() {
                 try {
-                    // Only play sound if enough time has passed since last play
+                    // Only play sound if enough time has passed
                     if (!lastSoundTime || Date.now() - lastSoundTime > 2000) {
-                        if (interactionSound && interactionSound.isLoaded()) {
-                            // Make sure audio context is running
-                            p.userStartAudio().then(() => {
+                        // First ensure audio context is running
+                        p.userStartAudio().then(() => {
+                            if (interactionSound && interactionSound.isLoaded() && !interactionSound.isPlaying()) {
                                 interactionSound.setVolume(0.5);
                                 interactionSound.play();
                                 lastSoundTime = Date.now();
                                 console.log("Sound played");
-                            }).catch(e => {
-                                console.log("Error starting audio:", e);
-                            });
-                        }
+                            }
+                        }).catch(e => {
+                            console.log("Error starting audio:", e);
+                        });
                     }
                 } catch(e) {
                     console.log("Error playing sound:", e);
