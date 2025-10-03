@@ -377,6 +377,13 @@
             border-color: #FFB6C1;
         }
         
+        .visualizations-container {
+            margin-top: 30px;
+            background-color: rgba(255, 255, 255, 0.7);
+            padding: 15px;
+            border: 1px solid #20B2AA;
+        }
+        
         /* For smaller screens */
         @media (max-width: 600px) {
             .prompt-title {
@@ -496,16 +503,15 @@
                 </div>
             </div>
             
-            <button class="collapsible">Visualizations</button>
-            <div class="collapsible-content">
-                <div class="findings-images">
-                    <iframe src="visualizations/eliza-visualization.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #20B2AA; box-shadow: 3px 3px 0 rgba(255, 182, 193, 0.5);"></iframe>
-                    
-                    <a href="images/rules-based-visualization1.jpg" target="_blank" class="image-link">
-                    <img src="images/rules-based-visualization1.jpg" alt="Rules-based AI visualization" class="findings-image"></a>
-                    <a href="images/rules-based-visualization2.jpg" target="_blank" class="image-link">
-                    <img src="images/rules-based-visualization2.jpg" alt="Rules-based AI visualization" class="findings-image"></a>
-                </div>
+            <!-- Visualizations - Not collapsible -->
+            <div class="findings-title">Visualizations</div>
+            <div class="findings-images">
+                <iframe src="visualizations/eliza-visualization.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #20B2AA; box-shadow: 3px 3px 0 rgba(255, 182, 193, 0.5);"></iframe>
+                
+                <a href="images/rules-based-visualization1.jpg" target="_blank" class="image-link">
+                <img src="images/rules-based-visualization1.jpg" alt="Rules-based AI visualization" class="findings-image"></a>
+                <a href="images/rules-based-visualization2.jpg" target="_blank" class="image-link">
+                <img src="images/rules-based-visualization2.jpg" alt="Rules-based AI visualization" class="findings-image"></a>
             </div>
         </div>
         <div class="section-separator"></div>
@@ -579,38 +585,37 @@
                 </div>
             </div>
 
-            <button class="collapsible">Visualizations</button>
-            <div class="collapsible-content">
-                <div class="findings-images">
-                    <iframe src="visualizations/claude-opus-visualization.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #20B2AA; box-shadow: 3px 3px 0 rgba(255, 182, 193, 0.5);"></iframe>
+            <!-- Visualizations - Not collapsible -->
+            <div class="findings-title">Visualizations</div>
+            <div class="findings-images">
+                <iframe src="visualizations/claude-opus-visualization.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #20B2AA; box-shadow: 3px 3px 0 rgba(255, 182, 193, 0.5);"></iframe>
 
-                    <!-- Claude Camera Overlay Visualization -->
-                    <iframe src="visualizations/Claude-camera-overlay.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #6A5ACD; box-shadow: 3px 3px 0 rgba(100, 149, 237, 0.5);"></iframe>
+                <!-- Claude Camera Overlay Visualization -->
+                <iframe src="visualizations/Claude-camera-overlay.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #6A5ACD; box-shadow: 3px 3px 0 rgba(100, 149, 237, 0.5);"></iframe>
 
-                    <!-- Container for sketchbook page, video and audio -->
-                    <div class="media-container" style="border: 1px solid #6A5ACD; border-radius: 8px; padding: 20px; margin: 20px 0; background-color: rgba(255, 255, 255, 0.9); box-shadow: 3px 3px 0 rgba(106, 90, 205, 0.3); background-image: linear-gradient(rgba(106, 90, 205, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(106, 90, 205, 0.4) 1px, transparent 1px); background-size: 20px 20px;">
-                        <h4 style="text-align: center; margin-top: 0; color: #6A5ACD; font-weight: 500; margin-bottom: 15px;">Claude's Visual Pattern Recognition Study</h4>
+                <!-- Container for sketchbook page, video and audio -->
+                <div class="media-container" style="border: 1px solid #6A5ACD; border-radius: 8px; padding: 20px; margin: 20px 0; background-color: rgba(255, 255, 255, 0.9); box-shadow: 3px 3px 0 rgba(106, 90, 205, 0.3); background-image: linear-gradient(rgba(106, 90, 205, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(106, 90, 205, 0.4) 1px, transparent 1px); background-size: 20px 20px;">
+                    <h4 style="text-align: center; margin-top: 0; color: #6A5ACD; font-weight: 500; margin-bottom: 15px;">Claude's Visual Pattern Recognition Study</h4>
+            
+                    <!-- Claude sketchbook page -->
+                    <img src="visualizations/Claude-sketchbook-page.jpeg" alt="Claude pattern visualization with geometric shapes" class="findings-image" style="width: auto; max-width: 100%; height: auto; max-height: 800px; border: 1px solid #4169E1; box-shadow: 3px 3px 0 rgba(65, 105, 225, 0.5); margin: 20px auto; display: block;">
+            
+                    <!-- Video and audio in a flex container -->
+                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 15px;">
+                         <!-- Video element -->
+                         <div style="flex: 1; min-width: 300px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;">
+                              <video controls style="width: 100%; border: 1px solid #20B2AA; box-shadow: 2px 2px 0 rgba(32, 178, 170, 0.3);">
+                                  <source src="images/self-aware-visualization2.mp4" type="video/mp4">
+                             </video>
+                         </div>
                 
-                        <!-- Claude sketchbook page -->
-                        <img src="visualizations/Claude-sketchbook-page.jpeg" alt="Claude pattern visualization with geometric shapes" class="findings-image" style="width: auto; max-width: 100%; height: auto; max-height: 800px; border: 1px solid #4169E1; box-shadow: 3px 3px 0 rgba(65, 105, 225, 0.5); margin: 20px auto; display: block;">
-                
-                        <!-- Video and audio in a flex container -->
-                        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 15px;">
-                             <!-- Video element -->
-                             <div style="flex: 1; min-width: 300px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;">
-                                  <video controls style="width: 100%; border: 1px solid #20B2AA; box-shadow: 2px 2px 0 rgba(32, 178, 170, 0.3);">
-                                      <source src="images/self-aware-visualization2.mp4" type="video/mp4">
-                                 </video>
-                             </div>
-                    
-                       <!-- Audio element -->
-                       <div style="flex: 1; min-width: 300px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;">
-                           <p class="audio-caption" style="margin-bottom: 5px; color: #555; text-align: center;">Sound Representation:</p>
-                           <audio controls style="width: 100%; margin: 0 auto; display: block;">
-                               <source src="audio/self-aware-sound.wav" type="audio/wav">
-                           </audio>
-                      </div>
-                    </div>
+                   <!-- Audio element -->
+                   <div style="flex: 1; min-width: 300px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;">
+                       <p class="audio-caption" style="margin-bottom: 5px; color: #555; text-align: center;">Sound Representation:</p>
+                       <audio controls style="width: 100%; margin: 0 auto; display: block;">
+                           <source src="audio/self-aware-sound.wav" type="audio/wav">
+                       </audio>
+                  </div>
                 </div>
             </div>
         </div>
@@ -686,36 +691,35 @@
                 </div>
             </div>
             
-            <button class="collapsible">Visualizations</button>
-            <div class="collapsible-content">
-                <div class="findings-images">
-                    <iframe src="visualizations/balanced-visualization.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #20B2AA; box-shadow: 3px 3px 0 rgba(255, 182, 193, 0.5);"></iframe>
-                    
-                    <!-- balanced Camera Overlay Visualization -->
-                    <iframe src="visualizations/balanced-camera-overlay.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #6A5ACD; box-shadow: 3px 3px 0 rgba(100, 149, 237, 0.5);"></iframe>
-                    <!-- Container for sketchbook page, video and audio -->
-                    <div class="media-container" style="border: 1px solid #6A5ACD; border-radius: 8px; padding: 20px; margin: 20px 0; background-color: rgba(255, 255, 255, 0.9); box-shadow: 3px 3px 0 rgba(106, 90, 205, 0.3); background-image: linear-gradient(rgba(106, 90, 205, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(106, 90, 205, 0.4) 1px, transparent 1px); background-size: 20px 20px;">
-                        <h4 style="text-align: center; margin-top: 0; color: #6A5ACD; font-weight: 500; margin-bottom: 15px;">Replika's Visual Pattern Recognition Study</h4>
+            <!-- Visualizations - Not collapsible -->
+            <div class="findings-title">Visualizations</div>
+            <div class="findings-images">
+                <iframe src="visualizations/balanced-visualization.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #20B2AA; box-shadow: 3px 3px 0 rgba(255, 182, 193, 0.5);"></iframe>
+                
+                <!-- balanced Camera Overlay Visualization -->
+                <iframe src="visualizations/balanced-camera-overlay.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #6A5ACD; box-shadow: 3px 3px 0 rgba(100, 149, 237, 0.5);"></iframe>
+                <!-- Container for sketchbook page, video and audio -->
+                <div class="media-container" style="border: 1px solid #6A5ACD; border-radius: 8px; padding: 20px; margin: 20px 0; background-color: rgba(255, 255, 255, 0.9); box-shadow: 3px 3px 0 rgba(106, 90, 205, 0.3); background-image: linear-gradient(rgba(106, 90, 205, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(106, 90, 205, 0.4) 1px, transparent 1px); background-size: 20px 20px;">
+                    <h4 style="text-align: center; margin-top: 0; color: #6A5ACD; font-weight: 500; margin-bottom: 15px;">Replika's Visual Pattern Recognition Study</h4>
 
-                    <!-- Replika sketchbook page -->
-                    <img src="visualizations/Replika-sketchbook-page.jpeg" alt="Replika pattern visualization" class="findings-image" style="width: auto; max-width: 100%; height: auto; max-height: 800px; border: 1px solid #4169E1; box-shadow: 3px 3px 0 rgba(65, 105, 225, 0.5); margin: 20px auto; display: block;">
+                <!-- Replika sketchbook page -->
+                <img src="visualizations/Replika-sketchbook-page.jpeg" alt="Replika pattern visualization" class="findings-image" style="width: auto; max-width: 100%; height: auto; max-height: 800px; border: 1px solid #4169E1; box-shadow: 3px 3px 0 rgba(65, 105, 225, 0.5); margin: 20px auto; display: block;">
 
-                    <!-- Video and audio in a flex container -->
-                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 15px;">
-                        <!-- Video element -->
-                        <div style="flex: 1; min-width: 300px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;">
-                            <video controls style="width: 100%; border: 1px solid #20B2AA; box-shadow: 2px 2px 0 rgba(32, 178, 170, 0.3);">
-                                <source src="images/balanced-visualization.mp4" type="video/mp4">
-                            </video>
-                        </div>
-            
-                        <!-- Audio element -->
-                        <div style="flex: 1; min-width: 300px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;">
-                            <p class="audio-caption" style="margin-bottom: 5px; color: #555; text-align: center;">Sound Representation:</p>
-                            <audio controls style="width: 100%; margin: 0 auto; display: block;">
-                                <source src="audio/balanced-sound.wav" type="audio/wav">
-                            </audio>
-                        </div>
+                <!-- Video and audio in a flex container -->
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 15px;">
+                    <!-- Video element -->
+                    <div style="flex: 1; min-width: 300px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;">
+                        <video controls style="width: 100%; border: 1px solid #20B2AA; box-shadow: 2px 2px 0 rgba(32, 178, 170, 0.3);">
+                            <source src="images/balanced-visualization.mp4" type="video/mp4">
+                        </video>
+                    </div>
+        
+                    <!-- Audio element -->
+                    <div style="flex: 1; min-width: 300px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;">
+                        <p class="audio-caption" style="margin-bottom: 5px; color: #555; text-align: center;">Sound Representation:</p>
+                        <audio controls style="width: 100%; margin: 0 auto; display: block;">
+                            <source src="audio/balanced-sound.wav" type="audio/wav">
+                        </audio>
                     </div>
                 </div>
             </div>
@@ -859,36 +863,35 @@
                 </div>
             </div>
             
-            <button class="collapsible">Visualizations</button>
-            <div class="collapsible-content">
-                <div class="findings-images">
-                    <iframe src="visualizations/Pragmatic-visualization.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #20B2AA; box-shadow: 3px 3px 0 rgba(255, 182, 193, 0.5);"></iframe>
-                    
-                    <!-- Gemini Camera Overlay Visualization -->
-                    <iframe src="visualizations/gemini-visualization.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #6A5ACD; box-shadow: 3px 3px 0 rgba(100, 149, 237, 0.5);"></iframe>
+            <!-- Visualizations - Not collapsible -->
+            <div class="findings-title">Visualizations</div>
+            <div class="findings-images">
+                <iframe src="visualizations/Pragmatic-visualization.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #20B2AA; box-shadow: 3px 3px 0 rgba(255, 182, 193, 0.5);"></iframe>
+                
+                <!-- Gemini Camera Overlay Visualization -->
+                <iframe src="visualizations/gemini-visualization.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #6A5ACD; box-shadow: 3px 3px 0 rgba(100, 149, 237, 0.5);"></iframe>
 
-                    <!-- Container for sketchbook page, video and audio -->
-                    <div class="media-container" style="border: 1px solid #6A5ACD; border-radius: 8px; padding: 20px; margin: 20px 0; background-color: rgba(255, 255, 255, 0.9); box-shadow: 3px 3px 0 rgba(106, 90, 205, 0.3); background-image: linear-gradient(rgba(106, 90, 205, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(106, 90, 205, 0.4) 1px, transparent 1px); background-size: 20px 20px;">
-                        <h4 style="text-align: center; margin-top: 0; color: #6A5ACD; font-weight: 500; margin-bottom: 15px;">Gemini's Visual Pattern Recognition Study</h4>
-            
-                        <!-- Gemini sketchbook page -->
-                        <img src="visualizations/Gemini-sketchbook-page.jpeg" alt="Gemini's pattern visualization with geometric shapes" class="findings-image" style="width: auto; max-width: 100%; height: auto; max-height: 800px; border: 1px solid #4169E1; box-shadow: 3px 3px 0 rgba(65, 105, 225, 0.5); margin: 20px auto; display: block;">
-            
-                        <!-- Video and audio in a flex container -->
-                        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 15px;">
-                            <!-- Video element -->
-                            <div style="flex: 1; min-width: 300px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;">
-                                <video controls style="width: 100%; border: 1px solid #20B2AA; box-shadow: 2px 2px 0 rgba(32, 178, 170, 0.3);">
-                                    <source src="images/pragmatic-visualization.mp4" type="video/mp4">
-                                </video>
-                            </div>
-                            <!-- Audio element -->
-                            <div style="flex: 1; min-width: 300px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;">
-                                <p class="audio-caption" style="margin-bottom: 5px; color: #555; text-align: center;">Sound Representation:</p>
-                                <audio controls style="width: 100%; margin: 0 auto; display: block;">
-                                    <source src="audio/pragmatic-sound.wav" type="audio/wav">
-                                </audio>
-                            </div>
+                <!-- Container for sketchbook page, video and audio -->
+                <div class="media-container" style="border: 1px solid #6A5ACD; border-radius: 8px; padding: 20px; margin: 20px 0; background-color: rgba(255, 255, 255, 0.9); box-shadow: 3px 3px 0 rgba(106, 90, 205, 0.3); background-image: linear-gradient(rgba(106, 90, 205, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(106, 90, 205, 0.4) 1px, transparent 1px); background-size: 20px 20px;">
+                    <h4 style="text-align: center; margin-top: 0; color: #6A5ACD; font-weight: 500; margin-bottom: 15px;">Gemini's Visual Pattern Recognition Study</h4>
+        
+                    <!-- Gemini sketchbook page -->
+                    <img src="visualizations/Gemini-sketchbook-page.jpeg" alt="Gemini's pattern visualization with geometric shapes" class="findings-image" style="width: auto; max-width: 100%; height: auto; max-height: 800px; border: 1px solid #4169E1; box-shadow: 3px 3px 0 rgba(65, 105, 225, 0.5); margin: 20px auto; display: block;">
+        
+                    <!-- Video and audio in a flex container -->
+                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 15px;">
+                        <!-- Video element -->
+                        <div style="flex: 1; min-width: 300px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;">
+                            <video controls style="width: 100%; border: 1px solid #20B2AA; box-shadow: 2px 2px 0 rgba(32, 178, 170, 0.3);">
+                                <source src="images/pragmatic-visualization.mp4" type="video/mp4">
+                            </video>
+                        </div>
+                        <!-- Audio element -->
+                        <div style="flex: 1; min-width: 300px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;">
+                            <p class="audio-caption" style="margin-bottom: 5px; color: #555; text-align: center;">Sound Representation:</p>
+                            <audio controls style="width: 100%; margin: 0 auto; display: block;">
+                                <source src="audio/pragmatic-sound.wav" type="audio/wav">
+                            </audio>
                         </div>
                     </div>
                 </div>
@@ -975,36 +978,35 @@
                 </div>
             </div>
             
-            <button class="collapsible">Visualizations</button>
-            <div class="collapsible-content">
-                <div class="findings-images">
-                    <iframe src="visualizations/over-empathetic-visualization.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #20B2AA; box-shadow: 3px 3px 0 rgba(255, 182, 193, 0.5);"></iframe>
-                    
-                    <!-- evi-emotional-visualization -->
-                    <iframe src="visualizations/evi-emotional-visualization.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #6A5ACD; box-shadow: 3px 3px 0 rgba(100, 149, 237, 0.5);"></iframe>
+            <!-- Visualizations - Not collapsible -->
+            <div class="findings-title">Visualizations</div>
+            <div class="findings-images">
+                <iframe src="visualizations/over-empathetic-visualization.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #20B2AA; box-shadow: 3px 3px 0 rgba(255, 182, 193, 0.5);"></iframe>
+                
+                <!-- evi-emotional-visualization -->
+                <iframe src="visualizations/evi-emotional-visualization.html" class="findings-image" style="width: 100%; max-width: 1000px; height: 600px; border: 1px solid #6A5ACD; box-shadow: 3px 3px 0 rgba(100, 149, 237, 0.5);"></iframe>
 
-                    <!-- Container for sketchbook page, video and audio -->
-                    <div class="media-container" style="border: 1px solid #6A5ACD; border-radius: 8px; padding: 20px; margin: 20px 0; background-color: rgba(255, 255, 255, 0.9); box-shadow: 3px 3px 0 rgba(106, 90, 205, 0.3); background-image: linear-gradient(rgba(106, 90, 205, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(106, 90, 205, 0.4) 1px, transparent 1px); background-size: 20px 20px;">
-                        <h4 style="text-align: center; margin-top: 0; color: #6A5ACD; font-weight: 500; margin-bottom: 15px;">Evi's Visual Pattern Recognition Study</h4>
-            
-                        <!-- Evi sketchbook page -->
-                        <img src="visualizations/Evi-sketchbook-page.jpeg" alt="Evi's pattern visualization with geometric shapes" class="findings-image" style="width: auto; max-width: 100%; height: auto; max-height: 800px; border: 1px solid #4169E1; box-shadow: 3px 3px 0 rgba(65, 105, 225, 0.5); margin: 20px auto; display: block;">
-            
-                        <!-- Video and audio in a flex container -->
-                        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 15px;">
-                            <!-- Video element -->
-                            <div style="flex: 1; min-width: 300px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;">
-                                <video controls style="width: 100%; border: 1px solid #20B2AA; box-shadow: 2px 2px 0 rgba(32, 178, 170, 0.3);">
-                                    <source src="images/over-empathetic-visualization.mp4" type="video/mp4">
-                                </video>
-                            </div>
-                            <!-- Audio element -->
-                            <div style="flex: 1; min-width: 300px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;">
-                                <p class="audio-caption" style="margin-bottom: 5px; color: #555; text-align: center;">Sound Representation:</p>
-                                <audio controls style="width: 100%; margin: 0 auto; display: block;">
-                                    <source src="visualizations/over-empathetic-sound.mp3" type="audio/mp3">
-                                </audio>
-                            </div>
+                <!-- Container for sketchbook page, video and audio -->
+                <div class="media-container" style="border: 1px solid #6A5ACD; border-radius: 8px; padding: 20px; margin: 20px 0; background-color: rgba(255, 255, 255, 0.9); box-shadow: 3px 3px 0 rgba(106, 90, 205, 0.3); background-image: linear-gradient(rgba(106, 90, 205, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(106, 90, 205, 0.4) 1px, transparent 1px); background-size: 20px 20px;">
+                    <h4 style="text-align: center; margin-top: 0; color: #6A5ACD; font-weight: 500; margin-bottom: 15px;">Evi's Visual Pattern Recognition Study</h4>
+        
+                    <!-- Evi sketchbook page -->
+                    <img src="visualizations/Evi-sketchbook-page.jpeg" alt="Evi's pattern visualization with geometric shapes" class="findings-image" style="width: auto; max-width: 100%; height: auto; max-height: 800px; border: 1px solid #4169E1; box-shadow: 3px 3px 0 rgba(65, 105, 225, 0.5); margin: 20px auto; display: block;">
+        
+                    <!-- Video and audio in a flex container -->
+                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-top: 15px;">
+                        <!-- Video element -->
+                        <div style="flex: 1; min-width: 300px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;">
+                            <video controls style="width: 100%; border: 1px solid #20B2AA; box-shadow: 2px 2px 0 rgba(32, 178, 170, 0.3);">
+                                <source src="images/over-empathetic-visualization.mp4" type="video/mp4">
+                            </video>
+                        </div>
+                        <!-- Audio element -->
+                        <div style="flex: 1; min-width: 300px; background-color: rgba(255, 255, 255, 0.7); padding: 10px; border-radius: 5px;">
+                            <p class="audio-caption" style="margin-bottom: 5px; color: #555; text-align: center;">Sound Representation:</p>
+                            <audio controls style="width: 100%; margin: 0 auto; display: block;">
+                                <source src="visualizations/over-empathetic-sound.mp3" type="audio/mp3">
+                            </audio>
                         </div>
                     </div>
                 </div>
