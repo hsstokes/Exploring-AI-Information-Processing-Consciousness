@@ -556,6 +556,43 @@
                 font-size: 1rem;
             }
         }
+
+        .visualization-link {
+            margin: 20px 0;
+        }
+
+        .viz-button {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 25px;
+            background-color: var(--cream-dark);
+            border: 1px solid var(--accent-teal);
+            color: var(--text-dark);
+            text-decoration: none;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .viz-button:hover {
+            background-color: var(--accent-teal);
+            color: white;
+        }
+
+        .viz-icon {
+            font-size: 1.5rem;
+            color: var(--accent-teal);
+        }
+
+        .viz-button:hover .viz-icon,
+        .viz-button:hover .viz-arrow {
+            color: white;
+        }
+
+        .viz-arrow {
+            font-size: 1.3rem;
+        }
     </style>
 </head>
 <body>
@@ -656,8 +693,12 @@
                 <!-- Visualizations -->
                 <div class="findings-title">Visualizations</div>
                 <div class="findings-images">
-                    <div class="iframe-container">
-                        <iframe src="visualizations/eliza-visualization.html"></iframe>
+                    <div class="visualization-link">
+                        <a href="visualizations/eliza-visualization.html" target="_blank" class="viz-button">
+                            <span class="viz-icon">◈</span>
+                            <span>View ELIZA Visualization</span>
+                            <span class="viz-arrow">→</span>
+                        </a>
                     </div>
                     
                     <div class="image-grid">
@@ -847,12 +888,18 @@
                 <!-- Visualizations -->
                 <div class="findings-title">Visualizations</div>
                 <div class="findings-images">
-                    <div class="iframe-container">
-                        <iframe src="visualizations/balanced-visualization.html"></iframe>
+                    <div class="visualization-link">
+                        <a href="visualizations/balanced-visualization.html"target="_blank" class="viz-button">
+                            <span>View Balanced Empathy Visualization</span>
+                            <span class="viz-arrow">→</span>
+                        </a>
                     </div>
                     
-                    <div class="iframe-container">
-                        <iframe src="visualizations/balanced-camera-overlay.html"></iframe>
+                    <div class="visualization-link">
+                        <a href="visualizations/balanced-camera-overlay.html"target="_blank" class="viz-button">
+                            <span>View Balanced Empathy Visualization</span>
+                            <span class="viz-arrow">→</span>
+                        </a>
                     </div>
 
                     <div class="media-container">
@@ -1002,13 +1049,22 @@
                 <!-- Visualizations -->
                 <div class="findings-title">Visualizations</div>
                 <div class="findings-images">
-                    <div class="iframe-container">
-                        <iframe src="visualizations/Pragmatic-visualization.html"></iframe>
+                    <div class="visualization-link">
+                        <a href="visualizations/Pragmatic-visualization.html" target="_blank" class="viz-button">
+                            <span class="viz-icon">◈</span>
+                            <span>View Pragmatic Visualization</span>
+                            <span class="viz-arrow">→</span>
+                        </a>
                     </div>
                     
-                    <div class="iframe-container">
-                        <iframe src="visualizations/gemini-visualization.html"></iframe>
+                    <div class="visualization-link">
+                        <a href="visualizations/gemini-visualization.html" target="_blank" class="viz-button">
+                            <span class="viz-icon">◈</span>
+                            <span>View Gemini Visualization</span>
+                            <span class="viz-arrow">→</span>
+                        </a>
                     </div>
+                </div>
 
                     <div class="media-container">
                         <h4>Gemini's Visual Pattern Recognition Study</h4>
@@ -1107,13 +1163,22 @@
                 <!-- Visualizations -->
                 <div class="findings-title">Visualizations</div>
                 <div class="findings-images">
-                    <div class="iframe-container">
-                        <iframe src="visualizations/over-empathetic-visualization.html"></iframe>
+                    <div class="visualization-link">
+                        <a href="visualizations/over-empathetic-visualization.html" target="_blank" class="viz-button">
+                            <span class="viz-icon">◈</span>
+                            <span>View Over Empathetic Visualization</span>
+                            <span class="viz-arrow">→</span>
+                        </a>
                     </div>
                     
-                    <div class="iframe-container">
-                        <iframe src="visualizations/evi-emotional-visualization.html"></iframe>
+                    <div class="visualization-link">
+                        <a href="visualizations/evi-emotional-visualization.html" target="_blank" class="viz-button">
+                            <span class="viz-icon">◎</span>
+                            <span>View Evi emotional Visualization</span>
+                            <span class="viz-arrow">→</span>
+                        </a>
                     </div>
+                </div>
 
                     <div class="media-container">
                         <h4>Evi's Visual Pattern Recognition Study</h4>
