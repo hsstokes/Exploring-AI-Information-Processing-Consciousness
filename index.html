@@ -62,6 +62,45 @@
             letter-spacing: 0.5px;
         }
         
+        /* Server Notice */
+        .server-notice {
+            background-color: #fff3cd;
+            border: 1px solid #ffc107;
+            border-left: 4px solid #ffc107;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+        
+        .server-notice-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .server-notice-title::before {
+            content: "⚠";
+            font-size: 1.2em;
+        }
+        
+        .server-notice p {
+            margin: 0;
+            color: #856404;
+            font-size: 0.95em;
+            line-height: 1.6;
+        }
+        
+        .server-notice code {
+            background-color: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        
         /* Introduction Section */
         .introduction {
             background-color: var(--cream-dark);
@@ -296,7 +335,7 @@
         .iframe-container {
             position: relative;
             width: 100%;
-            padding-bottom: 60%; /* 5:3 aspect ratio */
+            padding-bottom: 60%;
             height: 0;
             overflow: hidden;
             border: 1px solid var(--border-light);
@@ -497,6 +536,119 @@
             font-style: italic;
         }
         
+        /* IMPROVED Visualization Buttons */
+        .visualization-link {
+            margin: 15px 0;
+        }
+
+        .viz-button {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 18px 24px;
+            background: linear-gradient(135deg, var(--accent-teal) 0%, #1a9a94 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            text-decoration: none;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.15rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(32, 178, 170, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .viz-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .viz-button:hover::before {
+            left: 100%;
+        }
+
+        .viz-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(32, 178, 170, 0.4);
+            background: linear-gradient(135deg, #25c4bc 0%, var(--accent-teal) 100%);
+        }
+
+        .viz-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(32, 178, 170, 0.3);
+        }
+
+        .viz-icon {
+            font-size: 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .viz-button-text {
+            flex-grow: 1;
+            text-align: left;
+        }
+
+        .viz-button-title {
+            display: block;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .viz-button-subtitle {
+            display: block;
+            font-size: 0.85rem;
+            opacity: 0.85;
+            font-weight: 400;
+            margin-top: 2px;
+        }
+
+        .viz-arrow {
+            font-size: 1.5rem;
+            transition: transform 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .viz-button:hover .viz-arrow {
+            transform: translateX(5px);
+        }
+
+        /* Secondary button style for camera overlays */
+        .viz-button.secondary {
+            background: linear-gradient(135deg, var(--accent-purple) 0%, #5a4abd 100%);
+            box-shadow: 0 4px 15px rgba(106, 90, 205, 0.3);
+        }
+
+        .viz-button.secondary:hover {
+            box-shadow: 0 6px 20px rgba(106, 90, 205, 0.4);
+            background: linear-gradient(135deg, #7b6be0 0%, var(--accent-purple) 100%);
+        }
+
+        /* Tertiary button style */
+        .viz-button.tertiary {
+            background: linear-gradient(135deg, var(--accent-pink) 0%, #c49090 100%);
+            box-shadow: 0 4px 15px rgba(212, 165, 165, 0.3);
+        }
+
+        .viz-button.tertiary:hover {
+            box-shadow: 0 6px 20px rgba(212, 165, 165, 0.4);
+            background: linear-gradient(135deg, #e0b5b5 0%, var(--accent-pink) 100%);
+        }
+        
         /* Mobile Responsive */
         @media (max-width: 768px) {
             body {
@@ -526,7 +678,7 @@
             }
             
             .iframe-container {
-                padding-bottom: 75%; /* Taller aspect ratio on mobile */
+                padding-bottom: 75%;
             }
             
             .media-item {
@@ -539,6 +691,21 @@
             
             .findings-attribute {
                 padding: 12px;
+            }
+            
+            .viz-button {
+                padding: 15px 18px;
+                font-size: 1rem;
+            }
+            
+            .viz-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 1.2rem;
+            }
+            
+            .viz-button-subtitle {
+                font-size: 0.8rem;
             }
         }
         
@@ -555,43 +722,15 @@
             .prompt-title {
                 font-size: 1rem;
             }
-        }
-
-        .visualization-link {
-            margin: 20px 0;
-        }
-
-        .viz-button {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 20px 25px;
-            background-color: var(--cream-dark);
-            border: 1px solid var(--accent-teal);
-            color: var(--text-dark);
-            text-decoration: none;
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-        }
-
-        .viz-button:hover {
-            background-color: var(--accent-teal);
-            color: white;
-        }
-
-        .viz-icon {
-            font-size: 1.5rem;
-            color: var(--accent-teal);
-        }
-
-        .viz-button:hover .viz-icon,
-        .viz-button:hover .viz-arrow {
-            color: white;
-        }
-
-        .viz-arrow {
-            font-size: 1.3rem;
+            
+            .viz-button {
+                flex-wrap: wrap;
+                gap: 10px;
+            }
+            
+            .viz-arrow {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -696,7 +835,10 @@
                     <div class="visualization-link">
                         <a href="visualizations/eliza-visualization.html" target="_blank" class="viz-button">
                             <span class="viz-icon">◈</span>
-                            <span>View ELIZA Visualization</span>
+                            <span class="viz-button-text">
+                                <span class="viz-button-title">ELIZA Visualization</span>
+                                <span class="viz-button-subtitle">Pattern-matching rules visualization</span>
+                            </span>
                             <span class="viz-arrow">→</span>
                         </a>
                     </div>
@@ -785,13 +927,50 @@
                 <!-- Visualizations -->
                 <div class="findings-title">Visualizations</div>
                 <div class="findings-images">
-                    <div class="iframe-container">
-                        <iframe src="visualizations/claude-opus-visualization.html"></iframe>
+                    <div class="visualization-link">
+                        <a href="visualizations/claude-opus-visualization.html" target="_blank" class="viz-button">
+                            <span class="viz-icon">◇</span>
+                            <span class="viz-button-text">
+                                <span class="viz-button-title">Claude Opus Visualization</span>
+                                <span class="viz-button-subtitle">Self-reflective polygon alignment</span>
+                            </span>
+                            <span class="viz-arrow">→</span>
+                        </a>
+                    </div>
+                    
+                    <div class="visualization-link">
+                        <a href="visualizations/Claude-camera-overlay.html" target="_blank" class="viz-button secondary">
+                            <span class="viz-icon">◈</span>
+                            <span class="viz-button-text">
+                                <span class="viz-button-title">Camera Overlay Experience</span>
+                                <span class="viz-button-subtitle">Interactive principle-checking AR view</span>
+                            </span>
+                            <span class="viz-arrow">→</span>
+                        </a>
                     </div>
 
-                    <div class="iframe-container">
-                        <iframe src="visualizations/Claude-camera-overlay.html"></iframe>
+                    <div class="media-container">
+                        <h4>Claude's Visual Pattern Recognition Study</h4>
+
+                        <img src="visualizations/Claude-sketchbook-page.jpeg" alt="Claude pattern visualization with geometric shapes" class="findings-image">
+
+                        <div class="media-flex">
+                            <div class="media-item">
+                                <video controls>
+                                    <source src="images/self-aware-visualization2.mp4" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                            </div>
+                            <div class="media-item">
+                                <p class="audio-caption">Sound Representation:</p>
+                                <audio controls>
+                                    <source src="audio/self-aware-sound.wav" type="audio/wav">
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                        </div>
                     </div>
+                </div>
 
                     <div class="media-container">
                         <h4>Claude's Visual Pattern Recognition Study</h4>
@@ -802,12 +981,14 @@
                             <div class="media-item">
                                 <video controls>
                                     <source src="images/self-aware-visualization2.mp4" type="video/mp4">
+                                    Your browser does not support the video tag.
                                 </video>
                             </div>
                             <div class="media-item">
                                 <p class="audio-caption">Sound Representation:</p>
                                 <audio controls>
                                     <source src="audio/self-aware-sound.wav" type="audio/wav">
+                                    Your browser does not support the audio element.
                                 </audio>
                             </div>
                         </div>
@@ -889,15 +1070,23 @@
                 <div class="findings-title">Visualizations</div>
                 <div class="findings-images">
                     <div class="visualization-link">
-                        <a href="visualizations/balanced-visualization.html"target="_blank" class="viz-button">
-                            <span>View Balanced Empathy Visualization</span>
+                        <a href="visualizations/balanced-visualization.html" target="_blank" class="viz-button">
+                            <span class="viz-icon">◉</span>
+                            <span class="viz-button-text">
+                                <span class="viz-button-title">Balanced Empathy Visualization</span>
+                                <span class="viz-button-subtitle">Interconnected spheres of emotion and data</span>
+                            </span>
                             <span class="viz-arrow">→</span>
                         </a>
                     </div>
                     
                     <div class="visualization-link">
-                        <a href="visualizations/balanced-camera-overlay.html"target="_blank" class="viz-button">
-                            <span>View Balanced Empathy Visualization</span>
+                        <a href="visualizations/balanced-camera-overlay.html" target="_blank" class="viz-button secondary">
+                            <span class="viz-icon">◎</span>
+                            <span class="viz-button-text">
+                                <span class="viz-button-title">Camera Overlay Experience</span>
+                                <span class="viz-button-subtitle">Interactive AR-style visualization</span>
+                            </span>
                             <span class="viz-arrow">→</span>
                         </a>
                     </div>
@@ -911,12 +1100,14 @@
                             <div class="media-item">
                                 <video controls>
                                     <source src="images/balanced-visualization.mp4" type="video/mp4">
+                                    Your browser does not support the video tag.
                                 </video>
                             </div>
                             <div class="media-item">
                                 <p class="audio-caption">Sound Representation:</p>
                                 <audio controls>
                                     <source src="audio/balanced-sound.wav" type="audio/wav">
+                                    Your browser does not support the audio element.
                                 </audio>
                             </div>
                         </div>
@@ -1051,20 +1242,25 @@
                 <div class="findings-images">
                     <div class="visualization-link">
                         <a href="visualizations/Pragmatic-visualization.html" target="_blank" class="viz-button">
-                            <span class="viz-icon">◈</span>
-                            <span>View Pragmatic Visualization</span>
+                            <span class="viz-icon">⬡</span>
+                            <span class="viz-button-text">
+                                <span class="viz-button-title">Pragmatic Visualization</span>
+                                <span class="viz-button-subtitle">Hexagonal grid problem-solving</span>
+                            </span>
                             <span class="viz-arrow">→</span>
                         </a>
                     </div>
                     
                     <div class="visualization-link">
-                        <a href="visualizations/gemini-visualization.html" target="_blank" class="viz-button">
-                            <span class="viz-icon">◈</span>
-                            <span>View Gemini Visualization</span>
+                        <a href="visualizations/gemini-visualization.html" target="_blank" class="viz-button secondary">
+                            <span class="viz-icon">✦</span>
+                            <span class="viz-button-text">
+                                <span class="viz-button-title">Gemini Visualization</span>
+                                <span class="viz-button-subtitle">Data synthesis patterns</span>
+                            </span>
                             <span class="viz-arrow">→</span>
                         </a>
                     </div>
-                </div>
 
                     <div class="media-container">
                         <h4>Gemini's Visual Pattern Recognition Study</h4>
@@ -1075,12 +1271,14 @@
                             <div class="media-item">
                                 <video controls>
                                     <source src="images/pragmatic-visualization.mp4" type="video/mp4">
+                                    Your browser does not support the video tag.
                                 </video>
                             </div>
                             <div class="media-item">
                                 <p class="audio-caption">Sound Representation:</p>
                                 <audio controls>
                                     <source src="audio/pragmatic-sound.wav" type="audio/wav">
+                                    Your browser does not support the audio element.
                                 </audio>
                             </div>
                         </div>
@@ -1164,21 +1362,26 @@
                 <div class="findings-title">Visualizations</div>
                 <div class="findings-images">
                     <div class="visualization-link">
-                        <a href="visualizations/over-empathetic-visualization.html" target="_blank" class="viz-button">
-                            <span class="viz-icon">◈</span>
-                            <span>View Over Empathetic Visualization</span>
+                        <a href="visualizations/over-empathetic-visualization.html" target="_blank" class="viz-button tertiary">
+                            <span class="viz-icon">◐</span>
+                            <span class="viz-button-text">
+                                <span class="viz-button-title">Over-Empathetic Visualization</span>
+                                <span class="viz-button-subtitle">Dynamic emotional wave patterns</span>
+                            </span>
                             <span class="viz-arrow">→</span>
                         </a>
                     </div>
                     
                     <div class="visualization-link">
                         <a href="visualizations/evi-emotional-visualization.html" target="_blank" class="viz-button">
-                            <span class="viz-icon">◎</span>
-                            <span>View Evi emotional Visualization</span>
+                            <span class="viz-icon">◑</span>
+                            <span class="viz-button-text">
+                                <span class="viz-button-title">Evi Emotional Visualization</span>
+                                <span class="viz-button-subtitle">Color-shifting mood responses</span>
+                            </span>
                             <span class="viz-arrow">→</span>
                         </a>
                     </div>
-                </div>
 
                     <div class="media-container">
                         <h4>Evi's Visual Pattern Recognition Study</h4>
@@ -1189,12 +1392,14 @@
                             <div class="media-item">
                                 <video controls>
                                     <source src="images/over-empathetic-visualization.mp4" type="video/mp4">
+                                    Your browser does not support the video tag.
                                 </video>
                             </div>
                             <div class="media-item">
                                 <p class="audio-caption">Sound Representation:</p>
                                 <audio controls>
-                                    <source src="visualizations/over-empathetic-sound.mp3" type="audio/mp3">
+                                    <source src="visualizations/over-empathetic-sound.mp3" type="audio/mpeg">
+                                    Your browser does not support the audio element.
                                 </audio>
                             </div>
                         </div>
