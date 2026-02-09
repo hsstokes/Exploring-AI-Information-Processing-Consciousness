@@ -1519,9 +1519,14 @@
         </div>
     </div>
 
+    <!-- Replace your existing <script> section with this expanded version -->
     <script>
-        // JavaScript for collapsible sections
+        // Store all lightbox-enabled images
+        let lightboxImages = [];
+        let currentLightboxIndex = 0;
+
         document.addEventListener('DOMContentLoaded', function() {
+            // Collapsible sections
             var coll = document.getElementsByClassName("collapsible");
             for (var i = 0; i < coll.length; i++) {
                 coll[i].addEventListener("click", function() {
@@ -1535,19 +1540,164 @@
                 });
             }
             
-            // Function to scroll to section
+            // Scroll to section function
             window.scrollToSection = function(id) {
                 var element = document.getElementById(id);
                 element.scrollIntoView({behavior: "smooth", block: "start"});
                 
-                // Update active nav button
                 var buttons = document.getElementsByClassName("nav-button");
                 for (var i = 0; i < buttons.length; i++) {
                     buttons[i].classList.remove("active");
                 }
                 event.target.classList.add("active");
             }
+            
+            // Initialize lightbox for all image links
+            initializeLightbox();
         });
+
+        function initializeLightbox() {
+            // Get all image links
+            const imageLinks = document.querySelectorAll('.image-link');
+            
+            imageLinks.forEach(function(link, index) {
+                // Prevent default link behavior
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    openLightbox(this.href, this.querySelector('img')?.alt || '');
+                });
+            });
+            
+            // Also handle standalone images that should open in lightbox
+            const standaloneImages = document.querySelectorAll('.findings-image:not(.image-link .findings-image)');
+            standaloneImages.forEach(function(img) {
+                // Check if parent is not already an image-link
+                if (!img.closest('.image-link')) {
+                    img.style.cursor = 'zoom-in';
+                    img.addEventListener('click', function() {
+                        openLightbox(this.src, this.alt);
+                    });
+                }
+            });
+            
+            // Build array of all lightbox images
+            buildLightboxArray();
+            
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                const lightbox = document.getElementById('lightbox');
+                if (lightbox.classList.contains('active')) {
+                    if (e.key === 'Escape') {
+                        closeLightbox();
+                    } else if (e.key === 'ArrowLeft') {
+                        changeLightboxImage(-1);
+                    } else if (e.key === 'ArrowRight') {
+                        changeLightboxImage(1);
+                    }
+                }
+            });
+            
+            // Close on overlay click (but not on image)
+            document.getElementById('lightbox').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeLightbox();
+                }
+            });
+        }
+
+        function buildLightboxArray() {
+            lightboxImages = [];
+            
+            // Get all images that can be opened in lightbox
+            const allImages = document.querySelectorAll('.image-link, .findings-image:not(.image-link .findings-image)');
+            
+            allImages.forEach(function(el) {
+                if (el.classList.contains('image-link')) {
+                    lightboxImages.push({
+                        src: el.href,
+                        alt: el.querySelector('img')?.alt || ''
+                    });
+                } else {
+                    lightboxImages.push({
+                        src: el.src,
+                        alt: el.alt || ''
+                    });
+                }
+            });
+        }
+
+        function openLightbox(src, caption) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImage = document.getElementById('lightbox-image');
+            const lightboxCaption = document.getElementById('lightbox-caption');
+            
+            // Find current index
+            currentLightboxIndex = lightboxImages.findIndex(img => img.src === src);
+            if (currentLightboxIndex === -1) currentLightboxIndex = 0;
+            
+            lightboxImage.src = src;
+            lightboxCaption.textContent = caption;
+            lightbox.classList.add('active');
+            
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+            
+            // Update navigation visibility
+            updateNavVisibility();
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function changeLightboxImage(direction) {
+            if (lightboxImages.length <= 1) return;
+            
+            currentLightboxIndex += direction;
+            
+            // Wrap around
+            if (currentLightboxIndex >= lightboxImages.length) {
+                currentLightboxIndex = 0;
+            } else if (currentLightboxIndex < 0) {
+                currentLightboxIndex = lightboxImages.length - 1;
+            }
+            
+            const lightboxImage = document.getElementById('lightbox-image');
+            const lightboxCaption = document.getElementById('lightbox-caption');
+            
+            lightboxImage.src = lightboxImages[currentLightboxIndex].src;
+            lightboxCaption.textContent = lightboxImages[currentLightboxIndex].alt;
+            
+            updateNavVisibility();
+        }
+
+        function updateNavVisibility() {
+            const prevBtn = document.querySelector('.lightbox-prev');
+            const nextBtn = document.querySelector('.lightbox-next');
+            
+            if (lightboxImages.length <= 1) {
+                prevBtn.style.display = 'none';
+                nextBtn.style.display = 'none';
+            } else {
+                prevBtn.style.display = 'block';
+                nextBtn.style.display = 'block';
+            }
+        }
     </script>
+
+    <!-- Add this HTML just before the closing </body> tag -->
+    <!-- Lightbox Overlay -->
+    <div id="lightbox" class="lightbox-overlay">
+        <span class="lightbox-nav lightbox-prev" onclick="changeLightboxImage(-1)">&#10094;</span>
+        <div class="lightbox-content">
+            <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+            <img id="lightbox-image" class="lightbox-image" src="" alt="">
+            <div id="lightbox-caption" class="lightbox-caption"></div>
+        </div>
+        <span class="lightbox-nav lightbox-next" onclick="changeLightboxImage(1)">&#10095;</span>
+    </div>
+
 </body>
 </html>
