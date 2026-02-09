@@ -675,6 +675,49 @@
             border-radius: 10px;
             line-height: 1.8;
         }
+
+        /*-----------------------------------
+        NAVIGATION (matching main site)
+        ---------------------------------*/
+
+        nav {
+            margin: 20px auto;
+            padding: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        nav ul {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 5px;
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            border: none;
+            background: none;
+            width: 100%;
+        }
+
+        nav a {
+            padding: 4px 8px;
+            background-color: #f9f2e2;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+            display: inline-block;
+            font-size: 11px;
+            white-space: nowrap;
+            color: #2c3e50;
+            text-decoration: none;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        nav a:hover {
+            background-color: #f5e9c9;
+            text-decoration: none;
+        }
         
         /*-----------------------------------
           TABLET RESPONSIVENESS
