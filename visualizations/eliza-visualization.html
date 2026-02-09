@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ELIZA's Information Processing Visualization</title>
     <style>
+
         * {
             box-sizing: border-box;
         }
@@ -201,11 +202,17 @@
 
         /* Mobile layout */
         @media (max-width: 900px) {
+            html, body {
+                overflow-x: hidden;
+                overflow-y: auto;
+                height: auto;
+            }
+            
             .back-button {
                 position: relative;
                 top: auto;
                 left: auto;
-                margin: 10px;
+                margin: 15px;
                 display: inline-flex;
             }
             
@@ -213,13 +220,16 @@
                 flex-direction: column;
                 padding-top: 0;
                 min-height: auto;
+                height: auto;
+                overflow: visible;
             }
             
             .grid-container {
                 width: 100%;
                 min-height: auto;
+                height: auto;
                 order: 1;
-                overflow-y: visible;
+                overflow: visible;
             }
             
             .visualization-container {
@@ -231,18 +241,7 @@
                 order: 2;
                 border-left: none;
                 border-top: 2px dotted #2980b9;
-            }
-            
-            h1 {
-                font-size: 18px;
-            }
-            
-            .interaction-tips li {
-                font-size: 12px;
-            }
-            
-            .info {
-                font-size: 11px;
+                flex-shrink: 0;
             }
         }
 
