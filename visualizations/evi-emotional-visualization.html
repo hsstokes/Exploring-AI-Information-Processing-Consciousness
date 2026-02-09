@@ -123,6 +123,34 @@
             opacity: 0.8;
         }
         
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #333;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            font-family: monospace;
+        }
+
+        .back-button svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .back-button:hover {
+            background: #333;
+            color: white;
+        }
+        
         /* Wave icon for Evi */
         .gesture-icon {
             width: 50px;
@@ -232,6 +260,7 @@
     </style>
 </head>
 <body>
+   
     <!-- Landing page -->
     <div id="landing-page">
         <div class="grid-background"></div>
@@ -264,7 +293,12 @@
     </div>
     
     <!-- Visualization container -->
-    <div id="visualization-container"></div>
+    <div id="visualization-container">
+        <a id="back-button" href="../index.html" class="back-button">
+            <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            <span>Back</span>
+        </a>
+    </div>
     
     <script>
         // Global variables
