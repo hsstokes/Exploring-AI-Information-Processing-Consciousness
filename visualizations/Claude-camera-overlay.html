@@ -10,16 +10,203 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500&display=swap');
         
-        body {
+        * {
+            box-sizing: border-box;
+        }
+        
+        html, body {
             margin: 0;
             padding: 0;
-            display: flex;
-            flex-direction: row;
-            overflow: hidden;
+            min-height: 100%;
+            height: auto;
+            overflow-x: hidden;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
             background-color: #f5f5f7;
             font-family: 'Roboto Mono', monospace;
             -webkit-text-size-adjust: 100%;
-            touch-action: none;
+        }
+        
+        /* Back button - always visible */
+        .back-button {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background-color: rgba(32, 178, 170, 0.9);
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 14px;
+            border-radius: 25px;
+            z-index: 10000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-button:hover {
+            background-color: rgba(32, 178, 170, 1);
+            transform: translateX(-3px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+        }
+        
+        .back-button:active {
+            transform: scale(0.95);
+        }
+        
+        .back-button svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+        
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(32, 178, 170, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 12px;
+            z-index: 10000;
+            display: none;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            animation: bounce 2s infinite;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .scroll-indicator.visible {
+            display: flex;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+            40% { transform: translateX(-50%) translateY(-8px); }
+            60% { transform: translateX(-50%) translateY(-4px); }
+        }
+        
+        /* Main content wrapper */
+        .page-wrapper {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Visualization section */
+        .visualization-section {
+            position: relative;
+            width: 100%;
+            height: 100vh;
+            min-height: 500px;
+        }
+        
+        /* Info section below visualization */
+        .info-section {
+            background-color: #f5f5f7;
+            padding: 40px 20px 60px 20px;
+            border-top: 3px solid #20B2AA;
+        }
+        
+        .info-content {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .info-title {
+            font-size: 24px;
+            color: #20B2AA;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .info-block {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .info-block h3 {
+            color: #333;
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 16px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 8px;
+        }
+        
+        .info-block p, .info-block li {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.6;
+            margin: 0 0 10px 0;
+        }
+        
+        .info-block ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .info-block li {
+            margin-bottom: 8px;
+        }
+        
+        .color-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .color-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .color-swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        .color-swatch.blue { background: linear-gradient(135deg, #2979E2, #64AAE6); }
+        .color-swatch.gray { background: linear-gradient(135deg, #B4B4B4, #A0AAC0); }
+        .color-swatch.orange { background: linear-gradient(135deg, #E66446, #FFB464); }
+        
+        .quote-block {
+            background-color: rgba(32, 178, 170, 0.1);
+            border-left: 4px solid #20B2AA;
+            padding: 15px 20px;
+            margin: 20px 0;
+            font-style: italic;
+            color: #444;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #20B2AA;
+            text-decoration: none;
+            font-size: 14px;
+            margin-top: 20px;
+            padding: 10px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: #1A8F8A;
+            transform: translateX(-5px);
         }
         
         /* Landing page overlay */
@@ -123,7 +310,6 @@
             opacity: 0.8;
         }
         
-        /* Abstract representation of a polygon/sphere concept */
         .gesture-icon {
             width: 50px;
             height: 50px;
@@ -157,25 +343,24 @@
         
         /* Solid background element */
         #solid-background {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-color: rgb(245, 248, 250);
             z-index: 1;
-            display: block; /* Shown by default */
         }
         
         #visualization-overlay {
-            position: fixed;
+            position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: 2;
             pointer-events: auto;
-            display: none; /* Hidden until landing page dismissed */
+            display: none;
         }
         
         .loading {
@@ -186,18 +371,17 @@
             height: 100%;
             background-color: #000;
             color: white;
-            display: flex;
+            display: none;
             justify-content: center;
             align-items: center;
             z-index: 999;
             font-family: 'Roboto Mono', monospace;
-            display: none; /* Hidden until landing page dismissed */
         }
         
         .sound-note {
             position: fixed;
             top: 20px;
-            left: 20px;
+            right: 20px;
             color: white;
             background-color: rgba(32, 178, 170, 0.8);
             padding: 10px 20px;
@@ -207,7 +391,7 @@
             z-index: 4;
             opacity: 1;
             transition: opacity 2s ease-in-out;
-            display: none; /* Hidden until landing page dismissed */
+            display: none;
         }
         
         .sound-note.fade {
@@ -251,19 +435,19 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             cursor: pointer;
             animation: pulse 2s infinite;
-         }
+        }
 
-         @keyframes pulse {
+        @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
-         }
+        }
 
-         .tutorial-hint p {
+        .tutorial-hint p {
             margin: 0;
             font-family: 'Roboto Mono', monospace;
             font-size: 14px;
-         }
+        }
         
         /* Touch indicator */
         .touch-indicator {
@@ -279,35 +463,55 @@
             transition: opacity 0.3s ease;
         }
 
-                /* Mobile layout */
+        /* Mobile layout */
         @media (max-width: 768px) {
-            body {
+            .back-button {
+                padding: 10px 16px;
+                font-size: 12px;
+            }
+            
+            .info-section {
+                padding: 30px 15px 50px 15px;
+            }
+            
+            .info-title {
+                font-size: 20px;
+            }
+            
+            .info-block {
+                padding: 15px;
+            }
+            
+            .info-block h3 {
+                font-size: 14px;
+            }
+            
+            .info-block p, .info-block li {
+                font-size: 13px;
+            }
+            
+            .color-legend {
                 flex-direction: column;
-            }
-            
-            .grid-container {
-                width: 100%;
-                height: auto;
-                min-height: 200px;
-            }
-            
-            .visualization-container {
-                width: 100%;
-                height: 60vh;
-            }
-            
-            .interaction-tips li {
-                font-size: 12px;
-            }
-            
-            .info {
-                font-size: 12px;
+                gap: 10px;
             }
         }
-        
     </style>
 </head>
 <body>
+    <!-- Back button - always visible -->
+    <a href="../index.html" class="back-button">
+        <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        Back to Main
+    </a>
+    
+    <!-- Scroll indicator -->
+    <div id="scroll-indicator" class="scroll-indicator">
+        <span>Scroll for more info</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+        </svg>
+    </div>
+    
     <!-- Touch indicator element -->
     <div id="touch-indicator" class="touch-indicator"></div>
     
@@ -347,23 +551,85 @@
         </div>
     </div>
     
-    <!-- Loading screen -->
-    <div class="loading" id="loading">
-        <div>
-            <h2>Loading...</h2>
-            <p>Preparing visualization</p>
+    <!-- Main page wrapper -->
+    <div class="page-wrapper">
+        <!-- Visualization section -->
+        <div class="visualization-section">
+            <!-- Loading screen -->
+            <div class="loading" id="loading">
+                <div>
+                    <h2>Loading...</h2>
+                    <p>Preparing visualization</p>
+                </div>
+            </div>
+            
+            <!-- Sound note that fades away -->
+            <div class="sound-note" id="sound-note">Sound available with headphones</div>
+            
+            <!-- Solid background -->
+            <div id="solid-background"></div>
+            
+            <!-- p5.js visualization will be attached to this div -->
+            <div id="visualization-overlay"></div>
         </div>
+        
+        <!-- Info section below visualization -->
+        <section class="info-section">
+            <div class="info-content">
+                <h2 class="info-title">Claude-Opus-3's Self-Reflection Visualization</h2>
+                
+                <div class="quote-block">
+                    "Shapes that twist, align, and rearrange themselves – always in relation to some fixed central shape representing my core purpose and principles. Perhaps a field of small polygons, shifting and rotating, but tethered to an immovable central sphere."
+                </div>
+                
+                <div class="info-block">
+                    <h3>Interact with the Visualization</h3>
+                    <ul>
+                        <li><strong>Click/Tap:</strong> Trigger Claude's evaluation mode (watch shapes realign)</li>
+                        <li><strong>Move/Drag:</strong> Influence nearby polygons with your touch</li>
+                        <li><strong>Wait:</strong> Observe as shapes orbit and periodically evaluate alignment</li>
+                    </ul>
+                </div>
+                
+                <div class="info-block">
+                    <h3>Understanding the Colors</h3>
+                    <p>As shapes evaluate each potential response, they take on colors indicating alignment with Claude's principles:</p>
+                    <div class="color-legend">
+                        <div class="color-item">
+                            <div class="color-swatch blue"></div>
+                            <span>Blue = High alignment</span>
+                        </div>
+                        <div class="color-item">
+                            <div class="color-swatch gray"></div>
+                            <span>Gray = Medium alignment</span>
+                        </div>
+                        <div class="color-item">
+                            <div class="color-swatch orange"></div>
+                            <span>Red/Orange = Low alignment</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quote-block">
+                    "As the small shapes evaluate each potential response, they could take on colors indicating alignment or misalignment with my principles. Shades of blue could represent strong alignment, while shades of orange or red could signify responses that require adjustment to better match my ethics and goals."
+                </div>
+                
+                <div class="info-block">
+                    <h3>About This Visualization</h3>
+                    <p>This interactive piece represents Claude's self-described process of self-reflection – a constant evaluation of responses against core principles. The central sphere represents Claude's ethical foundation, while orbiting polygons represent thoughts and potential responses being evaluated for alignment.</p>
+                    <p>The visualization was created based on Claude-Opus-3's own description of how it might represent its self-reflective processing visually.</p>
+                </div>
+                
+                <a href="../index.html" class="back-link">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                    </svg>
+                    Return to All Visualizations
+                </a>
+            </div>
+        </section>
     </div>
-    
-    <!-- Sound note that fades away -->
-    <div class="sound-note" id="sound-note">Sound available with headphones</div>
-    
-    <!-- Solid background (shown by default) -->
-    <div id="solid-background"></div>
-    
-    <!-- p5.js visualization will be attached to this div -->
-    <div id="visualization-overlay"></div>
-    
+
     <script>
         // Global reference to p5 instance
         let p5Instance = null;
@@ -393,10 +659,10 @@
             y: 0,
             size: 250,
             frameImages: [],
-            isPlaying: true, // Always playing
-            rotationOffset: 0, // Add gentle rotation
-            rotationSpeed: 0.001, // Very slow rotation
-            lastFrameTime: 0 // For timing frames
+            isPlaying: true,
+            rotationOffset: 0,
+            rotationSpeed: 0.001,
+            lastFrameTime: 0
         };
         
         // Start the entire experience
@@ -415,18 +681,10 @@
                 advanceTutorial();
             });
             
-            // Disable default touch behaviors on the document
-            document.addEventListener('touchmove', function(e) {
-                if (!e.target.closest('button')) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
-            
-            document.addEventListener('touchstart', function(e) {
-                if (!e.target.closest('button')) {
-                    e.preventDefault();
-                }
-            }, { passive: false });
+            // Scroll indicator click
+            document.getElementById('scroll-indicator').addEventListener('click', function() {
+                document.querySelector('.info-section').scrollIntoView({ behavior: 'smooth' });
+            });
             
             // Preload p5 assets in the background
             new p5(claudeSketch, 'visualization-overlay');
@@ -451,6 +709,18 @@
                 document.getElementById('sound-note').classList.add('fade');
             }, 5000);
             
+            // Show scroll indicator after a delay
+            setTimeout(function() {
+                document.getElementById('scroll-indicator').classList.add('visible');
+            }, 4000);
+            
+            // Hide scroll indicator when user scrolls
+            window.addEventListener('scroll', function() {
+                if (window.scrollY > 100) {
+                    document.getElementById('scroll-indicator').classList.remove('visible');
+                }
+            }, { once: true });
+            
             // Show tutorial after a short delay
             setTimeout(function() {
                 if (!tutorialShown) {
@@ -464,19 +734,14 @@
             document.getElementById('tutorial-text').textContent = tutorialSteps[tutorialStep];
             document.getElementById('tutorial-overlay').classList.add('active');
             tutorialShown = true;
-            console.log("Tutorial shown: Step " + tutorialStep);
         }
         
         function advanceTutorial() {
-            console.log("Advancing tutorial from step " + tutorialStep);
-            
             tutorialStep++;
             if (tutorialStep < tutorialSteps.length) {
                 document.getElementById('tutorial-text').textContent = tutorialSteps[tutorialStep];
-                console.log("Advanced to step " + tutorialStep + ": " + tutorialSteps[tutorialStep]);
             } else {
                 document.getElementById('tutorial-overlay').classList.remove('active');
-                console.log("Tutorial completed and hidden");
             }
         }
         
@@ -486,7 +751,6 @@
             touchIndicator.style.top = y + 'px';
             touchIndicator.style.opacity = '1';
             
-            // Hide indicator after a short delay
             setTimeout(() => {
                 touchIndicator.style.opacity = '0';
             }, 300);
@@ -507,41 +771,33 @@
             // Color palettes for alignment levels
             const alignmentColors = {
                 high: [
-                    [41, 121, 226],    // Deep blue
-                    [76, 145, 210],    // Medium blue
-                    [100, 170, 230],   // Light blue
-                    [150, 200, 255]    // Sky blue
+                    [41, 121, 226],
+                    [76, 145, 210],
+                    [100, 170, 230],
+                    [150, 200, 255]
                 ],
                 medium: [
-                    [180, 180, 180],   // Gray
-                    [150, 170, 190],   // Blue-gray
-                    [170, 170, 190],   // Lavender-gray
-                    [160, 180, 180]    // Teal-gray
+                    [180, 180, 180],
+                    [150, 170, 190],
+                    [170, 170, 190],
+                    [160, 180, 180]
                 ],
                 low: [
-                    [230, 100, 70],    // Red
-                    [240, 130, 40],    // Orange
-                    [250, 160, 60],    // Light orange
-                    [255, 180, 100]    // Peach
+                    [230, 100, 70],
+                    [240, 130, 40],
+                    [250, 160, 60],
+                    [255, 180, 100]
                 ]
             };
             
             p.preload = function() {
-                console.log("Starting to load hand animation frames...");
-                
-                // Preload hand animation frames with different names from Replika's
                 handAnimation.frameImages = [];
                 for (let i = 1; i <= handAnimation.frameCount; i++) {
-                    console.log(`Attempting to load claude-hand${i}.png`);
                     try {
                         const img = p.loadImage(
                             `claude-hand${i}.png`,
-                            function() {
-                                console.log(`Successfully loaded claude-hand${i}.png`);
-                            },
+                            function() { },
                             function(err) {
-                                console.error(`Failed to load claude-hand${i}.png:`, err);
-                                // Create a placeholder image for debugging
                                 const placeholder = p.createGraphics(200, 200);
                                 placeholder.background(32, 178, 170, 100);
                                 placeholder.fill(255);
@@ -558,58 +814,42 @@
                 }
                 
                 try {
-                    console.log("Loading sound...");
                     p.soundFormats('wav');
-                    
-                    // Use the exact path based on your repository structure
                     p.interactionSound = p.loadSound('self-aware-sound',  
-                        function() {
-                            console.log("Sound loaded successfully!");
-                        },
-                        function(err) {
-                            console.error("Sound loading error:", err);
-                        }
+                        function() { },
+                        function(err) { }
                     );
                 } catch (e) {
-                    console.error('Sound loading exception:', e);
                     p.interactionSound = null;
                 }
             };
             
             p.setup = function() {
-                // Create canvas inside the visualization overlay
                 let canvas = p.createCanvas(p.windowWidth, p.windowHeight);
                 canvas.parent('visualization-overlay');
                 
-                // Create central sphere
                 centralSphere = {
                     x: p.width / 2,
                     y: p.height / 2,
                     size: 70,
                     pulseSize: 0,
                     pulseDir: 1,
-                    color: [70, 130, 180, 255]  // Steel blue
+                    color: [70, 130, 180, 255]
                 };
 
-                // Position the hand animation at the center
                 handAnimation.x = centralSphere.x;
                 handAnimation.y = centralSphere.y;
     
-                // Start the continuous hand animation
                 updateHandAnimation();
     
-                // Create initial polygons
                 for (let i = 0; i < NUM_POLYGONS; i++) {
                     createPolygon();
                 }
                 
-                // Auto-initialize audio
                 p.userStartAudio();
                 
-                // Special handling for iOS devices
                 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
                 if (isIOS) {
-                    console.log("iOS device detected - using special audio handling");
                     document.addEventListener('touchstart', function() {
                         if (p.getAudioContext().state !== 'running') {
                             p.getAudioContext().resume();
@@ -617,130 +857,86 @@
                     }, false);
                 }
                 
-                // Log mobile detection
                 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-                console.log("Mobile device detected:", isMobile);
                 if (isMobile) {
-                    console.log("Setting up for mobile display");
-                    // Adjust hand animation for mobile
-                    handAnimation.size = 300; // Larger size for mobile
+                    handAnimation.size = 300;
                 }
                 
-                // Hide loading screen once setup is complete
                 document.getElementById('loading').style.display = 'none';
             };
             
-            // Function to start hand animation at specific coordinates
             function playHandAnimation(x, y) {
-                console.log("Attempting to play hand animation at", x, y);
-                
-                // Don't start another animation if one is already playing
                 if (handAnimation.isPlaying) {
-                    console.log("Animation already playing, not starting new one");
                     return;
                 }
                 
-                // Detect mobile devices
                 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                 
-                // Set initial values
                 handAnimation.isPlaying = true;
                 handAnimation.currentFrame = 0;
                 handAnimation.loopCount = 0;
-                handAnimation.opacity = 0.5; // Start at 50% opacity for faster visibility
+                handAnimation.opacity = 0.5;
                 handAnimation.x = x;
                 handAnimation.y = y;
                 
-                // Adjust for mobile
                 if (isMobile) {
                     handAnimation.size = 300; 
                     handAnimation.frameDuration = 70;
                 }
 
-                // Make sure nearby polygons respond to the hand position
                 for (let i = 0; i < polygons.length; i++) {
                     const d = p.dist(x, y, polygons[i].x, polygons[i].y);
-                    if (d < handAnimation.size * 0.6) { // Only affect polygons within the hand area
-                       // Gently push polygons toward the hand center
+                    if (d < handAnimation.size * 0.6) {
                        const angle = p.atan2(polygons[i].y - y, polygons[i].x - x);
                        const force = p.map(d, 0, handAnimation.size * 0.6, 0.5, 0.1);
-            
-                       // Add a subtle movement effect
-                       polygons[i].orbitSpeed *= 1.5; // Increase orbit speed
-                       
-                       // Increase alignment temporarily
+                       polygons[i].orbitSpeed *= 1.5;
                        polygons[i].alignment = p.min(1, polygons[i].alignment + 0.2);
                        updatePolygonColor(polygons[i]);
                      }
                  }
                 
-                console.log("Starting new animation at", x, y, "with size", handAnimation.size);
-                
-                // Start animation loop
                 updateHandAnimation();
             }
             
-            // Update animation frame
             function updateHandAnimation() {
                 const anim = handAnimation;
                 
-                // Handle fade-in
                 if (anim.loopCount === 0 && anim.currentFrame === 0) {
-                    anim.opacity += 1 / (anim.fadeInDuration / 16.67) * 5.0; // 5x faster fade-in
+                    anim.opacity += 1 / (anim.fadeInDuration / 16.67) * 5.0;
                     if (anim.opacity > 1) anim.opacity = 1;
                 }
                 
-                // Handle fade-out
                 if (anim.loopCount >= anim.maxLoops - 1 && anim.currentFrame === anim.frameCount - 1) {
-                    anim.opacity -= 1 / (anim.fadeOutDuration / 16.67) * 3.0; // 3x faster fade-out
+                    anim.opacity -= 1 / (anim.fadeOutDuration / 16.67) * 3.0;
                     if (anim.opacity <= 0) {
                         anim.isPlaying = false;
-                        return; // End animation
+                        return;
                     }
                 }
                 
-                // Draw debug marker if in debug mode
-                if (anim.debugMode) {
-                    p.push();
-                    p.noStroke();
-                    p.fill(255, 0, 0, 100); // Semi-transparent red
-                    p.ellipse(anim.x, anim.y, 20);
-                    p.pop();
-                }
-                
-                // Advance to next frame based on timing
                 setTimeout(() => {
                     anim.currentFrame = (anim.currentFrame + 1) % anim.frameCount;
                     
-                    // Track completed loops
                     if (anim.currentFrame === 0) {
                         anim.loopCount++;
                     }
                     
-                    // Continue animation
                     if (anim.isPlaying) {
                         requestAnimationFrame(updateHandAnimation);
                     }
                 }, anim.frameDuration);
             }
             
-            // Draw the current animation frame - FIXED VERSION WITHOUT TEAL OVERLAY
             function drawHandAnimationFrame() {
                 const anim = handAnimation;
                 
                 if (anim.frameImages[anim.currentFrame]) {
-                    // First draw a visual indicator/background to make it more visible
                     p.push();
-
-                    // Apply gentle rotation around center
                     p.translate(anim.x, anim.y);
                     p.rotate(anim.rotationOffset);
                     p.translate(-anim.x, -anim.y);
-        
-                    // First draw a visual indicator/background to make it more visible
                     p.noStroke();
                   
-                    // Create a blurred background using multiple overlapping circles with decreasing opacity
                     for (let i = 0; i < 3; i++) {
                         const blurOpacity = anim.opacity * (100 - i * 20); 
                         const blurSize = anim.size * (1.05 + i * 0.04);
@@ -749,31 +945,21 @@
                     }
                     p.pop();
                     
-                    // Get the current frame image
                     const img = anim.frameImages[anim.currentFrame];
-                    
-                    // Calculate height while preserving aspect ratio
                     const aspectRatio = img.height / img.width;
                     const drawHeight = anim.size * aspectRatio;
                     
-                    // Draw the hand without tint (natural colors)
                     p.push();
-                    // No tint, just use the image as-is with opacity
                     p.tint(255, 255, 255, Math.min(255, anim.opacity * 255));
-                    
-                    // Draw the current frame centered at x,y 
                     p.image(
                         img,
                         anim.x - anim.size/2,
-                        anim.y - drawHeight/2, // Correct vertical centering
+                        anim.y - drawHeight/2,
                         anim.size,
                         drawHeight
                     );
                     p.pop();
                 } else {
-                    console.error(`Image for frame ${anim.currentFrame} not found!`);
-                    
-                    // Draw a simple circle as fallback
                     p.push();
                     p.noStroke();
                     p.fill(255, 255, 255, anim.opacity * 255);
@@ -782,17 +968,11 @@
                 }
             }
             
-            // Claude-specific functions for the polygon-based visualization
             function createPolygon() {
-                // Random angle and distance from center
                 const angle = p.random(p.TWO_PI);
                 const distance = p.random(100, 300);
-                const sides = p.floor(p.random(3, 7)); // Triangle to hexagon
-                
-                // Random alignment level (will determine color)
+                const sides = p.floor(p.random(3, 7));
                 const alignment = p.random(0, 1);
-                
-                // Calculate position based on angle and distance
                 const x = centralSphere.x + p.cos(angle) * distance;
                 const y = centralSphere.y + p.sin(angle) * distance;
                 
@@ -809,7 +989,7 @@
                     orbitDistance: distance,
                     orbitSpeed: p.random(0.001, 0.003),
                     alignment: alignment,
-                    color: [0, 0, 0, 0], // Will be set by updatePolygonColor
+                    color: [0, 0, 0, 0],
                     tetherOpacity: p.map(distance, 100, 300, 180, 80),
                     wobbleAmount: p.random(1, 3),
                     wobbleSpeed: p.random(0.02, 0.05),
@@ -821,14 +1001,11 @@
                     attractStrength: 0
                 };
                 
-                // Set color based on alignment
                 updatePolygonColor(polygon);
-                
                 polygons.push(polygon);
             }
             
             function updatePolygonColor(polygon) {
-                // Choose color based on alignment
                 let palette;
                 if (polygon.alignment > 0.7) {
                     palette = alignmentColors.high;
@@ -839,8 +1016,6 @@
                 }
                 
                 const baseColor = p.random(palette);
-                
-                // Add slight variation to the color
                 polygon.color = [
                     baseColor[0] + p.random(-15, 15),
                     baseColor[1] + p.random(-15, 15),
@@ -850,61 +1025,39 @@
             }
             
             function updatePolygon(polygon) {
-                // Age the polygon
                 polygon.age++;
-                
-                // Update rotation
                 polygon.rotation += polygon.rotationSpeed;
                 
                 if (evaluationMode) {
-                    // During evaluation, make polygons move more dynamically
                     polygon.evaluatingShift = p.sin(p.frameCount * 0.1 + polygon.orbitAngle * 3) * 15;
-                    
-                    // Calculate new alignment that fluctuates but generally improves
                     let targetAlignment = 0.8 + p.sin(p.frameCount * 0.03 + polygon.orbitAngle) * 0.2;
                     polygon.alignment = p.lerp(polygon.alignment, targetAlignment, 0.02);
-                    
-                    // Update color based on new alignment
                     updatePolygonColor(polygon);
-                    
-                    // Update orbit speed to be faster during evaluation
                     polygon.orbitSpeed = 0.005 + p.sin(p.frameCount * 0.02) * 0.002;
                 } else {
                     polygon.evaluatingShift = 0;
                 }
                 
-                // Update orbit position
                 polygon.orbitAngle += polygon.orbitSpeed;
-                
-                // Calculate new position based on orbit
                 polygon.baseX = centralSphere.x + p.cos(polygon.orbitAngle) * polygon.orbitDistance;
                 polygon.baseY = centralSphere.y + p.sin(polygon.orbitAngle) * polygon.orbitDistance;
                 
-                // Add a gentle wobble
                 const wobble = p.sin(p.frameCount * polygon.wobbleSpeed) * polygon.wobbleAmount;
-                
-                // Default position with wobble
                 let newX = polygon.baseX + wobble;
                 let newY = polygon.baseY + wobble + polygon.evaluatingShift;
                 
-                // If being attracted to a touch point
                 if (polygon.attractToPoint && polygon.attractStrength > 0) {
-                    // Calculate vector toward attract point
                     let dx = polygon.attractPoint.x - newX;
                     let dy = polygon.attractPoint.y - newY;
                     let dist = Math.sqrt(dx * dx + dy * dy);
                     
                     if (dist > 0) {
-                        // Normalize and apply attraction
                         dx = dx / dist * polygon.attractStrength;
                         dy = dy / dist * polygon.attractStrength;
-                        
-                        // Move toward point
                         newX += dx;
                         newY += dy;
                     }
                     
-                    // Reduce attraction strength over time
                     polygon.attractStrength *= 0.95;
                     if (polygon.attractStrength < 0.1) {
                         polygon.attractToPoint = false;
@@ -914,7 +1067,6 @@
                 polygon.x = newX;
                 polygon.y = newY;
                 
-                // Fade in and out based on age
                 const fadeInDuration = 60;
                 const fadeOutDuration = 120;
                 
@@ -932,11 +1084,9 @@
                 p.translate(polygon.x, polygon.y);
                 p.rotate(polygon.rotation);
                 
-                // Draw polygon
                 p.noStroke();
                 p.fill(polygon.color);
                 
-                // Create polygon shape
                 p.beginShape();
                 for (let i = 0; i < polygon.sides; i++) {
                     const angle = p.map(i, 0, polygon.sides, 0, p.TWO_PI);
@@ -946,7 +1096,6 @@
                 }
                 p.endShape(p.CLOSE);
                 
-                // Inner highlight for depth
                 p.fill(255, 255, 255, 40);
                 p.beginShape();
                 for (let i = 0; i < polygon.sides; i++) {
@@ -961,35 +1110,27 @@
             }
             
             function drawTether(polygon) {
-                // Calculate distance for tether opacity
                 const distance = p.dist(centralSphere.x, centralSphere.y, polygon.x, polygon.y);
                 let alpha = polygon.tetherOpacity;
                 
-                // Adjust alpha based on polygon's age for fade in/out
                 if (polygon.age < 60) {
                     alpha = p.map(polygon.age, 0, 60, 0, polygon.tetherOpacity);
                 } else if (polygon.age > polygon.lifespan - 120) {
                     alpha = p.map(polygon.age, polygon.lifespan - 120, polygon.lifespan, polygon.tetherOpacity, 0);
                 }
                 
-                // Draw a segmented line to represent the tether with color based on alignment
                 const segments = 8;
                 let prevX = centralSphere.x;
                 let prevY = centralSphere.y;
                 
                 for (let i = 1; i <= segments; i++) {
                     const t = i / segments;
-                    
-                    // Add a slight curve to the tether
                     const curveAmount = 10 * p.sin(t * p.PI);
                     const curveX = p.cos(polygon.orbitAngle + p.PI/2) * curveAmount;
                     const curveY = p.sin(polygon.orbitAngle + p.PI/2) * curveAmount;
-                    
-                    // Calculate segment position
                     const segX = p.lerp(centralSphere.x, polygon.x, t) + curveX;
                     const segY = p.lerp(centralSphere.y, polygon.y, t) + curveY;
                     
-                    // Blend from central sphere color to polygon color
                     const segmentColor = p.lerpColor(
                         p.color(centralSphere.color[0], centralSphere.color[1], centralSphere.color[2], alpha * 0.7),
                         p.color(polygon.color[0], polygon.color[1], polygon.color[2], alpha * 0.5),
@@ -1006,13 +1147,11 @@
             }
             
             function updateCentralSphere() {
-                // Pulse effect for central sphere
                 centralSphere.pulseSize += 0.05 * centralSphere.pulseDir;
                 if (centralSphere.pulseSize > 5 || centralSphere.pulseSize < 0) {
                     centralSphere.pulseDir *= -1;
                 }
                 
-                // During evaluation mode, make central sphere pulse more actively
                 if (evaluationMode) {
                     centralSphere.pulseSize = 3 + p.sin(p.frameCount * 0.2) * 3;
                 }
@@ -1021,7 +1160,6 @@
             function drawCentralSphere() {
                 p.noStroke();
                 
-                // Draw outer glow
                 for (let i = 5; i >= 0; i--) {
                     const glowSize = centralSphere.size * (1 + i * 0.15);
                     const glowAlpha = 80 - i * 15;
@@ -1029,7 +1167,6 @@
                     p.ellipse(centralSphere.x, centralSphere.y, glowSize + centralSphere.pulseSize, glowSize + centralSphere.pulseSize);
                 }
                 
-                // Draw main sphere with gradient
                 for (let i = 1; i >= 0; i -= 0.2) {
                     const innerSize = (centralSphere.size + centralSphere.pulseSize) * i;
                     p.fill(
@@ -1041,7 +1178,6 @@
                     p.ellipse(centralSphere.x, centralSphere.y, innerSize, innerSize);
                 }
                 
-                // Core highlight
                 p.fill(255, 255, 255, 150);
                 p.ellipse(
                     centralSphere.x - (centralSphere.size * 0.15),
@@ -1055,21 +1191,17 @@
                 evaluationMode = true;
                 evaluationTimer = 0;
                 
-                // Reset all polygons for the evaluation process
                 for (let polygon of polygons) {
-                    // Make alignment fluctuate
-                    polygon.rotationSpeed *= 3; // Faster rotation during evaluation
+                    polygon.rotationSpeed *= 3;
                 }
             }
             
-            // Draw touch indicator
             function drawTouchFeedback() {
                 if (lastTouchPosition.active) {
                     p.noStroke();
                     p.fill(32, 178, 170, 80);
                     p.ellipse(lastTouchPosition.x, lastTouchPosition.y, 40, 40);
                     
-                    // Draw ripple effect
                     p.noFill();
                     p.stroke(32, 178, 170, 60 - lastTouchPosition.timer);
                     p.strokeWeight(2);
@@ -1083,17 +1215,14 @@
             }
             
             p.draw = function() {
-                // Make sure we're completely clearing the canvas
                 p.clear();
-                p.background(255, 255, 255, 0); // Transparent background
+                p.background(255, 255, 255, 0);
                 
-                // Handle evaluation mode timing
                 if (evaluationMode) {
                     evaluationTimer++;
-                    if (evaluationTimer > 180) { // 3 seconds at 60fps
+                    if (evaluationTimer > 180) {
                         evaluationMode = false;
                         evaluationTimer = 0;
-                        // Return polygons to their regular behavior
                         for (let polygon of polygons) {
                             polygon.alignment = p.random(0, 1);
                             updatePolygonColor(polygon);
@@ -1103,62 +1232,50 @@
                     }
                 }
                 
-                // Draw tethers first (behind polygons)
                 for (let polygon of polygons) {
                     drawTether(polygon);
                 }
                 
-                // Draw and update the central sphere
                 updateCentralSphere();
                 drawCentralSphere();
-                
-                // Draw touch feedback
                 drawTouchFeedback();
                 
-                // Draw and update polygons
                 for (let i = 0; i < polygons.length; i++) {
                     updatePolygon(polygons[i]);
                     drawPolygon(polygons[i]);
                 }
                 
-                // Periodically trigger evaluation mode
                 if (!evaluationMode && p.frameCount % 300 === 0) {
                     triggerEvaluationMode();
                 }
                 
-                // Occasionally add new polygons and remove old ones
                 if (p.frameCount % 90 === 0 && polygons.length < 40) {
                     createPolygon();
                 }
                 
-                // Remove polygons that are too old
                 polygons = polygons.filter(poly => poly.age < poly.lifespan);
                 
-                // If hand animation is playing, draw the current frame (last to be on top)
                 if (handAnimation.isPlaying) {
                     drawHandAnimationFrame();
                 }
             };
             
             p.windowResized = function() {
-                p.resizeCanvas(p.windowWidth, p.windowHeight);
+                // Only resize if within the visualization section
+                const vizSection = document.querySelector('.visualization-section');
+                p.resizeCanvas(vizSection.offsetWidth, vizSection.offsetHeight);
                 
-                // Update central sphere position
                 centralSphere.x = p.width / 2;
                 centralSphere.y = p.height / 2;
-
-                // Update hand animation position to match central sphere
                 handAnimation.x = centralSphere.x;
                 handAnimation.y = centralSphere.y;
                 
-                // Update polygon base positions
                 for (let polygon of polygons) {
                     polygon.baseX = centralSphere.x + p.cos(polygon.orbitAngle) * polygon.orbitDistance;
                     polygon.baseY = centralSphere.y + p.sin(polygon.orbitAngle) * polygon.orbitDistance;
                 }
             };
             
-            // Helper function to apply attraction to nearby polygons
             function attractPolygonsToPoint(x, y, radius, strength) {
                 let interacted = false;
                 
@@ -1169,14 +1286,9 @@
                         polygons[i].attractToPoint = true;
                         polygons[i].attractPoint = {x: x, y: y};
                         polygons[i].attractStrength = p.map(d, 0, radius, strength, 0.1);
-                        
-                        // Increase alignment temporarily
                         polygons[i].alignment = p.min(1, polygons[i].alignment + 0.1);
                         updatePolygonColor(polygons[i]);
-                        
-                        // Increase orbit speed
                         polygons[i].orbitSpeed *= 1.1;
-                        
                         interacted = true;
                     }
                 }
@@ -1184,34 +1296,20 @@
                 return interacted;
             }
             
-            // Play sound with better mobile handling
             function tryPlaySound() {
                 if (!p.interactionSound) {
-                    console.log("No sound available");
                     return;
                 }
                 
-                console.log("Trying to play sound...");
-                
-                // First ensure audio context is running
                 if (p.getAudioContext().state !== 'running') {
-                    console.log("Audio context not running, trying to start...");
-                    
                     p.userStartAudio()
                     .then(() => {
-                        console.log("Audio context started, now playing sound");
-                        
                         if (!p.interactionSound.isPlaying()) {
                             p.interactionSound.play();
                         }
                     })
-                    .catch(e => {
-                        console.error("Could not start audio context:", e);
-                    });
+                    .catch(e => { });
                 } else {
-                    // Audio context is running, play directly
-                    console.log("Audio context already running, playing sound directly");
-                    
                     if (!p.interactionSound.isPlaying()) {
                         p.interactionSound.play();
                     }
@@ -1220,69 +1318,45 @@
             
             p.mouseMoved = function() {
                 try {
-                    // Find polygons near the mouse for attraction effect
                     attractPolygonsToPoint(p.mouseX, p.mouseY, 200, 0.15);
-                    return false; // Prevent default
-                } catch (error) {
-                    console.error("Error in mouseMoved:", error);
-                }
+                    return false;
+                } catch (error) { }
             };
             
             p.mousePressed = function() {
-                // First ensure audio is initialized on interaction
                 p.userStartAudio();
                 
-                // Add interactivity when clicking
                 if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
-                    // Trigger evaluation mode
                     if (!evaluationMode) {
                         triggerEvaluationMode();
                     }
-
-                    // Play sound
                     tryPlaySound();
-                    
                     return false;
                 }
             };
             
-            // Add touch support for mobile
             p.touchStarted = function() {
                 if (p.touches.length > 0) {
-                    // Get more accurate touch coordinates
                     const touchX = p.touches[0].clientX || p.touches[0].x;
                     const touchY = p.touches[0].clientY || p.touches[0].y;
                     
-                    console.log("Touch detected at:", touchX, touchY);
-                    
-                    // First ensure audio is initialized on touch
                     p.userStartAudio();
                     
-                    // Make sure touch coordinates are within canvas
                     if (touchX > 0 && touchX < p.width && touchY > 0 && touchY < p.height) {
-                        // Trigger evaluation mode
                         if (!evaluationMode) {
                             triggerEvaluationMode();
                         }
-                        
-                        // Show touch indicator
                         showTouchIndicator(touchX, touchY);
-                        
-                        // Play sound
                         tryPlaySound();
                     }
                 }
-                
-                // Always return false to prevent default behavior
                 return false;
             };
             
             p.touchMoved = function() {
                 if (p.touches.length > 0) {
-                    // Get touch coordinates with fallbacks
                     let touchX, touchY;
                     
-                    // Try different ways to get touch coordinates
                     if (p.touches[0].clientX !== undefined) {
                         touchX = p.touches[0].clientX;
                         touchY = p.touches[0].clientY;
@@ -1290,20 +1364,14 @@
                         touchX = p.touches[0].x;
                         touchY = p.touches[0].y;
                     } else {
-                        // Use the canvas-relative touch position
                         touchX = p.touchX;
                         touchY = p.touchY;
                     }
 
-                    // Show visual touch indicator both in p5 and with DOM element
                     lastTouchPosition = {x: touchX, y: touchY, active: true, timer: 0};
                     showTouchIndicator(touchX, touchY);
-                    
-                    // Apply stronger attraction for mobile
                     attractPolygonsToPoint(touchX, touchY, 300, 0.3);
                 }
-                        
-                // Always prevent default to avoid page scrolling
                 return false;  
             };
         };
