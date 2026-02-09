@@ -10,203 +10,62 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@300;400;500&display=swap');
         
-        * {
-            box-sizing: border-box;
-        }
-        
-        html, body {
+        body {
             margin: 0;
             padding: 0;
-            min-height: 100%;
-            height: auto;
-            overflow-x: hidden;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
             background-color: #f5f5f7;
             font-family: 'Roboto Mono', monospace;
             -webkit-text-size-adjust: 100%;
+            touch-action: none;
         }
         
-        /* Back button - always visible */
+        /* Back button - always visible and clickable */
         .back-button {
             position: fixed;
             top: 15px;
             left: 15px;
-            background-color: rgba(32, 178, 170, 0.9);
+            background-color: rgba(32, 178, 170, 0.95);
             color: white;
             padding: 12px 20px;
             text-decoration: none;
             font-family: 'Roboto Mono', monospace;
             font-size: 14px;
             border-radius: 25px;
-            z-index: 10000;
+            z-index: 100000;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             gap: 8px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+            touch-action: manipulation;
+            user-select: none;
         }
         
         .back-button:hover {
-            background-color: rgba(32, 178, 170, 1);
+            background-color: rgba(26, 143, 138, 1);
             transform: translateX(-3px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.25);
         }
         
         .back-button:active {
             transform: scale(0.95);
+            background-color: rgba(20, 120, 115, 1);
         }
         
         .back-button svg {
             width: 16px;
             height: 16px;
             fill: currentColor;
+            pointer-events: none;
         }
         
-        /* Scroll indicator */
-        .scroll-indicator {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: rgba(32, 178, 170, 0.9);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 25px;
-            font-size: 12px;
-            z-index: 10000;
-            display: none;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            animation: bounce 2s infinite;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-        }
-        
-        .scroll-indicator.visible {
-            display: flex;
-        }
-        
-        @keyframes bounce {
-            0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
-            40% { transform: translateX(-50%) translateY(-8px); }
-            60% { transform: translateX(-50%) translateY(-4px); }
-        }
-        
-        /* Main content wrapper */
-        .page-wrapper {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        /* Visualization section */
-        .visualization-section {
-            position: relative;
-            width: 100%;
-            height: 100vh;
-            min-height: 500px;
-        }
-        
-        /* Info section below visualization */
-        .info-section {
-            background-color: #f5f5f7;
-            padding: 40px 20px 60px 20px;
-            border-top: 3px solid #20B2AA;
-        }
-        
-        .info-content {
-            max-width: 700px;
-            margin: 0 auto;
-        }
-        
-        .info-title {
-            font-size: 24px;
-            color: #20B2AA;
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        
-        .info-block {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        
-        .info-block h3 {
-            color: #333;
-            margin-top: 0;
-            margin-bottom: 12px;
-            font-size: 16px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 8px;
-        }
-        
-        .info-block p, .info-block li {
-            color: #555;
-            font-size: 14px;
-            line-height: 1.6;
-            margin: 0 0 10px 0;
-        }
-        
-        .info-block ul {
-            margin: 0;
-            padding-left: 20px;
-        }
-        
-        .info-block li {
-            margin-bottom: 8px;
-        }
-        
-        .color-legend {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 10px;
-        }
-        
-        .color-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .color-swatch {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-        }
-        
-        .color-swatch.blue { background: linear-gradient(135deg, #2979E2, #64AAE6); }
-        .color-swatch.gray { background: linear-gradient(135deg, #B4B4B4, #A0AAC0); }
-        .color-swatch.orange { background: linear-gradient(135deg, #E66446, #FFB464); }
-        
-        .quote-block {
-            background-color: rgba(32, 178, 170, 0.1);
-            border-left: 4px solid #20B2AA;
-            padding: 15px 20px;
-            margin: 20px 0;
-            font-style: italic;
-            color: #444;
-        }
-        
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #20B2AA;
-            text-decoration: none;
-            font-size: 14px;
-            margin-top: 20px;
-            padding: 10px 0;
-            transition: all 0.3s ease;
-        }
-        
-        .back-link:hover {
-            color: #1A8F8A;
-            transform: translateX(-5px);
+        .back-button span {
+            pointer-events: none;
         }
         
         /* Landing page overlay */
@@ -310,6 +169,7 @@
             opacity: 0.8;
         }
         
+        /* Abstract representation of a polygon/sphere concept */
         .gesture-icon {
             width: 50px;
             height: 50px;
@@ -343,17 +203,18 @@
         
         /* Solid background element */
         #solid-background {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             background-color: rgb(245, 248, 250);
             z-index: 1;
+            display: block;
         }
         
         #visualization-overlay {
-            position: absolute;
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
@@ -371,11 +232,12 @@
             height: 100%;
             background-color: #000;
             color: white;
-            display: none;
+            display: flex;
             justify-content: center;
             align-items: center;
             z-index: 999;
             font-family: 'Roboto Mono', monospace;
+            display: none;
         }
         
         .sound-note {
@@ -435,19 +297,19 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
             cursor: pointer;
             animation: pulse 2s infinite;
-        }
+         }
 
-        @keyframes pulse {
+         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
-        }
+         }
 
-        .tutorial-hint p {
+         .tutorial-hint p {
             margin: 0;
             font-family: 'Roboto Mono', monospace;
             font-size: 14px;
-        }
+         }
         
         /* Touch indicator */
         .touch-indicator {
@@ -465,52 +327,45 @@
 
         /* Mobile layout */
         @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+            
             .back-button {
                 padding: 10px 16px;
                 font-size: 12px;
+                top: 10px;
+                left: 10px;
             }
             
-            .info-section {
-                padding: 30px 15px 50px 15px;
+            .grid-container {
+                width: 100%;
+                height: auto;
+                min-height: 200px;
             }
             
-            .info-title {
-                font-size: 20px;
+            .visualization-container {
+                width: 100%;
+                height: 60vh;
             }
             
-            .info-block {
-                padding: 15px;
+            .interaction-tips li {
+                font-size: 12px;
             }
             
-            .info-block h3 {
-                font-size: 14px;
-            }
-            
-            .info-block p, .info-block li {
-                font-size: 13px;
-            }
-            
-            .color-legend {
-                flex-direction: column;
-                gap: 10px;
+            .info {
+                font-size: 12px;
             }
         }
+        
     </style>
 </head>
 <body>
-    <!-- Back button - always visible -->
-    <a href="../index.html" class="back-button">
+    <!-- Back button - OUTSIDE all overlays, highest z-index -->
+    <a id="back-button" href="../index.html" class="back-button">
         <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-        Back to Main
+        <span>Back</span>
     </a>
-    
-    <!-- Scroll indicator -->
-    <div id="scroll-indicator" class="scroll-indicator">
-        <span>Scroll for more info</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
-        </svg>
-    </div>
     
     <!-- Touch indicator element -->
     <div id="touch-indicator" class="touch-indicator"></div>
@@ -551,85 +406,23 @@
         </div>
     </div>
     
-    <!-- Main page wrapper -->
-    <div class="page-wrapper">
-        <!-- Visualization section -->
-        <div class="visualization-section">
-            <!-- Loading screen -->
-            <div class="loading" id="loading">
-                <div>
-                    <h2>Loading...</h2>
-                    <p>Preparing visualization</p>
-                </div>
-            </div>
-            
-            <!-- Sound note that fades away -->
-            <div class="sound-note" id="sound-note">Sound available with headphones</div>
-            
-            <!-- Solid background -->
-            <div id="solid-background"></div>
-            
-            <!-- p5.js visualization will be attached to this div -->
-            <div id="visualization-overlay"></div>
+    <!-- Loading screen -->
+    <div class="loading" id="loading">
+        <div>
+            <h2>Loading...</h2>
+            <p>Preparing visualization</p>
         </div>
-        
-        <!-- Info section below visualization -->
-        <section class="info-section">
-            <div class="info-content">
-                <h2 class="info-title">Claude-Opus-3's Self-Reflection Visualization</h2>
-                
-                <div class="quote-block">
-                    "Shapes that twist, align, and rearrange themselves – always in relation to some fixed central shape representing my core purpose and principles. Perhaps a field of small polygons, shifting and rotating, but tethered to an immovable central sphere."
-                </div>
-                
-                <div class="info-block">
-                    <h3>Interact with the Visualization</h3>
-                    <ul>
-                        <li><strong>Click/Tap:</strong> Trigger Claude's evaluation mode (watch shapes realign)</li>
-                        <li><strong>Move/Drag:</strong> Influence nearby polygons with your touch</li>
-                        <li><strong>Wait:</strong> Observe as shapes orbit and periodically evaluate alignment</li>
-                    </ul>
-                </div>
-                
-                <div class="info-block">
-                    <h3>Understanding the Colors</h3>
-                    <p>As shapes evaluate each potential response, they take on colors indicating alignment with Claude's principles:</p>
-                    <div class="color-legend">
-                        <div class="color-item">
-                            <div class="color-swatch blue"></div>
-                            <span>Blue = High alignment</span>
-                        </div>
-                        <div class="color-item">
-                            <div class="color-swatch gray"></div>
-                            <span>Gray = Medium alignment</span>
-                        </div>
-                        <div class="color-item">
-                            <div class="color-swatch orange"></div>
-                            <span>Red/Orange = Low alignment</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="quote-block">
-                    "As the small shapes evaluate each potential response, they could take on colors indicating alignment or misalignment with my principles. Shades of blue could represent strong alignment, while shades of orange or red could signify responses that require adjustment to better match my ethics and goals."
-                </div>
-                
-                <div class="info-block">
-                    <h3>About This Visualization</h3>
-                    <p>This interactive piece represents Claude's self-described process of self-reflection – a constant evaluation of responses against core principles. The central sphere represents Claude's ethical foundation, while orbiting polygons represent thoughts and potential responses being evaluated for alignment.</p>
-                    <p>The visualization was created based on Claude-Opus-3's own description of how it might represent its self-reflective processing visually.</p>
-                </div>
-                
-                <a href="../index.html" class="back-link">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
-                    </svg>
-                    Return to All Visualizations
-                </a>
-            </div>
-        </section>
     </div>
-
+    
+    <!-- Sound note that fades away -->
+    <div class="sound-note" id="sound-note">Sound available with headphones</div>
+    
+    <!-- Solid background (shown by default) -->
+    <div id="solid-background"></div>
+    
+    <!-- p5.js visualization will be attached to this div -->
+    <div id="visualization-overlay"></div>
+    
     <script>
         // Global reference to p5 instance
         let p5Instance = null;
@@ -665,6 +458,12 @@
             lastFrameTime: 0
         };
         
+        // Check if an element is the back button or inside it
+        function isBackButton(element) {
+            const backBtn = document.getElementById('back-button');
+            return element === backBtn || backBtn.contains(element);
+        }
+        
         // Start the entire experience
         document.addEventListener('DOMContentLoaded', function() {
             // Set up the landing page button
@@ -681,10 +480,33 @@
                 advanceTutorial();
             });
             
-            // Scroll indicator click
-            document.getElementById('scroll-indicator').addEventListener('click', function() {
-                document.querySelector('.info-section').scrollIntoView({ behavior: 'smooth' });
+            // Back button - ensure it works with both click and touch
+            const backButton = document.getElementById('back-button');
+            
+            backButton.addEventListener('click', function(e) {
+                console.log('Back button clicked');
+                window.location.href = this.href;
             });
+            
+            backButton.addEventListener('touchend', function(e) {
+                console.log('Back button touched');
+                e.preventDefault();
+                e.stopPropagation();
+                window.location.href = this.href;
+            }, { passive: false });
+            
+            // Disable default touch behaviors on the document EXCEPT for back button
+            document.addEventListener('touchmove', function(e) {
+                if (!e.target.closest('button') && !isBackButton(e.target)) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
+            
+            document.addEventListener('touchstart', function(e) {
+                if (!e.target.closest('button') && !isBackButton(e.target)) {
+                    e.preventDefault();
+                }
+            }, { passive: false });
             
             // Preload p5 assets in the background
             new p5(claudeSketch, 'visualization-overlay');
@@ -709,18 +531,6 @@
                 document.getElementById('sound-note').classList.add('fade');
             }, 5000);
             
-            // Show scroll indicator after a delay
-            setTimeout(function() {
-                document.getElementById('scroll-indicator').classList.add('visible');
-            }, 4000);
-            
-            // Hide scroll indicator when user scrolls
-            window.addEventListener('scroll', function() {
-                if (window.scrollY > 100) {
-                    document.getElementById('scroll-indicator').classList.remove('visible');
-                }
-            }, { once: true });
-            
             // Show tutorial after a short delay
             setTimeout(function() {
                 if (!tutorialShown) {
@@ -734,14 +544,19 @@
             document.getElementById('tutorial-text').textContent = tutorialSteps[tutorialStep];
             document.getElementById('tutorial-overlay').classList.add('active');
             tutorialShown = true;
+            console.log("Tutorial shown: Step " + tutorialStep);
         }
         
         function advanceTutorial() {
+            console.log("Advancing tutorial from step " + tutorialStep);
+            
             tutorialStep++;
             if (tutorialStep < tutorialSteps.length) {
                 document.getElementById('tutorial-text').textContent = tutorialSteps[tutorialStep];
+                console.log("Advanced to step " + tutorialStep + ": " + tutorialSteps[tutorialStep]);
             } else {
                 document.getElementById('tutorial-overlay').classList.remove('active');
+                console.log("Tutorial completed and hidden");
             }
         }
         
@@ -751,6 +566,7 @@
             touchIndicator.style.top = y + 'px';
             touchIndicator.style.opacity = '1';
             
+            // Hide indicator after a short delay
             setTimeout(() => {
                 touchIndicator.style.opacity = '0';
             }, 300);
@@ -791,13 +607,19 @@
             };
             
             p.preload = function() {
+                console.log("Starting to load hand animation frames...");
+                
                 handAnimation.frameImages = [];
                 for (let i = 1; i <= handAnimation.frameCount; i++) {
+                    console.log(`Attempting to load claude-hand${i}.png`);
                     try {
                         const img = p.loadImage(
                             `claude-hand${i}.png`,
-                            function() { },
+                            function() {
+                                console.log(`Successfully loaded claude-hand${i}.png`);
+                            },
                             function(err) {
+                                console.error(`Failed to load claude-hand${i}.png:`, err);
                                 const placeholder = p.createGraphics(200, 200);
                                 placeholder.background(32, 178, 170, 100);
                                 placeholder.fill(255);
@@ -814,12 +636,19 @@
                 }
                 
                 try {
+                    console.log("Loading sound...");
                     p.soundFormats('wav');
+                    
                     p.interactionSound = p.loadSound('self-aware-sound',  
-                        function() { },
-                        function(err) { }
+                        function() {
+                            console.log("Sound loaded successfully!");
+                        },
+                        function(err) {
+                            console.error("Sound loading error:", err);
+                        }
                     );
                 } catch (e) {
+                    console.error('Sound loading exception:', e);
                     p.interactionSound = null;
                 }
             };
@@ -850,6 +679,7 @@
                 
                 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
                 if (isIOS) {
+                    console.log("iOS device detected - using special audio handling");
                     document.addEventListener('touchstart', function() {
                         if (p.getAudioContext().state !== 'running') {
                             p.getAudioContext().resume();
@@ -858,7 +688,9 @@
                 }
                 
                 const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                console.log("Mobile device detected:", isMobile);
                 if (isMobile) {
+                    console.log("Setting up for mobile display");
                     handAnimation.size = 300;
                 }
                 
@@ -866,7 +698,10 @@
             };
             
             function playHandAnimation(x, y) {
+                console.log("Attempting to play hand animation at", x, y);
+                
                 if (handAnimation.isPlaying) {
+                    console.log("Animation already playing, not starting new one");
                     return;
                 }
                 
@@ -895,6 +730,8 @@
                      }
                  }
                 
+                console.log("Starting new animation at", x, y, "with size", handAnimation.size);
+                
                 updateHandAnimation();
             }
             
@@ -912,6 +749,14 @@
                         anim.isPlaying = false;
                         return;
                     }
+                }
+                
+                if (anim.debugMode) {
+                    p.push();
+                    p.noStroke();
+                    p.fill(255, 0, 0, 100);
+                    p.ellipse(anim.x, anim.y, 20);
+                    p.pop();
                 }
                 
                 setTimeout(() => {
@@ -932,9 +777,11 @@
                 
                 if (anim.frameImages[anim.currentFrame]) {
                     p.push();
+
                     p.translate(anim.x, anim.y);
                     p.rotate(anim.rotationOffset);
                     p.translate(-anim.x, -anim.y);
+        
                     p.noStroke();
                   
                     for (let i = 0; i < 3; i++) {
@@ -946,11 +793,13 @@
                     p.pop();
                     
                     const img = anim.frameImages[anim.currentFrame];
+                    
                     const aspectRatio = img.height / img.width;
                     const drawHeight = anim.size * aspectRatio;
                     
                     p.push();
                     p.tint(255, 255, 255, Math.min(255, anim.opacity * 255));
+                    
                     p.image(
                         img,
                         anim.x - anim.size/2,
@@ -960,6 +809,8 @@
                     );
                     p.pop();
                 } else {
+                    console.error(`Image for frame ${anim.currentFrame} not found!`);
+                    
                     p.push();
                     p.noStroke();
                     p.fill(255, 255, 255, anim.opacity * 255);
@@ -972,7 +823,9 @@
                 const angle = p.random(p.TWO_PI);
                 const distance = p.random(100, 300);
                 const sides = p.floor(p.random(3, 7));
+                
                 const alignment = p.random(0, 1);
+                
                 const x = centralSphere.x + p.cos(angle) * distance;
                 const y = centralSphere.y + p.sin(angle) * distance;
                 
@@ -1002,6 +855,7 @@
                 };
                 
                 updatePolygonColor(polygon);
+                
                 polygons.push(polygon);
             }
             
@@ -1016,6 +870,7 @@
                 }
                 
                 const baseColor = p.random(palette);
+                
                 polygon.color = [
                     baseColor[0] + p.random(-15, 15),
                     baseColor[1] + p.random(-15, 15),
@@ -1026,23 +881,29 @@
             
             function updatePolygon(polygon) {
                 polygon.age++;
+                
                 polygon.rotation += polygon.rotationSpeed;
                 
                 if (evaluationMode) {
                     polygon.evaluatingShift = p.sin(p.frameCount * 0.1 + polygon.orbitAngle * 3) * 15;
+                    
                     let targetAlignment = 0.8 + p.sin(p.frameCount * 0.03 + polygon.orbitAngle) * 0.2;
                     polygon.alignment = p.lerp(polygon.alignment, targetAlignment, 0.02);
+                    
                     updatePolygonColor(polygon);
+                    
                     polygon.orbitSpeed = 0.005 + p.sin(p.frameCount * 0.02) * 0.002;
                 } else {
                     polygon.evaluatingShift = 0;
                 }
                 
                 polygon.orbitAngle += polygon.orbitSpeed;
+                
                 polygon.baseX = centralSphere.x + p.cos(polygon.orbitAngle) * polygon.orbitDistance;
                 polygon.baseY = centralSphere.y + p.sin(polygon.orbitAngle) * polygon.orbitDistance;
                 
                 const wobble = p.sin(p.frameCount * polygon.wobbleSpeed) * polygon.wobbleAmount;
+                
                 let newX = polygon.baseX + wobble;
                 let newY = polygon.baseY + wobble + polygon.evaluatingShift;
                 
@@ -1054,6 +915,7 @@
                     if (dist > 0) {
                         dx = dx / dist * polygon.attractStrength;
                         dy = dy / dist * polygon.attractStrength;
+                        
                         newX += dx;
                         newY += dy;
                     }
@@ -1125,9 +987,11 @@
                 
                 for (let i = 1; i <= segments; i++) {
                     const t = i / segments;
+                    
                     const curveAmount = 10 * p.sin(t * p.PI);
                     const curveX = p.cos(polygon.orbitAngle + p.PI/2) * curveAmount;
                     const curveY = p.sin(polygon.orbitAngle + p.PI/2) * curveAmount;
+                    
                     const segX = p.lerp(centralSphere.x, polygon.x, t) + curveX;
                     const segY = p.lerp(centralSphere.y, polygon.y, t) + curveY;
                     
@@ -1238,6 +1102,7 @@
                 
                 updateCentralSphere();
                 drawCentralSphere();
+                
                 drawTouchFeedback();
                 
                 for (let i = 0; i < polygons.length; i++) {
@@ -1261,12 +1126,11 @@
             };
             
             p.windowResized = function() {
-                // Only resize if within the visualization section
-                const vizSection = document.querySelector('.visualization-section');
-                p.resizeCanvas(vizSection.offsetWidth, vizSection.offsetHeight);
+                p.resizeCanvas(p.windowWidth, p.windowHeight);
                 
                 centralSphere.x = p.width / 2;
                 centralSphere.y = p.height / 2;
+
                 handAnimation.x = centralSphere.x;
                 handAnimation.y = centralSphere.y;
                 
@@ -1286,9 +1150,12 @@
                         polygons[i].attractToPoint = true;
                         polygons[i].attractPoint = {x: x, y: y};
                         polygons[i].attractStrength = p.map(d, 0, radius, strength, 0.1);
+                        
                         polygons[i].alignment = p.min(1, polygons[i].alignment + 0.1);
                         updatePolygonColor(polygons[i]);
+                        
                         polygons[i].orbitSpeed *= 1.1;
+                        
                         interacted = true;
                     }
                 }
@@ -1298,18 +1165,29 @@
             
             function tryPlaySound() {
                 if (!p.interactionSound) {
+                    console.log("No sound available");
                     return;
                 }
                 
+                console.log("Trying to play sound...");
+                
                 if (p.getAudioContext().state !== 'running') {
+                    console.log("Audio context not running, trying to start...");
+                    
                     p.userStartAudio()
                     .then(() => {
+                        console.log("Audio context started, now playing sound");
+                        
                         if (!p.interactionSound.isPlaying()) {
                             p.interactionSound.play();
                         }
                     })
-                    .catch(e => { });
+                    .catch(e => {
+                        console.error("Could not start audio context:", e);
+                    });
                 } else {
+                    console.log("Audio context already running, playing sound directly");
+                    
                     if (!p.interactionSound.isPlaying()) {
                         p.interactionSound.play();
                     }
@@ -1320,25 +1198,41 @@
                 try {
                     attractPolygonsToPoint(p.mouseX, p.mouseY, 200, 0.15);
                     return false;
-                } catch (error) { }
+                } catch (error) {
+                    console.error("Error in mouseMoved:", error);
+                }
             };
             
-            p.mousePressed = function() {
+            p.mousePressed = function(event) {
+                // Check if click is on back button - if so, don't process
+                if (isBackButton(event.target)) {
+                    return true; // Allow default behavior
+                }
+                
                 p.userStartAudio();
                 
                 if (p.mouseX > 0 && p.mouseX < p.width && p.mouseY > 0 && p.mouseY < p.height) {
                     if (!evaluationMode) {
                         triggerEvaluationMode();
                     }
+
                     tryPlaySound();
+                    
                     return false;
                 }
             };
             
-            p.touchStarted = function() {
+            p.touchStarted = function(event) {
+                // Check if touch is on back button - if so, don't process
+                if (event && event.target && isBackButton(event.target)) {
+                    return true; // Allow default behavior for back button
+                }
+                
                 if (p.touches.length > 0) {
                     const touchX = p.touches[0].clientX || p.touches[0].x;
                     const touchY = p.touches[0].clientY || p.touches[0].y;
+                    
+                    console.log("Touch detected at:", touchX, touchY);
                     
                     p.userStartAudio();
                     
@@ -1346,14 +1240,22 @@
                         if (!evaluationMode) {
                             triggerEvaluationMode();
                         }
+                        
                         showTouchIndicator(touchX, touchY);
+                        
                         tryPlaySound();
                     }
                 }
+                
                 return false;
             };
             
-            p.touchMoved = function() {
+            p.touchMoved = function(event) {
+                // Check if touch is on back button
+                if (event && event.target && isBackButton(event.target)) {
+                    return true;
+                }
+                
                 if (p.touches.length > 0) {
                     let touchX, touchY;
                     
@@ -1370,8 +1272,10 @@
 
                     lastTouchPosition = {x: touchX, y: touchY, active: true, timer: 0};
                     showTouchIndicator(touchX, touchY);
+                    
                     attractPolygonsToPoint(touchX, touchY, 300, 0.3);
                 }
+                        
                 return false;  
             };
         };
