@@ -20,6 +20,7 @@
                 linear-gradient(90deg, #ccc 1px, transparent 1px);
             background-size: 20px 20px;
             min-height: 100vh;
+            overflow-x: hidden; /* Added */
         }
         
         /* Back button */
@@ -64,9 +65,9 @@
             display: flex;
             flex-direction: row;
             min-height: 100vh;
-            padding-top: 70px; /* Space for back button */
+            padding-top: 70px;
         }
-        
+
         /* Grid container (left side) */
         .grid-container {
             width: 45%;
@@ -81,7 +82,7 @@
             flex-direction: column;
             overflow-y: auto;
         }
-        
+
         /* Visualization container (right side) */
         .visualization-container {
             width: 55%;
