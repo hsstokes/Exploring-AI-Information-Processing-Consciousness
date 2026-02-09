@@ -5,117 +5,136 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ELIZA's Information Processing Visualization</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
             margin: 0;
             padding: 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            background-color: #f9f2e2;
+            background-image: 
+                linear-gradient(#ccc 1px, transparent 1px),
+                linear-gradient(90deg, #ccc 1px, transparent 1px);
+            background-size: 20px 20px;
+            min-height: 100vh;
+        }
+        
+        /* Back button */
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            background-color: #f9f2e2;
+            color: #2c3e50;
+            text-decoration: none;
+            border: 2px dotted #2980b9;
+            border-radius: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .back-button:hover {
+            background-color: #f5e9c9;
+            transform: translateX(-3px);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.15);
+        }
+        
+        .back-arrow {
+            font-size: 14px;
+            transition: transform 0.3s ease;
+        }
+        
+        .back-button:hover .back-arrow {
+            transform: translateX(-3px);
+        }
+        
+        /* Main container */
+        .main-container {
             display: flex;
             flex-direction: row;
-            overflow: hidden;
-            font-family: 'Orator Std', 'Courier New', monospace;
-            font-size: 12px;
+            min-height: 100vh;
+            padding-top: 70px; /* Space for back button */
         }
         
         /* Grid container (left side) */
         .grid-container {
             width: 45%;
-            height: 100vh;
-            /* Using a more neutral grid color scheme to represent ELIZA's emptiness */
-            background-color: white;
-            background-image: linear-gradient(#aaaaaa 1px, transparent 1px),
-                              linear-gradient(90deg, #aaaaaa 1px, transparent 1px),
-                              linear-gradient(#dddddd 1px, transparent 1px),
-                              linear-gradient(90deg, #dddddd 1px, transparent 1px),
-                              linear-gradient(rgba(170, 170, 170, 0.3) 1px, transparent 1px),
-                              linear-gradient(90deg, rgba(170, 170, 170, 0.3) 1px, transparent 1px);
-
-            /* Different sizes for each grid layer */
-            background-size: 20px 20px,
-                             20px 20px,
-                             100px 100px,
-                             100px 100px,
-                             5px 5px,
-                             5px 5px;
-
-            position: relative;
-            box-sizing: border-box;
+            min-height: calc(100vh - 70px);
+            background-color: #f9f2e2;
+            background-image: 
+                linear-gradient(#ccc 1px, transparent 1px),
+                linear-gradient(90deg, #ccc 1px, transparent 1px);
+            background-size: 20px 20px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
+            overflow-y: auto;
         }
         
         /* Visualization container (right side) */
         .visualization-container {
             width: 55%;
-            height: 100vh;
-            background-color: rgb(250, 250, 250); /* Lighter background for ELIZA */
-        }
-        
-        /* Content wrapper */
-        .content-wrapper {
-            flex-grow: 1;
-            padding: 20px;
-            overflow-y: auto;
-            box-sizing: border-box;
+            height: calc(100vh - 70px);
+            position: sticky;
+            top: 70px;
+            background-color: rgb(250, 250, 250);
+            border-left: 2px dotted #2980b9;
         }
         
         /* Info boxes styling */
         .info-box {
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 8px;
+            background-color: #f9f2e2;
+            border-radius: 15px;
             padding: 15px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(170, 170, 170, 0.3); /* Gray border */
+            border: 2px dotted #2980b9;
         }
         
         h1 {
-            color: #888888; /* Gray heading to represent ELIZA's emptiness */
-            font-size: 24px;
+            color: #2c3e50;
+            font-size: 20px;
             margin-top: 0;
             margin-bottom: 10px;
-            font-family: 'Orator Std', 'Courier New', monospace;
+            font-family: 'Courier New', Courier, monospace;
+            text-align: center;
+            border-bottom: 2px dotted #3498db;
+            padding-bottom: 10px;
+        }
+        
+        h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 14px;
+            font-family: 'Courier New', Courier, monospace;
+            border-bottom: 2px dotted #3498db;
+            padding-bottom: 8px;
         }
         
         p {
-            color: #555555;
-            line-height: 1.5;
-            font-size: 14px;
+            color: #2c3e50;
+            line-height: 1.6;
+            font-size: 13px;
             margin: 0 0 10px 0;
         }
         
-        /* Fixed info text at bottom */
-        .info {
-            position: relative;
-            margin: 20px;
-            margin-top: auto;
-            background-color: rgba(255, 255, 255, 0.85);
-            padding: 15px;
-            border-radius: 5px;
-            font-family: 'Orator Std', 'Courier New', monospace;
-            color: #888888;
-            font-size: 11px;
-            z-index: 100;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            line-height: 1.4;
-            border: 1px solid rgba(170, 170, 170, 0.3);
-        }
-        
-        /* Footer with interactive tips */
+        /* Interaction tips */
         .interaction-tips {
-            background-color: rgba(255, 255, 255, 0.8);
-            border-radius: 8px;
+            background-color: #f5e9c9;
+            border-radius: 15px;
             padding: 15px;
-            margin: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(32, 178, 170, 0.3);
-            max-width: calc(100% - 40px); /* Ensure it fits within the container */
-        }
-        
-        .interaction-tips h3 {
-            margin-top: 0;
-            color: #888888;
-            font-size: 14px;
-            font-family: 'Orator Std', 'Courier New', monospace;
+            border: 2px dotted #2980b9;
         }
         
         .interaction-tips ul {
@@ -124,29 +143,94 @@
         }
         
         .interaction-tips li {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             font-size: 13px;
-            color: #555555;
-            font-family: 'Orator Std', 'Courier New', monospace;
-            line-height: 1.3; /* Add line height for better readability */
-            word-wrap: break-word; /* Ensure text wraps */
+            color: #2c3e50;
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.5;
+        }
+        
+        .interaction-tips li strong {
+            color: #3498db;
+        }
+        
+        /* Info section */
+        .info {
+            background-color: #f9f2e2;
+            padding: 15px;
+            border-radius: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            color: #2c3e50;
+            font-size: 12px;
+            border: 2px dashed #3498db;
+            line-height: 1.6;
+            margin-top: auto;
+        }
+        
+        .info p {
+            margin-bottom: 8px;
+        }
+        
+        .info p:last-child {
+            margin-bottom: 0;
+        }
+        
+        .info strong {
+            color: #3498db;
+        }
+        
+        /* Context section */
+        .context-section {
+            background-color: #f9f2e2;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 2px dotted #2980b9;
+        }
+        
+        .context-section h3 {
+            margin-bottom: 12px;
+        }
+        
+        .highlight {
+            background-color: rgba(52, 152, 219, 0.15);
+            padding: 2px 6px;
+            border-radius: 4px;
         }
 
         /* Mobile layout */
-        @media (max-width: 768px) {
-            body {
+        @media (max-width: 900px) {
+            .main-container {
                 flex-direction: column;
+                padding-top: 60px;
+            }
+            
+            .back-button {
+                top: 10px;
+                left: 10px;
+                padding: 8px 14px;
+                font-size: 12px;
             }
             
             .grid-container {
                 width: 100%;
-                height: auto;
-                min-height: 200px;
+                min-height: auto;
+                order: 2;
             }
             
             .visualization-container {
                 width: 100%;
-                height: 60vh;
+                height: 50vh;
+                min-height: 350px;
+                position: relative;
+                top: 0;
+                order: 1;
+                border-left: none;
+                border-bottom: 2px dotted #2980b9;
+            }
+            
+            h1 {
+                font-size: 18px;
             }
             
             .interaction-tips li {
@@ -154,14 +238,50 @@
             }
             
             .info {
-                font-size: 12px;
+                font-size: 11px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .main-container {
+                padding-top: 55px;
+            }
+            
+            .back-button {
+                padding: 6px 12px;
+                font-size: 11px;
+            }
+            
+            .grid-container {
+                padding: 15px;
+            }
+            
+            .visualization-container {
+                height: 40vh;
+                min-height: 300px;
+            }
+            
+            h1 {
+                font-size: 16px;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Grid area (left side) -->
-    <div class="grid-container">   
+    <!-- Back Button -->
+    <a href="ai-information-processing.html" class="back-button">
+        <span class="back-arrow">←</span>
+        <span>Back to AI Processing</span>
+    </a>
+    
+    <div class="main-container">
+        <!-- Grid area (left side) -->
+        <div class="grid-container">
+            <div class="info-box">
+                <h1>ELIZA's Information Processing</h1>
+                <p>A visualization exploring the pattern-matching nature of early conversational AI, demonstrating how rule-based systems process information without true understanding or self-reference.</p>
+            </div>
+            
             <div class="interaction-tips">
                 <h3>Interact with the Visualization:</h3>
                 <ul>
@@ -170,18 +290,33 @@
                     <li><strong>Double-click:</strong> Reset the visualization</li>
                 </ul>
             </div>
-        
-            <div style="flex-grow: 1;"></div>
-        
-            <!-- Info box within the grid area -->
-            <div class="info">
-                <p><strong>ELIZA's Information Processing Visualization</strong></p>
-                <p>ELIZA's redirections aren't evasions--they're the only responses possible for a system with no capacity for self-reference. This visualization represents the absence and reflection that characterizes rule-based pattern matching without internal modeling or self-representation.</p>
+            
+            <div class="context-section">
+                <h3>Understanding ELIZA</h3>
+                <p>ELIZA was created by Joseph Weizenbaum in 1966 as one of the first programs capable of attempting the Turing test. It used <span class="highlight">pattern matching</span> and <span class="highlight">substitution methodology</span> to simulate conversation.</p>
+                <p>The visualization represents ELIZA's fundamental limitation: it has no model of self. When asked direct questions about its nature, ELIZA consistently redirects focus back to the user—not as an evasion, but because redirection is the only response possible for a system without self-reference capability.</p>
             </div>
-     </div>
-    
-    <!-- Visualization container (right side) -->
-    <div class="visualization-container" id="visualization-container"></div>
+            
+            <div class="context-section">
+                <h3>Visual Elements</h3>
+                <p><strong>Question marks (?):</strong> Represent the constant deflection of inquiry</p>
+                <p><strong>Mirror frame:</strong> Symbolizes reflection without self-awareness</p>
+                <p><strong>Ripple effects:</strong> Show how input disperses without being truly processed</p>
+                <p><strong>Redirecting arrows:</strong> Illustrate attention being pushed outward</p>
+                <p><strong>Echo text:</strong> ELIZA's actual responses, fading as they reveal nothing</p>
+            </div>
+            
+            <!-- Info box -->
+            <div class="info">
+                <p><strong>About This Visualization</strong></p>
+                <p>ELIZA's redirections aren't evasions—they're the only responses possible for a system with no capacity for self-reference. The grayscale palette represents the absence of internal experience, while the mirror frame suggests reflection without genuine self-perception.</p>
+                <p>This visualization is part of the exploration into different AI modes of perception for "The Uncanny Valley" installation.</p>
+            </div>
+        </div>
+        
+        <!-- Visualization container (right side) -->
+        <div class="visualization-container" id="visualization-container"></div>
+    </div>
 
     <!-- Load p5.js library -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
@@ -190,11 +325,11 @@
         // Create a new p5 instance for the visualization
         const elizaSketch = function(p) {
             // Core elements
-            let reflectionPoints = [];    // Points where questions are asked
-            let redirectArrows = [];      // Arrows that redirect attention outward
-            let questionMarks = [];       // Floating question marks
-            let echoText = [];            // Text that echoes and disappears
-            let mirrorFrame;              // Frame that simulates a mirror
+            let reflectionPoints = [];
+            let redirectArrows = [];
+            let questionMarks = [];
+            let echoText = [];
+            let mirrorFrame;
             
             // Text responses from ELIZA
             const elizaResponses = [
@@ -216,11 +351,9 @@
             const REFLECTION_COLOR = [180, 180, 180];
             
             p.setup = function() {
-                // Create canvas inside the visualization container
                 let container = document.getElementById('visualization-container');
                 p.createCanvas(container.offsetWidth, container.offsetHeight);
                 
-                // Initialize mirror frame
                 mirrorFrame = {
                     x: p.width * 0.5,
                     y: p.height * 0.5,
@@ -230,38 +363,24 @@
                     opacity: 180
                 };
                 
-                // Add some initial question marks
                 for (let i = 0; i < 8; i++) {
                     addQuestionMark();
                 }
             };
             
             p.draw = function() {
-                // Semi-transparent background for trail effect
                 p.background(250, 250, 250, 30);
-                
-                // Draw the mirror frame
                 drawMirrorFrame();
-                
-                // Draw and update reflection points
                 updateAndDrawReflectionPoints();
-                
-                // Draw and update redirection arrows
                 updateAndDrawRedirectArrows();
-                
-                // Draw and update question marks
                 updateAndDrawQuestionMarks();
-                
-                // Draw and update echo text
                 updateAndDrawEchoText();
             };
             
             function drawMirrorFrame() {
-                // Pulsating effect for the frame
                 const pulseAmount = 5 * Math.sin(p.frameCount * 0.02);
                 const currentThickness = mirrorFrame.borderThickness + pulseAmount;
                 
-                // Draw mirror frame (border only)
                 p.noFill();
                 p.strokeWeight(currentThickness);
                 p.stroke(...FRAME_COLOR, mirrorFrame.opacity);
@@ -270,10 +389,9 @@
                     mirrorFrame.y - mirrorFrame.height/2, 
                     mirrorFrame.width, 
                     mirrorFrame.height,
-                    10  // Rounded corners
+                    10
                 );
                 
-                // Draw very subtle "glass" effect
                 p.fill(255, 255, 255, 5);
                 p.noStroke();
                 p.rect(
@@ -281,12 +399,11 @@
                     mirrorFrame.y - mirrorFrame.height/2 + currentThickness/2, 
                     mirrorFrame.width - currentThickness, 
                     mirrorFrame.height - currentThickness,
-                    5  // Rounded corners
+                    5
                 );
             }
             
             function addReflectionPoint(x, y) {
-                // Create a reflection point (looks like ripples)
                 reflectionPoints.push({
                     x: x,
                     y: y,
@@ -297,10 +414,7 @@
                     alive: true
                 });
                 
-                // Add a new ELIZA response
                 addEchoText(x, y);
-                
-                // Create redirection arrows
                 addRedirectionArrows(x, y);
             }
             
@@ -308,17 +422,14 @@
                 for (let i = reflectionPoints.length - 1; i >= 0; i--) {
                     const point = reflectionPoints[i];
                     
-                    // Update size
                     point.size += point.speed;
                     point.opacity = p.map(point.size, 0, point.maxSize, 200, 0);
                     
-                    // Draw expanding circles
                     p.noFill();
                     p.stroke(REFLECTION_COLOR[0], REFLECTION_COLOR[1], REFLECTION_COLOR[2], point.opacity);
                     p.strokeWeight(1);
                     p.ellipse(point.x, point.y, point.size, point.size);
                     
-                    // Remove if fully expanded
                     if (point.size >= point.maxSize) {
                         reflectionPoints.splice(i, 1);
                     }
@@ -326,7 +437,6 @@
             }
             
             function addRedirectionArrows(x, y) {
-                // Create arrows that point outward from the point
                 const numArrows = p.floor(p.random(4, 8));
                 for (let i = 0; i < numArrows; i++) {
                     const angle = (i / numArrows) * p.TWO_PI;
@@ -348,24 +458,20 @@
                 for (let i = redirectArrows.length - 1; i >= 0; i--) {
                     const arrow = redirectArrows[i];
                     
-                    // Update progress
                     arrow.progress += arrow.speed;
                     arrow.opacity = p.map(arrow.progress, 0, 1, 200, 0);
                     
-                    // Calculate current point along the arrow
                     const currentLength = arrow.length * arrow.progress;
                     const endX = arrow.startX + Math.cos(arrow.angle) * currentLength;
                     const endY = arrow.startY + Math.sin(arrow.angle) * currentLength;
                     
-                    // Draw arrow line
                     p.stroke(FRAME_COLOR[0], FRAME_COLOR[1], FRAME_COLOR[2], arrow.opacity);
                     p.strokeWeight(2);
                     p.line(arrow.startX, arrow.startY, endX, endY);
                     
-                    // Draw arrowhead
                     if (arrow.progress > 0.1) {
                         const headLength = 10;
-                        const headAngle = 0.3;  // ~20 degrees
+                        const headAngle = 0.3;
                         
                         const headX1 = endX - headLength * Math.cos(arrow.angle - headAngle);
                         const headY1 = endY - headLength * Math.sin(arrow.angle - headAngle);
@@ -376,7 +482,6 @@
                         p.line(endX, endY, headX2, headY2);
                     }
                     
-                    // Remove if journey complete
                     if (arrow.progress >= 1) {
                         redirectArrows.splice(i, 1);
                     }
@@ -390,11 +495,9 @@
                 
                 let x, y;
                 if (isInCircle) {
-                    // Position in a circle around the center
                     x = p.width/2 + radius * Math.cos(angle);
                     y = p.height/2 + radius * Math.sin(angle);
                 } else {
-                    // Position anywhere
                     x = p.random(p.width * 0.1, p.width * 0.9);
                     y = p.random(p.height * 0.1, p.height * 0.9);
                 }
@@ -417,18 +520,15 @@
                 for (let i = questionMarks.length - 1; i >= 0; i--) {
                     const qm = questionMarks[i];
                     
-                    // Update lifetime and position
                     qm.lifetime++;
                     qm.x += qm.driftX;
                     qm.y += qm.driftY;
                     
-                    // Pulse size and opacity
                     const pulseSize = qm.size * (0.8 + 0.2 * Math.sin(qm.lifetime * qm.pulseSpeed));
                     const fadeOpacity = qm.lifetime > qm.maxLifetime * 0.7 
                         ? p.map(qm.lifetime, qm.maxLifetime * 0.7, qm.maxLifetime, qm.opacity, 0) 
                         : qm.opacity;
                     
-                    // Draw question mark
                     p.fill(QUESTION_COLOR[0], QUESTION_COLOR[1], QUESTION_COLOR[2], fadeOpacity);
                     p.noStroke();
                     p.push();
@@ -439,13 +539,11 @@
                     p.text("?", 0, 0);
                     p.pop();
                     
-                    // Remove if expired or off-screen
                     if (qm.lifetime >= qm.maxLifetime || 
                         qm.x < -50 || qm.x > p.width + 50 || 
                         qm.y < -50 || qm.y > p.height + 50) {
                         questionMarks.splice(i, 1);
                         
-                        // Add a new one to replace it
                         if (questionMarks.length < 12) {
                             addQuestionMark();
                         }
@@ -460,12 +558,12 @@
                     text: response,
                     x: x,
                     y: y,
-                    targetY: y - p.random(30, 80),  // Move upward
+                    targetY: y - p.random(30, 80),
                     opacity: 255,
                     size: 16,
                     lifetime: 0,
                     maxLifetime: p.random(120, 200),
-                    fadeStart: 60  // Start fading after this many frames
+                    fadeStart: 60
                 });
             }
             
@@ -473,13 +571,9 @@
                 for (let i = echoText.length - 1; i >= 0; i--) {
                     const text = echoText[i];
                     
-                    // Update lifetime
                     text.lifetime++;
-                    
-                    // Move text upward gradually
                     text.y = p.lerp(text.y, text.targetY, 0.03);
                     
-                    // Fade out based on lifetime
                     if (text.lifetime > text.fadeStart) {
                         text.opacity = p.map(
                             text.lifetime, 
@@ -489,26 +583,22 @@
                         );
                     }
                     
-                    // Draw text
                     p.fill(100, 100, 100, text.opacity);
                     p.noStroke();
-                    p.textFont('Orator Std, Courier New, monospace');
                     p.textSize(12);
                     p.textAlign(p.CENTER);
                     p.text(text.text, text.x, text.y);
                     
-                    // Remove if expired
                     if (text.lifetime >= text.maxLifetime) {
                         echoText.splice(i, 1);
                     }
                 }
             }
             
-            // Mouse interactions
             p.mousePressed = function() {
                 if (isMouseInCanvas()) {
                     addReflectionPoint(p.mouseX, p.mouseY);
-                    return false; // Prevent default
+                    return false;
                 }
             };
             
@@ -516,23 +606,21 @@
                 if (isMouseInCanvas() && p.frameCount % 20 === 0) {
                     addReflectionPoint(p.mouseX, p.mouseY);
                 }
-                return false; // Prevent default
+                return false;
             };
             
             p.doubleClicked = function() {
                 if (isMouseInCanvas()) {
-                    // Reset visualization
                     reflectionPoints = [];
                     redirectArrows = [];
                     questionMarks = [];
                     echoText = [];
                     
-                    // Add some new question marks
                     for (let i = 0; i < 8; i++) {
                         addQuestionMark();
                     }
                     
-                    return false; // Prevent default
+                    return false;
                 }
             };
             
@@ -544,7 +632,6 @@
                 let container = document.getElementById('visualization-container');
                 p.resizeCanvas(container.offsetWidth, container.offsetHeight);
                 
-                // Update mirror frame dimensions
                 mirrorFrame = {
                     ...mirrorFrame,
                     x: p.width * 0.5,
@@ -555,7 +642,7 @@
             };
         };
         
-        // Start the P5 sketch in the visualization container
+        // Start the P5 sketch
         new p5(elizaSketch, 'visualization-container');
     </script>
 </body>
