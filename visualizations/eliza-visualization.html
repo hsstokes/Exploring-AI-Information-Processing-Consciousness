@@ -254,6 +254,7 @@
             .visualization-container {
                 height: 60vh;
                 min-height: 300px;
+                
             }
             
             h1 {
@@ -595,18 +596,19 @@
                 }
             }
             
+            // UPDATED: Mouse events - return true to allow scrolling
             p.mousePressed = function() {
                 if (isMouseInCanvas()) {
                     addReflectionPoint(p.mouseX, p.mouseY);
-                    return false;
                 }
+                return true;
             };
             
             p.mouseDragged = function() {
                 if (isMouseInCanvas() && p.frameCount % 20 === 0) {
                     addReflectionPoint(p.mouseX, p.mouseY);
                 }
-                return false;
+                return true;
             };
             
             p.doubleClicked = function() {
@@ -619,9 +621,24 @@
                     for (let i = 0; i < 8; i++) {
                         addQuestionMark();
                     }
-                    
-                    return false;
                 }
+                return true;
+            };
+            
+            // NEW: Touch events for mobile - allow scrolling
+            p.touchStarted = function() {
+                if (isMouseInCanvas()) {
+                    addReflectionPoint(p.mouseX, p.mouseY);
+                }
+                return true;
+            };
+            
+            p.touchMoved = function() {
+                return true;
+            };
+            
+            p.touchEnded = function() {
+                return true;
             };
             
             function isMouseInCanvas() {
