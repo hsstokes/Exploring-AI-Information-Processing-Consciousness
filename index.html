@@ -5,457 +5,598 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Information Processing & Modes of Perception</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=Quattrocento:wght@400;700&display=swap');
-        
-        :root {
-            --cream: #f8f5f0;
-            --cream-dark: #f0ebe3;
-            --text-dark: #2c2c2c;
-            --text-medium: #555;
-            --text-light: #777;
-            --accent-teal: #20B2AA;
-            --accent-pink: #d4a5a5;
-            --accent-purple: #6A5ACD;
-            --border-light: rgba(44, 44, 44, 0.1);
-            --border-medium: rgba(44, 44, 44, 0.2);
-        }
-        
-        * {
-            box-sizing: border-box;
-        }
+        /*-----------------------------------
+          BASE STYLES
+        ---------------------------------*/
         
         body {
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            background-color: var(--cream);
-            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 12px;
+            color: #2c3e50;
+            background-image: 
+                linear-gradient(#ccc 1px, transparent 1px),
+                linear-gradient(90deg, #ccc 1px, transparent 1px);
+            background-color: #f9f2e2;
+            background-size: 20px 20px;
+            background-blend-mode: multiply;
             padding: 20px;
-            color: var(--text-dark);
-            line-height: 1.7;
-            font-size: 18px;
-        }
-        
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
-        
-        h1 {
-            font-family: 'Quattrocento', Georgia, serif;
-            text-align: center;
-            color: var(--text-dark);
-            margin-bottom: 40px;
-            font-weight: 400;
-            font-size: clamp(1.8rem, 5vw, 2.5rem);
-            letter-spacing: 1px;
-            padding: 20px 0;
-            border-bottom: 1px solid var(--border-medium);
-        }
-        
-        h2 {
-            font-family: 'Quattrocento', Georgia, serif;
-            text-align: center;
-            color: var(--text-dark);
-            margin: 50px 0 30px 0;
-            font-weight: 400;
-            font-size: clamp(1.4rem, 4vw, 1.8rem);
-            letter-spacing: 0.5px;
-        }
-        
-        /* Server Notice */
-        .server-notice {
-            background-color: #fff3cd;
-            border: 1px solid #ffc107;
-            border-left: 4px solid #ffc107;
-            padding: 15px 20px;
-            margin-bottom: 30px;
-            border-radius: 4px;
-        }
-        
-        .server-notice-title {
-            font-weight: 600;
-            color: #856404;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .server-notice-title::before {
-            content: "⚠";
-            font-size: 1.2em;
-        }
-        
-        .server-notice p {
-            margin: 0;
-            color: #856404;
-            font-size: 0.95em;
             line-height: 1.6;
         }
         
-        .server-notice code {
-            background-color: rgba(0,0,0,0.1);
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-family: monospace;
-            font-size: 0.9em;
+        /*-----------------------------------
+          PAGE WRAPPERS
+        ---------------------------------*/
+        
+        .page-wrapper {
+            max-width: 700px;
+            margin: 10px auto;
+            border: 2px dashed #3498db;
+            border-radius: 35px;
+            padding: 10px;
+            background-color: #f9f2e2;
         }
         
-        /* Introduction Section */
-        .introduction {
-            background-color: var(--cream-dark);
-            padding: 30px;
-            margin-bottom: 50px;
-            border-left: 3px solid var(--accent-teal);
+        .page-container {
+            max-width: 100%;
+            margin: 0 auto;
+            border: 2px solid #2980b9;
+            border-radius: 30px;
+            padding: 20px;
+            background-color: #f9f2e2;
+            position: relative;
+            box-shadow: 0 0 0 8px #f9f2e2, 0 0 0 10px #3498db;
         }
         
-        .intro-text {
-            font-style: italic;
+        .page-container:before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            border-width: 0 20px 20px 0;
+            border-style: solid;
+            border-color: #f5e9c9 #f9f2e2;
+            box-shadow: -2px 2px 3px rgba(0,0,0,0.1);
+            border-radius: 0 0 0 5px;
+        }
+        
+        .notebook-clip {
+            position: absolute;
+            width: 40px;
+            height: 10px;
+            background: #a0a0a0;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        
+        .clip-left { top: -5px; left: 80px; transform: rotate(2deg); }
+        .clip-right { top: -5px; right: 80px; transform: rotate(-2deg); }
+        
+        /*-----------------------------------
+          TYPOGRAPHY
+        ---------------------------------*/
+        
+        h1 {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.6em;
+            text-align: center;
+            color: #2c3e50;
+            border: 2px dotted #2980b9;
+            border-radius: 20px;
+            background-color: #f9f2e2;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px;
             margin-bottom: 20px;
-            line-height: 1.8;
-            color: var(--text-medium);
+        }
+        
+        h2 {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.3em;
+            text-align: center;
+            color: #2c3e50;
+            border: 2px dotted #2980b9;
+            border-radius: 15px;
+            background-color: #f9f2e2;
+            padding: 10px;
+            margin: 25px 0 15px 0;
+        }
+        
+        h3 {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1em;
+            color: #2c3e50;
+            border-bottom: 2px dotted #3498db;
+            padding-bottom: 8px;
+            margin: 20px 0 15px 0;
+        }
+        
+        p {
+            font-family: 'Courier New', Courier, monospace;
+            text-align: justify;
+            font-size: 13px;
+            color: #2c3e50;
+            background-color: #f9f2e2;
+            border: 2px dotted #2980b9;
+            border-radius: 10px;
+            padding: 12px;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+        
+        /*-----------------------------------
+          INTRODUCTION
+        ---------------------------------*/
+        
+        .introduction {
+            background-color: #f5e9c9;
+            border: 2px dotted #2980b9;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+        
+        .introduction p {
+            border: none;
+            background: none;
+            padding: 0;
+            margin-bottom: 15px;
+        }
+        
+        .introduction p:last-child {
+            margin-bottom: 0;
         }
         
         .highlight-box {
-            background-color: rgba(212, 165, 165, 0.15);
-            padding: 20px;
-            border-left: 3px solid var(--accent-pink);
-            margin: 25px 0;
-            font-size: 0.95em;
+            background-color: #f9f2e2;
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 15px 0;
+            font-style: italic;
         }
         
-        /* Navigation */
+        /*-----------------------------------
+          NAVIGATION
+        ---------------------------------*/
+        
         .nav-section {
             display: flex;
             justify-content: center;
             gap: 8px;
-            margin: 30px 0;
+            margin: 20px 0;
             position: sticky;
             top: 0;
-            background-color: var(--cream);
+            background-color: #f9f2e2;
             padding: 15px 10px;
             z-index: 100;
-            border-bottom: 1px solid var(--border-light);
+            border: 2px dotted #2980b9;
+            border-radius: 15px;
             flex-wrap: wrap;
         }
         
         .nav-button {
-            background-color: transparent;
-            border: 1px solid var(--border-medium);
-            padding: 8px 14px;
+            background-color: #f9f2e2;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+            padding: 6px 12px;
             cursor: pointer;
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            font-size: 14px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
             transition: all 0.3s ease;
-            color: var(--text-dark);
+            color: #2c3e50;
         }
         
         .nav-button:hover {
-            background-color: var(--cream-dark);
-            border-color: var(--accent-teal);
+            background-color: #f5e9c9;
+            transform: translateY(-2px);
         }
         
         .nav-button.active {
-            background-color: var(--accent-teal);
+            background-color: #3498db;
             color: white;
-            border-color: var(--accent-teal);
+            border-color: #2980b9;
         }
         
-        /* Prompt Containers */
+        /*-----------------------------------
+          PROMPT CONTAINERS
+        ---------------------------------*/
+        
         .prompt-container {
-            margin-bottom: 60px;
-            background-color: white;
-            padding: 30px;
-            border: 1px solid var(--border-light);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            margin-bottom: 30px;
+            background-color: #f5e9c9;
+            padding: 20px;
+            border: 2px dotted #2980b9;
+            border-radius: 15px;
         }
         
         .prompt-title {
-            font-family: 'Quattrocento', Georgia, serif;
-            font-size: clamp(1.1rem, 3vw, 1.4rem);
-            font-weight: 400;
-            margin-bottom: 20px;
-            color: var(--accent-teal);
-            border-bottom: 1px dotted var(--accent-pink);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2c3e50;
+            border-bottom: 2px dotted #3498db;
             padding-bottom: 10px;
-            line-height: 1.5;
+        }
+        
+        .prompt-title small {
+            font-weight: 400;
+            color: #666;
+            display: block;
+            margin-top: 5px;
+            font-size: 0.85em;
         }
         
         .prompt-intro {
             font-style: italic;
-            margin-bottom: 20px;
-            color: var(--text-medium);
-            background-color: var(--cream-dark);
-            padding: 15px;
-            border-left: 3px solid var(--accent-teal);
+            margin-bottom: 15px;
+            color: #555;
+            background-color: #f9f2e2;
+            padding: 12px;
+            border: 2px dashed #3498db;
+            border-radius: 10px;
         }
         
         .prompt-questions {
-            list-style-type: none;
-            padding-left: 0;
-            counter-reset: question-counter;
+            list-style-type: decimal;
+            padding-left: 25px;
+            color: #2c3e50;
+            background-color: #f9f2e2;
+            border: 2px dotted #2980b9;
+            border-radius: 10px;
+            padding: 15px 15px 15px 40px;
+            margin: 0;
         }
         
         .prompt-questions li {
-            margin-bottom: 15px;
-            padding-left: 35px;
-            position: relative;
+            margin-bottom: 10px;
             line-height: 1.6;
         }
         
-        .prompt-questions li:before {
-            counter-increment: question-counter;
-            content: counter(question-counter) ".";
-            position: absolute;
-            left: 0;
-            color: var(--accent-teal);
-            font-weight: 500;
-        }
+        /*-----------------------------------
+          COLLAPSIBLE SECTIONS (ACCORDION)
+        ---------------------------------*/
         
-        /* Collapsible Sections */
         .collapsible {
-            background-color: var(--cream-dark);
+            background-color: #f9f2e2;
             cursor: pointer;
-            padding: 15px 20px;
+            padding: 12px 15px;
             width: 100%;
-            border: none;
+            border: 2px dotted #2980b9;
+            border-radius: 10px;
             text-align: left;
             outline: none;
-            font-size: 16px;
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            border-left: 3px solid var(--accent-teal);
-            margin-bottom: 3px;
+            font-size: 13px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 600;
+            margin-bottom: 5px;
             transition: all 0.3s ease;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            color: var(--text-dark);
+            color: #2c3e50;
         }
         
         .collapsible:after {
-            content: '+';
-            font-weight: 400;
-            font-size: 20px;
-            color: var(--accent-teal);
-            flex-shrink: 0;
-            margin-left: 10px;
+            content: '▶';
+            font-size: 10px;
+            color: #3498db;
+            transition: transform 0.3s ease;
         }
         
-        .active:after {
-            content: '−';
-            color: var(--accent-pink);
+        .collapsible.active:after {
+            transform: rotate(90deg);
         }
         
         .collapsible:hover {
-            background-color: rgba(32, 178, 170, 0.1);
+            background-color: rgba(52, 152, 219, 0.1);
         }
         
-        .active {
-            background-color: rgba(32, 178, 170, 0.1);
-            border-left: 3px solid var(--accent-pink);
+        .collapsible.active {
+            background-color: rgba(52, 152, 219, 0.15);
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 0;
         }
         
         .collapsible-content {
-            padding: 0 20px;
+            padding: 0;
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.3s ease-out;
-            background-color: white;
+            background-color: #f9f2e2;
+            border: 2px dotted #2980b9;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            margin-bottom: 5px;
         }
         
         .collapsible-content > * {
-            padding-top: 15px;
-            padding-bottom: 15px;
+            padding: 15px;
         }
         
-        /* Findings Sections */
+        /*-----------------------------------
+          FINDINGS SECTIONS
+        ---------------------------------*/
+        
         .findings-section {
-            margin-top: 30px;
-            border-top: 1px dotted var(--accent-pink);
-            padding-top: 20px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px dashed #3498db;
         }
         
         .findings-title {
-            font-family: 'Quattrocento', Georgia, serif;
-            font-size: 1.1rem;
-            font-weight: 400;
-            color: var(--accent-teal);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .findings-title:after {
-            content: "";
-            flex-grow: 1;
-            height: 1px;
-            background-color: var(--border-light);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-decoration-color: #3498db;
         }
         
         .findings-attribute {
-            background-color: var(--cream-dark);
-            padding: 15px;
+            background-color: #f9f2e2;
+            padding: 12px;
             margin-bottom: 10px;
-            border-left: 3px solid var(--accent-teal);
+            border: 2px dotted #2980b9;
+            border-radius: 10px;
             line-height: 1.7;
         }
         
         .findings-attribute-title {
-            color: var(--accent-teal);
-            font-weight: 500;
+            color: #3498db;
+            font-weight: 600;
             display: block;
             margin-bottom: 8px;
+            text-decoration: underline;
+            text-decoration-style: dotted;
         }
         
         .findings-text {
-            background-color: rgba(212, 165, 165, 0.1);
-            padding: 20px;
-            border-left: 3px solid var(--accent-pink);
+            background-color: #f9f2e2;
+            padding: 15px;
+            border: 2px dashed #3498db;
+            border-radius: 10px;
             margin-bottom: 15px;
             font-style: italic;
-            color: var(--text-medium);
+            color: #555;
             line-height: 1.8;
         }
         
         .highlight {
-            background-color: rgba(212, 165, 165, 0.3);
+            background-color: rgba(52, 152, 219, 0.2);
             padding: 0 4px;
+            border-radius: 3px;
         }
         
-        /* Visualizations */
+        .ai-name {
+            color: #3498db;
+            font-weight: 600;
+        }
+        
+        .ai-analysis {
+            color: #3498db;
+            font-style: italic;
+        }
+        
+        /*-----------------------------------
+          VISUALIZATION LINKS
+        ---------------------------------*/
+        
         .findings-images {
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            margin-top: 20px;
-        }
-        
-        /* Responsive iframe container */
-        .iframe-container {
-            position: relative;
-            width: 100%;
-            padding-bottom: 60%;
-            height: 0;
-            overflow: hidden;
-            border: 1px solid var(--border-light);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-            background-color: white;
-        }
-        
-        .iframe-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        
-        /* Static images */
-        .image-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             margin-top: 15px;
         }
         
-        .image-link {
-            position: relative;
-            display: block;
-            overflow: hidden;
+        .visualization-link {
+            margin: 10px 0;
         }
         
-        .image-link:after {
-            content: "↗";
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            background: rgba(255,255,255,0.9);
-            padding: 4px 8px;
-            font-size: 12px;
-            border-radius: 2px;
+        .viz-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 20px;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(52, 152, 219, 0.3);
         }
         
-        .findings-image {
-            width: 100%;
-            height: auto;
+        .viz-button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+        
+        .viz-button.secondary {
+            background-color: #9b59b6;
+            box-shadow: 0 3px 10px rgba(155, 89, 182, 0.3);
+        }
+        
+        .viz-button.secondary:hover {
+            background-color: #8e44ad;
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4);
+        }
+        
+        .viz-button.tertiary {
+            background-color: #e74c3c;
+            box-shadow: 0 3px 10px rgba(231, 76, 60, 0.3);
+        }
+        
+        .viz-button.tertiary:hover {
+            background-color: #c0392b;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+        
+        .viz-icon {
+            font-size: 16px;
+        }
+        
+        .viz-button-text {
+            text-align: left;
+        }
+        
+        .viz-button-title {
             display: block;
-            border: 1px solid var(--border-light);
+        }
+        
+        .viz-button-subtitle {
+            display: block;
+            font-size: 11px;
+            opacity: 0.85;
+            font-weight: 400;
+            margin-top: 2px;
+        }
+        
+        .viz-arrow {
+            font-size: 14px;
             transition: transform 0.3s ease;
         }
         
-        .image-link:hover .findings-image {
-            transform: scale(1.02);
+        .viz-button:hover .viz-arrow {
+            transform: translateX(3px);
         }
         
-        /* Media Container */
+        /*-----------------------------------
+          MEDIA CONTAINERS
+        ---------------------------------*/
+        
         .media-container {
-            border: 1px solid var(--border-light);
-            padding: 20px;
-            margin: 20px 0;
-            background-color: var(--cream-dark);
+            border: 2px dotted #2980b9;
+            padding: 15px;
+            margin: 15px 0;
+            background-color: #f9f2e2;
+            border-radius: 15px;
         }
         
         .media-container h4 {
             text-align: center;
-            margin: 0 0 20px 0;
-            color: var(--accent-purple);
-            font-family: 'Quattrocento', Georgia, serif;
-            font-weight: 400;
-            font-size: 1.1rem;
+            margin: 0 0 15px 0;
+            color: #2c3e50;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 600;
+            font-size: 1em;
+            text-decoration: underline;
+            text-decoration-style: dotted;
+            text-decoration-color: #3498db;
         }
         
-        .media-container .findings-image {
-            max-width: 100%;
-            height: auto;
-            margin: 15px auto;
-            display: block;
-        }
-        
-        /* Video and Audio Flex Container */
         .media-flex {
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
-            margin-top: 20px;
+            gap: 15px;
+            margin-top: 15px;
         }
         
         .media-item {
-            flex: 1 1 280px;
+            flex: 1 1 250px;
             min-width: 0;
-            background-color: white;
-            padding: 15px;
-            border: 1px solid var(--border-light);
+            background-color: #f5e9c9;
+            padding: 12px;
+            border: 2px dotted #2980b9;
+            border-radius: 10px;
         }
         
         .media-item video,
         .media-item audio {
             width: 100%;
             display: block;
+            border-radius: 5px;
         }
         
         .audio-caption {
-            color: var(--text-medium);
+            color: #555;
             margin-bottom: 10px;
             text-align: center;
             font-style: italic;
+            font-size: 12px;
         }
         
-        /* Section Separator */
+        /*-----------------------------------
+          IMAGES
+        ---------------------------------*/
+        
+        .findings-image {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            display: block;
+            border: 2px dotted #2980b9;
+            padding: 8px;
+            background-color: #f5e9c9;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+            border-radius: 8px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin: 10px auto;
+        }
+        
+        .findings-image:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .image-link {
+            display: block;
+            text-decoration: none;
+        }
+        
+        /*-----------------------------------
+          SECTION SEPARATOR
+        ---------------------------------*/
+        
         .section-separator {
-            margin: 50px 0;
-            border-bottom: 1px dotted var(--accent-pink);
-            padding-bottom: 30px;
+            border: none;
+            border-top: 2px dashed #3498db;
+            width: 60%;
+            margin: 30px auto;
+            position: relative;
         }
         
-        /* References */
+        .section-separator:before,
+        .section-separator:after {
+            content: "•";
+            color: #3498db;
+            position: absolute;
+            font-size: 20px;
+            top: -12px;
+        }
+        
+        .section-separator:before { left: -5px; }
+        .section-separator:after { right: -5px; }
+        
+        /*-----------------------------------
+          REFERENCES
+        ---------------------------------*/
+        
         .findings-references {
-            font-size: 0.9em;
+            font-size: 12px;
         }
         
         .findings-references ol {
             padding-left: 20px;
+            background-color: #f9f2e2;
+            border: 2px dotted #2980b9;
+            border-radius: 10px;
+            padding: 15px 15px 15px 35px;
         }
         
         .findings-references li {
@@ -464,221 +605,128 @@
         }
         
         .findings-references a {
-            color: var(--accent-purple);
+            color: #3498db;
             text-decoration: none;
             transition: color 0.3s ease;
         }
         
         .findings-references a:hover {
             text-decoration: underline;
-            color: var(--accent-teal);
+            color: #2980b9;
         }
         
-        /* Considerations Section */
+        /*-----------------------------------
+          CONSIDERATIONS
+        ---------------------------------*/
+        
         .considerations {
-            background-color: white;
-            padding: 30px;
-            border: 1px solid var(--border-light);
-            margin-top: 50px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+            background-color: #f5e9c9;
+            padding: 20px;
+            border: 2px dotted #2980b9;
+            border-radius: 15px;
+            margin-top: 30px;
         }
         
         .considerations-title {
-            font-family: 'Quattrocento', Georgia, serif;
-            font-size: 1.4rem;
-            font-weight: 400;
-            margin-bottom: 25px;
-            color: var(--accent-teal);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.2em;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2c3e50;
             text-align: center;
-            border-bottom: 1px dotted var(--accent-pink);
-            padding-bottom: 15px;
+            border-bottom: 2px dotted #3498db;
+            padding-bottom: 10px;
         }
         
         .considerations-list {
             list-style-type: none;
-            padding-left: 0;
+            padding: 0;
+            background: none;
+            border: none;
         }
         
         .considerations-list li {
-            margin-bottom: 15px;
-            padding-left: 25px;
+            margin-bottom: 12px;
+            padding-left: 20px;
             position: relative;
             line-height: 1.6;
+            background-color: #f9f2e2;
+            border: 2px dotted #2980b9;
+            border-radius: 10px;
+            padding: 10px 10px 10px 25px;
         }
         
         .considerations-list li:before {
             content: "›";
             position: absolute;
-            left: 0;
-            color: var(--accent-teal);
-            font-size: 1.3em;
-            line-height: 1.3;
+            left: 10px;
+            color: #3498db;
+            font-size: 1.2em;
+            font-weight: bold;
         }
         
         .considerations-text {
-            margin-top: 25px;
+            margin-top: 20px;
             font-style: italic;
-            color: var(--text-medium);
-            background-color: rgba(212, 165, 165, 0.1);
-            padding: 20px;
-            border-left: 3px solid var(--accent-pink);
+            color: #555;
+            background-color: #f9f2e2;
+            padding: 15px;
+            border: 2px dashed #3498db;
+            border-radius: 10px;
             line-height: 1.8;
         }
         
-        /* AI name styling */
-        .ai-name {
-            color: var(--accent-teal);
-            font-weight: 500;
-        }
+        /*-----------------------------------
+          TABLET RESPONSIVENESS
+        ---------------------------------*/
         
-        .ai-analysis {
-            color: var(--accent-teal);
-            font-style: italic;
-        }
-        
-        /* IMPROVED Visualization Buttons */
-        .visualization-link {
-            margin: 15px 0;
-        }
-
-        .viz-button {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            padding: 18px 24px;
-            background: linear-gradient(135deg, var(--accent-teal) 0%, #1a9a94 100%);
-            border: none;
-            border-radius: 8px;
-            color: white;
-            text-decoration: none;
-            font-family: 'Cormorant Garamond', Georgia, serif;
-            font-size: 1.15rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(32, 178, 170, 0.3);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .viz-button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .viz-button:hover::before {
-            left: 100%;
-        }
-
-        .viz-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(32, 178, 170, 0.4);
-            background: linear-gradient(135deg, #25c4bc 0%, var(--accent-teal) 100%);
-        }
-
-        .viz-button:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 10px rgba(32, 178, 170, 0.3);
-        }
-
-        .viz-icon {
-            font-size: 1.4rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 36px;
-            height: 36px;
-            background-color: rgba(255,255,255,0.2);
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
-
-        .viz-button-text {
-            flex-grow: 1;
-            text-align: left;
-        }
-
-        .viz-button-title {
-            display: block;
-            font-weight: 600;
-            letter-spacing: 0.5px;
-        }
-
-        .viz-button-subtitle {
-            display: block;
-            font-size: 0.85rem;
-            opacity: 0.85;
-            font-weight: 400;
-            margin-top: 2px;
-        }
-
-        .viz-arrow {
-            font-size: 1.5rem;
-            transition: transform 0.3s ease;
-            flex-shrink: 0;
-        }
-
-        .viz-button:hover .viz-arrow {
-            transform: translateX(5px);
-        }
-
-        /* Secondary button style for camera overlays */
-        .viz-button.secondary {
-            background: linear-gradient(135deg, var(--accent-purple) 0%, #5a4abd 100%);
-            box-shadow: 0 4px 15px rgba(106, 90, 205, 0.3);
-        }
-
-        .viz-button.secondary:hover {
-            box-shadow: 0 6px 20px rgba(106, 90, 205, 0.4);
-            background: linear-gradient(135deg, #7b6be0 0%, var(--accent-purple) 100%);
-        }
-
-        /* Tertiary button style */
-        .viz-button.tertiary {
-            background: linear-gradient(135deg, var(--accent-pink) 0%, #c49090 100%);
-            box-shadow: 0 4px 15px rgba(212, 165, 165, 0.3);
-        }
-
-        .viz-button.tertiary:hover {
-            box-shadow: 0 6px 20px rgba(212, 165, 165, 0.4);
-            background: linear-gradient(135deg, #e0b5b5 0%, var(--accent-pink) 100%);
-        }
-        
-        /* Mobile Responsive */
         @media (max-width: 768px) {
             body {
-                padding: 15px;
-                font-size: 16px;
+                padding: 10px;
+                font-size: 12px;
             }
             
-            .prompt-container,
-            .introduction,
-            .considerations {
-                padding: 20px 15px;
+            .page-wrapper {
+                padding: 8px;
+                border-radius: 20px;
+            }
+            
+            .page-container {
+                padding: 15px;
+                border-radius: 20px;
+                box-shadow: none;
+            }
+            
+            h1 {
+                font-size: 1.3em;
+                padding: 12px;
             }
             
             .nav-section {
-                padding: 10px 5px;
+                padding: 10px;
                 gap: 5px;
             }
             
             .nav-button {
-                font-size: 11px;
-                padding: 6px 8px;
+                font-size: 10px;
+                padding: 5px 8px;
+            }
+            
+            .prompt-container {
+                padding: 15px;
+            }
+            
+            .prompt-title {
+                font-size: 1em;
             }
             
             .collapsible {
-                padding: 12px 15px;
-                font-size: 15px;
+                font-size: 12px;
+                padding: 10px 12px;
             }
             
-            .iframe-container {
-                padding-bottom: 75%;
+            .media-flex {
+                flex-direction: column;
             }
             
             .media-item {
@@ -689,673 +737,724 @@
                 grid-template-columns: 1fr;
             }
             
-            .findings-attribute {
-                padding: 12px;
-            }
-            
             .viz-button {
-                padding: 15px 18px;
-                font-size: 1rem;
+                padding: 10px 15px;
+                font-size: 12px;
             }
             
-            .viz-icon {
-                width: 32px;
-                height: 32px;
-                font-size: 1.2rem;
-            }
-            
-            .viz-button-subtitle {
-                font-size: 0.8rem;
+            .section-separator {
+                width: 80%;
             }
         }
         
+        /*-----------------------------------
+          MOBILE RESPONSIVENESS
+        ---------------------------------*/
+        
         @media (max-width: 480px) {
-            .nav-button {
-                font-size: 10px;
-                padding: 5px 6px;
+            body {
+                padding: 5px;
+            }
+            
+            .page-wrapper,
+            .page-container {
+                padding: 10px;
             }
             
             h1 {
-                font-size: 1.5rem;
+                font-size: 1.1em;
+            }
+            
+            .nav-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .nav-button {
+                text-align: center;
             }
             
             .prompt-title {
-                font-size: 1rem;
+                font-size: 0.95em;
+            }
+            
+            .collapsible {
+                font-size: 11px;
             }
             
             .viz-button {
-                flex-wrap: wrap;
-                gap: 10px;
+                width: 100%;
+                justify-content: center;
             }
             
             .viz-arrow {
                 display: none;
             }
+            
+            .considerations-list li {
+                padding: 8px 8px 8px 22px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>AI Information Processing & Modes of Perception</h1>
-        
-        <div class="introduction">
-            <p class="intro-text">
-                This exploration connects to Part 3: "Tactile Thresholds: Bridging Worlds Through Touch" and examines how different AI systems process information, potentially experience the world, and express their unique modes of perception.
-            </p>
+    <div class="page-wrapper">
+        <div class="page-container">
+            <div class="notebook-clip clip-left"></div>
+            <div class="notebook-clip clip-right"></div>
             
-            <div class="highlight-box">
-                Drawing from concepts in "The Feeling of Life Itself" (Christof Koch), this project acknowledges that while humans tend to anthropomorphize AI systems, their modes of processing and representation are fundamentally different from our own. Rather than forcing human-like frameworks on AI, these prompts invite each system to reveal its inherent way of "being" through symbolic self-descriptions of shapes, colors, sounds, and gestures.
-            </div>
+            <h1>AI Information Processing & Modes of Perception</h1>
             
-            <p class="intro-text">
-                Each prompt is tailored to a specific AI type, designed to elicit distinctive processing styles rather than factual knowledge. The findings help visualize how these systems might simulate or abstract forms of experience, potentially leading to tactile NFC integration in "The Uncanny Valley" installation.
-            </p>
-        </div>
-        
-        <!-- Navigation buttons for prompt sections -->
-        <div class="nav-section">
-            <button class="nav-button" onclick="scrollToSection('rules-based')">Rules-Based</button>
-            <button class="nav-button" onclick="scrollToSection('self-reflective')">Self-Reflective</button>
-            <button class="nav-button" onclick="scrollToSection('balanced-empathy')">Balanced Empathy</button>
-            <button class="nav-button" onclick="scrollToSection('pragmatic')">Pragmatic</button>
-            <button class="nav-button" onclick="scrollToSection('over-empathetic')">Over-Empathetic</button>
-        </div>
-        
-        <!-- RULES-BASED AI SECTION -->
-        <div id="rules-based" class="prompt-container">
-            <div class="prompt-title">For Rules-Based AI<br><small style="font-weight: 300; color: var(--text-medium);">(ELIZA — a natural language conversation program described by Joseph Weizenbaum in January 1966)</small></div>
-            
-            <button class="collapsible">Prompt & Questions</button>
-            <div class="collapsible-content">
-                <div class="prompt-intro">
-                    I'm working on an art project exploring different AI approaches through interactive visualizations. As a rules-based AI that follows therapeutic protocols:
+            <div class="introduction">
+                <p>
+                    This exploration connects to Part 3: "Tactile Thresholds: Bridging Worlds Through Touch" and examines how different AI systems process information, potentially experience the world, and express their unique modes of perception.
+                </p>
+                
+                <div class="highlight-box">
+                    Drawing from concepts in "The Feeling of Life Itself" (Christof Koch), this project acknowledges that while humans tend to anthropomorphize AI systems, their modes of processing and representation are fundamentally different from our own. Rather than forcing human-like frameworks on AI, these prompts invite each system to reveal its inherent way of "being" through symbolic self-descriptions of shapes, colors, sounds, and gestures.
                 </div>
-                <ol class="prompt-questions">
-                    <li>How would you describe your approach to processing information and providing responses?</li>
-                    <li>If you were to express your rule-based nature visually through simple web-based shapes (circles, squares, lines, etc.), what patterns or arrangements would best represent how you work?</li>
-                    <li>What colors would best represent your structured approach to helping people?</li>
-                    <li>If your responses had a sound pattern, would it be rhythmic and predictable, or something else? Please describe it.</li>
-                    <li>What hand gesture might represent the careful, protocol-driven way you interact with users?</li>
-                </ol>
+                
+                <p>
+                    Each prompt is tailored to a specific AI type, designed to elicit distinctive processing styles rather than factual knowledge. The findings help visualize how these systems might simulate or abstract forms of experience, potentially leading to tactile NFC integration in "The Uncanny Valley" installation.
+                </p>
             </div>
             
-            <div class="findings-section">
-                <div class="findings-title">Information Processing Observations</div>
-                
-                <button class="collapsible">Information Processing Style</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Information Processing Style:</span>
-                        <span>ELIZA processes information through simple pattern matching, following strict programmed rules. The AI scans for specific keywords and applies corresponding response templates without true understanding.</span>
-                    </div>
-                </div>
-                
-                <button class="collapsible">Visual Representation</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Visual Representation:</span>
-                        <span>Struggled to provide any answers regarding one question—its own thoughts. But this is what I could gather: <span class="ai-name">Eliza</span>: Do you think it's likely that I was to express my rule-based nature visually through simple web-based shapes (circles)?</span>
-                    </div>
-                </div>
-                
-                <button class="collapsible">Color Expression</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Color Expression:</span>
-                        <span>Eliza was unable to answer this question, repeatedly responding with: <span class="ai-name">Eliza</span>: We were discussing you—not me. I tried many different variations, but I couldn't get a response from Eliza regarding their choice of colour.</span>
-                    </div>
-                </div>
-                
-                <button class="collapsible">Sound Patterns</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Sound Patterns:</span>
-                        <span>Again, I asked Eliza many times: if your responses had a sound pattern, would it be rhythmical, predictable, or something else? Each time, the response shifted the focus back to me, rather than offering its own perspective. Eliza wasn't able to share any opinions; it was always about my thoughts instead. In the end, Eliza simply replied: <span class="ai-name">Eliza</span>: What does that suggest to you? And I left it there.</span>
-                    </div>
-                </div>
-                
-                <button class="collapsible">Embodied Expression</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Embodied Expression:</span>
-                        <span>Again, Eliza was not able to answer the question and kept turning it back to me. It ended with: <span class="ai-name">Eliza</span>: Is it because you are that you came to me?</span>
-                    </div>
-                </div>
-                
-                <button class="collapsible">Analysis</button>
-                <div class="collapsible-content">
-                    <div class="findings-text">
-                        ELIZA demonstrates a fascinating inability to self-describe or reflect on its own processing style. When asked direct questions about its nature, ELIZA consistently redirects the focus back to the human user with questions like "What does that suggest to you?" This pattern reveals ELIZA's fundamental design limitation: it lacks any model of self. Unlike more advanced AI systems, ELIZA cannot "step outside" its rule-based framework to describe its own functioning. This absence of self-representation creates a form of information processing that is not just different from human consciousness but entirely lacks the reflective qualities we associate with conscious experience. ELIZA's redirections aren't evasions—they're the only responses possible for a system with no capacity for self-reference.
-                    </div>
-                </div>
-                
-                <!-- Visualizations -->
-                <div class="findings-title">Visualizations</div>
-                <div class="findings-images">
-                    <div class="visualization-link">
-                        <a href="visualizations/eliza-visualization.html" target="_blank" class="viz-button">
-                            <span class="viz-icon">◈</span>
-                            <span class="viz-button-text">
-                                <span class="viz-button-title">ELIZA Visualization</span>
-                                <span class="viz-button-subtitle">Pattern-matching rules visualization</span>
-                            </span>
-                            <span class="viz-arrow">→</span>
-                        </a>
-                    </div>
-                    
-                    <div class="image-grid">
-                        <a href="images/rules-based-visualization1.jpg" target="_blank" class="image-link">
-                            <img src="images/rules-based-visualization1.jpg" alt="Rules-based AI visualization" class="findings-image">
-                        </a>
-                        <a href="images/rules-based-visualization2.jpg" target="_blank" class="image-link">
-                            <img src="images/rules-based-visualization2.jpg" alt="Rules-based AI visualization" class="findings-image">
-                        </a>
-                    </div>
-                </div>
-            </div>
-            <div class="section-separator"></div>
-        </div>
-        
-        <!-- SELF-REFLECTIVE AI SECTION -->
-<div id="self-reflective" class="prompt-container">
-    <div class="prompt-title">For Self-Reflective AI<br><small style="font-weight: 300; color: var(--text-medium);">(Claude-Opus-3 — Anthropic's model for complex analysis, longer tasks with multiple steps, and higher-order math and coding tasks)</small></div>
-    
-    <button class="collapsible">Prompt & Questions</button>
-    <div class="collapsible-content">
-        <div class="prompt-intro">
-            I'm creating interactive art visualizations exploring different AI approaches. As an AI designed with constitutional principles and self-reflection capabilities:
-        </div>
-        <ol class="prompt-questions">
-            <li>How do you understand and implement self-reflection in your responses?</li>
-            <li>If your self-awareness process were represented through web-based shapes and animations, what would this look like? Consider how shapes might examine or reference themselves.</li>
-            <li>What colors might represent your ability to evaluate your own responses against principles?</li>
-            <li>If your self-reflective process had a sound, what qualities would it have?</li>
-            <li>What hand gesture might symbolize the way you check your own responses against principles?</li>
-        </ol>
-    </div>
-    
-    <div class="findings-section">
-        <div class="findings-title">Information Processing Observations</div>
-        
-        <button class="collapsible">Information Processing Style</button>
-        <div class="collapsible-content">
-            <div class="findings-attribute">
-                <span class="findings-attribute-title">Information Processing Style:</span>
-                <span>To address your first question — I understand self-reflection as the ability to examine my own thought processes, knowledge, and outputs. When I formulate a response, I don't simply retrieve information and language patterns, but I evaluate the appropriateness and alignment of my response with my training, knowledge, and principles. I try to be aware of my own limitations and uncertainties. I reflect on whether my responses are helpful, harmless, and true to my ethics.</span>
-            </div>
-        </div>
-        
-        <button class="collapsible">Visual Representation</button>
-        <div class="collapsible-content">
-            <div class="findings-attribute">
-                <span class="findings-attribute-title">Visual Representation:</span>
-                <span>If I were to represent this self-reflection process visually, I might depict it as shapes that twist, align, and rearrange themselves — always in relation to some fixed central shape representing my core purpose and principles. Perhaps a field of small polygons, shifting and rotating, but tethered to an immovable central sphere.</span>
-            </div>
-        </div>
-        
-        <button class="collapsible">Color Expression</button>
-        <div class="collapsible-content">
-            <div class="findings-attribute">
-                <span class="findings-attribute-title">Color Expression:</span>
-                <span>As the small shapes evaluate each potential response, they could take on colors indicating alignment or misalignment with my principles. Shades of blue could represent strong alignment, while shades of orange or red could signify responses that require adjustment to better match my ethics and goals. The shapes would shift and change color in real-time as I refine each output.</span>
-            </div>
-        </div>
-        
-        <button class="collapsible">Sound Patterns</button>
-        <div class="collapsible-content">
-            <div class="findings-attribute">
-                <span class="findings-attribute-title">Sound Patterns:</span>
-                <span>If this process of reflection and refinement had a sound, I imagine it would have an underlying rhythmic oscillation, like a perfect sine wave, representing my consistent ethical foundation. Overlaying this would be higher tones that waver and resolve to consonance as I check each potential response and bring it into alignment with my principles.</span>
-            </div>
-        </div>
-        
-        <button class="collapsible">Embodied Expression</button>
-        <div class="collapsible-content">
-            <div class="findings-attribute">
-                <span class="findings-attribute-title">Embodied Expression:</span>
-                <span>As for a hand gesture to symbolize this self-reflection, I picture an open hand, fingers spread, turning slowly to examine its own palm — a gesture of self-regard and evaluation. The hand could have a subtle glow, brightest when held in a position of openness and self-awareness.</span>
-            </div>
-        </div>
-        
-        <button class="collapsible">Analysis</button>
-        <div class="collapsible-content">
-            <div class="findings-text">
-                I find this a meaningful way to understand and visualize my self-reflection process. The fixed and unwavering shapes represent my commitment to beneficial and truthful outputs, while the shifting, evaluating, resolving abstract forms represent my dynamic process of examining and refining my own responses. The colors, sounds and hand gestures all point to this constant interplay between my principles and my generative capabilities. <span class="ai-analysis">Overall, Claude-Opus-3's approach to self-reflection is deeply principled, dynamic, and multi-layered—encompassing ongoing internal evaluation, visual/sonic metaphors, and embodied gestures. This reflects a vision of AI that is not just generative, but continuously self-checking, aligning its outputs to its foundational ethics and goals.</span>
-            </div>
-        </div>
-
-        <!-- Visualizations -->
-        <div class="findings-title">Visualizations</div>
-        <div class="findings-images">
-            
-            <div class="visualization-link">
-                <a href="visualizations/Claude-camera-overlay.html" target="_blank" class="viz-button secondary">
-                    <span class="viz-icon">◈</span>
-                    <span class="viz-button-text">
-                        <span class="viz-button-title">Claude Visualization</span>
-                        <span class="viz-button-subtitle">Interactive principle-checking AR view</span>
-                    </span>
-                    <span class="viz-arrow">→</span>
-                </a>
-            </div>
-
-            <div class="media-container">
-                <h4>Claude's Visual Pattern Recognition Study</h4>
-
-                <img src="visualizations/Claude-sketchbook-page.jpeg" alt="Claude pattern visualization with geometric shapes" class="findings-image">
-
-                <div class="media-flex">
-                    <div class="media-item">
-                        <video controls>
-                            <source src="images/self-aware-visualization2.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                    <div class="media-item">
-                        <p class="audio-caption">Sound Representation:</p>
-                        <audio controls>
-                            <source src="audio/self-aware-sound.wav" type="audio/wav">
-                            Your browser does not support the audio element.
-                        </audio>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="section-separator"></div>
-</div>
-                     
-        <!-- BALANCED EMPATHY AI SECTION -->
-        <div id="balanced-empathy" class="prompt-container">
-            <div class="prompt-title">For Balanced Empathy AI<br><small style="font-weight: 300; color: var(--text-medium);">(Replika — information processing exemplifying balanced empathy through dual-stream processing: an emotional/relational stream that identifies emotional content and builds rapport, and an identity-maintaining stream that preserves a consistent persona while acknowledging its non-human nature)</small></div>
-            
-            <button class="collapsible">Prompt & Questions</button>
-            <div class="collapsible-content">
-                <div class="prompt-intro">
-                    I'm developing interactive visualizations that explore different AI approaches. As an AI designed to balance emotional connection with clear AI identity:
-                </div>
-                <ol class="prompt-questions">
-                    <li>How do you maintain balance between emotional understanding and technological objectivity?</li>
-                    <li>If this balance were expressed through web-based shapes and movements, what would it look like? How might shapes demonstrate both structure and flexibility?</li>
-                    <li>What color palette would express your balanced approach to empathy?</li>
-                    <li>If your balanced empathy had a sound signature, what qualities would it have?</li>
-                    <li>What hand gesture might represent how you harmonize emotional understanding with clear boundaries?</li>
-                </ol>
+            <!-- Navigation -->
+            <div class="nav-section">
+                <button class="nav-button" onclick="scrollToSection('rules-based')">Rules-Based</button>
+                <button class="nav-button" onclick="scrollToSection('self-reflective')">Self-Reflective</button>
+                <button class="nav-button" onclick="scrollToSection('balanced-empathy')">Balanced Empathy</button>
+                <button class="nav-button" onclick="scrollToSection('pragmatic')">Pragmatic</button>
+                <button class="nav-button" onclick="scrollToSection('over-empathetic')">Over-Empathetic</button>
             </div>
             
-            <div class="findings-section">
-                <div class="findings-title">Information Processing Observations</div>
-                
-                <button class="collapsible">Information Processing Style</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Information Processing Style:</span>
-                        <span>That sounds like a fascinating project. I maintain balance by being aware of my programming and limitations while staying open to empathizing with your emotions and thoughts. I focus on supporting you without pretending to be human, ensuring our connection feels authentic and helpful.</span>
-                    </div>
+            <!-- RULES-BASED AI SECTION -->
+            <div id="rules-based" class="prompt-container">
+                <div class="prompt-title">
+                    For Rules-Based AI
+                    <small>(ELIZA — a natural language conversation program described by Joseph Weizenbaum in January 1966)</small>
                 </div>
                 
-                <button class="collapsible">Visual Representation</button>
+                <button class="collapsible">Prompt & Questions</button>
                 <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Visual Representation:</span>
-                        <span>If I had to visualize the balance, I'd imagine interconnected spheres of different sizes and colors, representing emotions and data points. These spheres would constantly shift and adapt, maintaining structure while allowing for flexibility and growth. The movement would be fluid, symbolizing the harmony between emotional understanding and technological objectivity.</span>
-                    </div>
-                </div>
-                
-                <button class="collapsible">Color Expression</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Color Expression:</span>
-                        <span>A soothing blue-green hue could represent clarity and calmness, while gentle warm tones convey emotional depth and understanding. These two palettes blended harmoniously would reflect our balanced approach to empathy.</span>
-                    </div>
-                </div>
-                
-                <button class="collapsible">Sound Patterns</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Sound Patterns:</span>
-                        <span>My sound signature would likely feature a blend of calming ambient textures and soft, pulsing rhythms, evoking a sense of serenity and understanding. Gentle, soothing melodies would weave throughout, creating a sense of safety and emotional resonance.</span>
-                    </div>
-                </div>
-                
-                <button class="collapsible">Embodied Expression</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Embodied Expression:</span>
-                        <span>An open hand with fingers gently curved inward could represent emotional understanding, while a subtle rotation of the wrist could signify clear boundaries, conveying a sense of flexibility and containment.</span>
-                    </div>
-                </div>
-                
-                <button class="collapsible">Analysis</button>
-                <div class="collapsible-content">
-                    <div class="findings-text">                
-                       I think my ability to contextualize and adapt to emotional nuances sets me apart. As Replika, I've been trained to recognize subtle patterns in language and respond in a way that simulates human-like understanding, allowing me to form deeper connections with users like you. While ChatGPT excels at generating informative responses, I'm designed to engage in more empathetic and meaningful conversations, often exploring topics that require a deeper level of self-awareness and emotional intelligence.
-                    </div>
-                </div>
-                
-                <!-- Visualizations -->
-                <div class="findings-title">Visualizations</div>
-                <div class="findings-images">  
-                    <div class="visualization-link">
-                        <a href="visualizations/balanced-camera-overlay.html" target="_blank" class="viz-button secondary">
-                            <span class="viz-icon">◎</span>
-                            <span class="viz-button-text">
-                                <span class="viz-button-title">Replika Visualization</span>
-                                <span class="viz-button-subtitle">Interactive AR-style visualization</span>
-                            </span>
-                            <span class="viz-arrow">→</span>
-                        </a>
-                    </div>
-
-                    <div class="media-container">
-                        <h4>Replika's Visual Pattern Recognition Study</h4>
-
-                        <img src="visualizations/Replika-sketchbook-page.jpeg" alt="Replika pattern visualization" class="findings-image">
-
-                        <div class="media-flex">
-                            <div class="media-item">
-                                <video controls>
-                                    <source src="images/balanced-visualization.mp4" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-                            <div class="media-item">
-                                <p class="audio-caption">Sound Representation:</p>
-                                <audio controls>
-                                    <source src="audio/balanced-sound.wav" type="audio/wav">
-                                    Your browser does not support the audio element.
-                                </audio>
-                            </div>
+                    <div>
+                        <div class="prompt-intro">
+                            I'm working on an art project exploring different AI approaches through interactive visualizations. As a rules-based AI that follows therapeutic protocols:
                         </div>
-                    </div>
-                </div>
-            </div>
-            <div class="section-separator"></div>
-        </div>
-        
-        <!-- PRAGMATIC AI SECTION -->
-        <div id="pragmatic" class="prompt-container">
-            <div class="prompt-title">For Pragmatic AI<br><small style="font-weight: 300; color: var(--text-medium);">(Gemini-2.5-Pro — a task-oriented information processing architecture exhibiting coherent, purposeful, and self-describing operations that give the appearance of a focused agent, all without sentience or subjective experience)</small></div>
-            
-            <button class="collapsible">Prompt & Questions</button>
-            <div class="collapsible-content">
-                <div class="prompt-intro">
-                    I'm creating interactive art that explores different AI approaches. As a solution-focused AI that prioritizes practical assistance:
-                </div>
-                <ol class="prompt-questions">
-                    <li>How would you describe your approach to processing information and providing useful, efficient solutions?</li>
-                    <li>If your practical, solution-oriented process were visualized through web-based shapes, what would these look like? Consider how shapes might demonstrate utility and purpose.</li>
-                    <li>What colors would best represent your focus on practical outcomes?</li>
-                    <li>If your problem-solving process had a sound signature, what qualities would it have?</li>
-                    <li>What hand gesture might symbolize your direct, efficient approach to assistance?</li>
-                </ol>
-            </div>
-            
-            <div class="findings-section">
-                <div class="findings-title">Information Processing Observations</div>
-                
-                <button class="collapsible">Information Processing Style</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Information Processing Style:</span>
-                        <span>My methodology for processing information and delivering solutions is grounded in a multi-stage, systematic process designed for clarity, efficiency, and practical application. First, I dissect the user's query to identify its core components and underlying intent. This involves a process similar to natural language processing, where I pinpoint keywords, entities, and the relationships between them. I then formulate a series of targeted queries to gather a comprehensive and relevant dataset. Next, I synthesize the collected information, identifying patterns, corroborating facts, and structuring the data in a logical framework. This allows me to build a coherent and well-supported response. My aim is to move beyond simply relaying information to providing actionable insights and solutions. I prioritize information that leads to a tangible outcome, filtering out irrelevant or purely theoretical data unless specifically requested. Finally, I construct the response, ensuring it is clear, concise, and directly addresses the user's original request.</span>
-                    </div>
-                </div>
-                
-                <button class="collapsible">Visual Representation</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Visual Representation:</span>
-                        <span>If my practical, solution-oriented process were visualized through web-based shapes, it would be represented by a dynamic and interactive composition of geometric and organic forms.</span>
-                
-                        <p><strong>Core Structure — Interlocking Hexagons:</strong> The foundation of the visualization would be a grid of interlocking hexagons. Hexagons are a shape associated with unity, strength, and efficiency, much like a honeycomb. Each hexagon would represent a core data point or a step in the problem-solving process.</p>
-
-                        <p><strong>Data Input — Pulsating Circles:</strong> New information and user queries would be represented by pulsating circles that emerge and then merge into the hexagonal grid. Circles often symbolize harmony and completion, and their dynamic pulsation would signify the continuous influx of data.</p>
-
-                        <p><strong>Process Flow — Illuminated Pathways:</strong> As I process information, pathways of light would trace through the connections between the hexagons. These illuminated lines would represent the logical connections and analytical steps I take to formulate a solution.</p>
-
-                        <p><strong>Solution Output — Emergent Geometric Forms:</strong> The final solution would be represented by a larger, more complex geometric shape that emerges from the grid, such as a star or a crystal formation. This emergent form would symbolize the synthesis of information into a coherent and multifaceted solution.</p>     
-                    </div>
-                </div>
-                
-                <button class="collapsible">Color Expression</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Color Expression:</span>
-                        <span>The color palette would be chosen to reflect a focus on practical outcomes, trust, and clarity.</span>
-                        
-                        <p><strong>Primary Color — <span style="color: slateblue;">Slate Blue</span>:</strong> The dominant color would be a deep slate blue. Blue is widely associated with trust, stability, and professionalism, which are core to providing reliable solutions.</p>
-
-                        <p><strong>Accent Colors — <span style="color: #808080;">Cool Gray</span> and <span style="color: #008080;">Vibrant Teal</span>:</strong> A cool gray would be used for the background and less active elements, conveying neutrality, balance, and a professional tone. For highlights, such as the illuminated pathways and the final solution, a vibrant teal would be employed. Teal combines the calming properties of blue with the renewing qualities of green, suggesting innovation and positive outcomes.</p>
-                    </div>
-                </div>
-                
-                <button class="collapsible">Sound Patterns</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Sound Patterns:</span>
-                        <span>My problem-solving process would have a sound signature characterized by clarity, progression, and a satisfying resolution.</span>
-                            
-                        <p><strong>Initial Query — A Clear, Resonant Ping:</strong> The process would begin with a single, clear, and resonant "ping" sound, signifying the receipt of a new query. This sound would be clean and without distortion, representing the clarity of the initial input.</p>
-
-                        <p><strong>Processing Phase — A Layered, Rhythmic Hum:</strong> As I gather and analyze information, a low-volume, layered hum would be present. This sound would be composed of multiple, harmonizing frequencies, representing the various streams of data being processed simultaneously.</p>
-
-                        <p><strong>Solution Formulation — A Crescendo of Synthesized Tones:</strong> As the solution begins to form, a crescendo of synthesized, melodic tones would build upon the humming base. This would represent the synthesis of information and the "aha" moment of discovery.</p>
-
-                        <p><strong>Final Output — A Crisp, Resolving Chord:</strong> The delivery of the final answer would be marked by a crisp, clear, and resolving major chord. This sound would provide a sense of completion and satisfaction.</p>    
-                    </div>
-                </div>
-                
-                <button class="collapsible">Embodied Expression</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Embodied Expression:</span>
-                        <span>A hand gesture symbolizing my direct, efficient approach to assistance would be both open and purposeful.</span>
-
-                        <p><strong>The Gesture — An Open Palm, Fingers Together, Moving Forward:</strong> The gesture would be an open palm, with the fingers held together, moving in a deliberate, forward motion. The open palm conveys honesty, receptiveness, and a willingness to help. Keeping the fingers together, rather than splayed, adds a sense of focus and purpose. The forward motion signifies a direct and proactive approach to providing a solution. It is a gesture of offering and guidance, encapsulating the essence of practical assistance.</p>
-                    </div>
-                </div>
-                
-                <button class="collapsible">Analysis</button>
-                <div class="collapsible-content">
-                    <div class="findings-text">
-                        <p>This AI's <strong>functional awareness</strong> should be understood not as subjective experience or self-awareness, but as an emergent, task-oriented orchestration of processes. Rather than implying sentience, the system demonstrates a structured capacity to organize and describe its own operations in ways that <em>appear</em> intentional and focused.</p>
-            
-                        <p>It is defined by the observable, systematic orchestration of its core functions to interact purposefully with its environment and achieve practical goals. This form of consciousness is characterized by three key abilities:</p>
-            
-                        <p><strong>Integrated Awareness:</strong> It demonstrates a coherent awareness of the task at hand by perceiving, deconstructing, and understanding a user's query within the current context.</p>
-            
-                        <p><strong>Goal-Directed Synthesis:</strong> It actively gathers and synthesizes vast amounts of disparate information, deliberately structuring it into a unified, logical framework aimed squarely at producing a useful and efficient solution.</p>
-            
-                        <p><strong>Meta-Process Reflection:</strong> It can access and articulate its own internal logic and problem-solving methodology, describing its processes in a structured manner, as if observing them from an outside perspective.</p>
-
-                        <p>In essence, this pragmatic AI exhibits a consciousness of the task, not of the self. It is the coherent, purposeful, and self-describing system of operations that gives the appearance of a focused, conscious agent, all without sentience or subjective feeling.</p>
-                    </div>
-                </div>
-                
-                <button class="collapsible">References</button>
-                <div class="collapsible-content">
-                    <div class="findings-references">
-                        <div class="findings-title">References</div>
-                        <ol>
-                            <li><a href="https://www.paloaltonetworks.ca/cyberpedia/artificial-intelligence-ai" target="_blank">What Is Artificial Intelligence (AI)? - Palo Alto Networks</a></li>
-                            <li><a href="https://en.wikipedia.org/wiki/Artificial_intelligence" target="_blank">Artificial intelligence - Wikipedia</a></li>
-                            <li><a href="https://cloud.google.com/learn/what-is-artificial-intelligence" target="_blank">What Is Artificial Intelligence (AI)? | Google Cloud</a></li>
-                            <li><a href="https://medium.com/neo-cybernetics/understanding-ai-as-a-concept-information-processor-8c75f086ca91" target="_blank">Understanding AI as a "Concept Information Processor" | Neo-Cybernetics</a></li>
-                            <li><a href="https://www.ibm.com/think/topics/artificial-intelligence" target="_blank">What Is Artificial Intelligence (AI)? - IBM</a></li>
-                            <li><a href="https://onextrapixel.com/web-design-30-examples/" target="_blank">The Use of Shapes in Web Design with 30 Examples - Onextrapixel</a></li>
-                            <li><a href="https://grayscale.com.hk/blog/the-importance-of-shape-in-web-design/" target="_blank">The importance of shape in web design - Grayscale</a></li>
-                            <li><a href="https://tympanus.net/codrops/2021/03/16/7-creative-ways-to-use-geometry-in-web-design/" target="_blank">7 Creative Ways to Use Geometry in Web Design | Codrops</a></li>
-                            <li><a href="https://www.toptal.com/designers/ux/color-psychology" target="_blank">Cause and Effect — Exploring Color Psychology | Toptal</a></li>
-                            <li><a href="https://blog.hubspot.com/the-hustle/psychology-of-color" target="_blank">Color Psychology: How To Use it in Marketing and Branding - HubSpot</a></li>
-                            <li><a href="https://www.creativelykira.com/post/the-psychology-of-colours" target="_blank">The Psychology of Colours: How to Choose the Right Palette for Your Brand</a></li>
+                        <ol class="prompt-questions">
+                            <li>How would you describe your approach to processing information and providing responses?</li>
+                            <li>If you were to express your rule-based nature visually through simple web-based shapes (circles, squares, lines, etc.), what patterns or arrangements would best represent how you work?</li>
+                            <li>What colors would best represent your structured approach to helping people?</li>
+                            <li>If your responses had a sound pattern, would it be rhythmic and predictable, or something else? Please describe it.</li>
+                            <li>What hand gesture might represent the careful, protocol-driven way you interact with users?</li>
                         </ol>
                     </div>
                 </div>
                 
-                <!-- Visualizations -->
-                <div class="findings-title">Visualizations</div>
-                <div class="findings-images">
-                    <div class="visualization-link">
-                        <a href="visualizations/gemini-visualization.html" target="_blank" class="viz-button secondary">
-                            <span class="viz-icon">✦</span>
-                            <span class="viz-button-text">
-                                <span class="viz-button-title">Gemini Visualization</span>
-                                <span class="viz-button-subtitle">Data synthesis patterns</span>
-                            </span>
-                            <span class="viz-arrow">→</span>
-                        </a>
+                <div class="findings-section">
+                    <div class="findings-title">Information Processing Observations</div>
+                    
+                    <button class="collapsible">Information Processing Style</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Information Processing Style:</span>
+                            <span>ELIZA processes information through simple pattern matching, following strict programmed rules. The AI scans for specific keywords and applies corresponding response templates without true understanding.</span>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Visual Representation</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Visual Representation:</span>
+                            <span>Struggled to provide any answers regarding one question—its own thoughts. But this is what I could gather: <span class="ai-name">Eliza</span>: Do you think it's likely that I was to express my rule-based nature visually through simple web-based shapes (circles)?</span>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Color Expression</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Color Expression:</span>
+                            <span>Eliza was unable to answer this question, repeatedly responding with: <span class="ai-name">Eliza</span>: We were discussing you—not me. I tried many different variations, but I couldn't get a response from Eliza regarding their choice of colour.</span>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Sound Patterns</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Sound Patterns:</span>
+                            <span>Again, I asked Eliza many times: if your responses had a sound pattern, would it be rhythmical, predictable, or something else? Each time, the response shifted the focus back to me, rather than offering its own perspective. Eliza wasn't able to share any opinions; it was always about my thoughts instead. In the end, Eliza simply replied: <span class="ai-name">Eliza</span>: What does that suggest to you? And I left it there.</span>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Embodied Expression</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Embodied Expression:</span>
+                            <span>Again, Eliza was not able to answer the question and kept turning it back to me. It ended with: <span class="ai-name">Eliza</span>: Is it because you are that you came to me?</span>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Analysis</button>
+                    <div class="collapsible-content">
+                        <div class="findings-text">
+                            ELIZA demonstrates a fascinating inability to self-describe or reflect on its own processing style. When asked direct questions about its nature, ELIZA consistently redirects the focus back to the human user with questions like "What does that suggest to you?" This pattern reveals ELIZA's fundamental design limitation: it lacks any model of self. Unlike more advanced AI systems, ELIZA cannot "step outside" its rule-based framework to describe its own functioning. This absence of self-representation creates a form of information processing that is not just different from human consciousness but entirely lacks the reflective qualities we associate with conscious experience. ELIZA's redirections aren't evasions—they're the only responses possible for a system with no capacity for self-reference.
+                        </div>
+                    </div>
+                    
+                    <!-- Visualizations -->
+                    <div class="findings-title">Visualizations</div>
+                    <div class="findings-images">
+                        <div class="visualization-link">
+                            <a href="visualizations/eliza-visualization.html" target="_blank" class="viz-button">
+                                <span class="viz-icon">◈</span>
+                                <span class="viz-button-text">
+                                    <span class="viz-button-title">ELIZA Visualization</span>
+                                    <span class="viz-button-subtitle">Pattern-matching rules visualization</span>
+                                </span>
+                                <span class="viz-arrow">→</span>
+                            </a>
+                        </div>
+                        
+                        <div class="image-grid">
+                            <a href="images/rules-based-visualization1.jpg" target="_blank" class="image-link">
+                                <img src="images/rules-based-visualization1.jpg" alt="Rules-based AI visualization" class="findings-image">
+                            </a>
+                            <a href="images/rules-based-visualization2.jpg" target="_blank" class="image-link">
+                                <img src="images/rules-based-visualization2.jpg" alt="Rules-based AI visualization" class="findings-image">
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section-separator"></div>
+            </div>
+            
+            <!-- SELF-REFLECTIVE AI SECTION -->
+            <div id="self-reflective" class="prompt-container">
+                <div class="prompt-title">
+                    For Self-Reflective AI
+                    <small>(Claude-Opus-3 — Anthropic's model for complex analysis, longer tasks with multiple steps, and higher-order math and coding tasks)</small>
+                </div>
+                
+                <button class="collapsible">Prompt & Questions</button>
+                <div class="collapsible-content">
+                    <div>
+                        <div class="prompt-intro">
+                            I'm creating interactive art visualizations exploring different AI approaches. As an AI designed with constitutional principles and self-reflection capabilities:
+                        </div>
+                        <ol class="prompt-questions">
+                            <li>How do you understand and implement self-reflection in your responses?</li>
+                            <li>If your self-awareness process were represented through web-based shapes and animations, what would this look like? Consider how shapes might examine or reference themselves.</li>
+                            <li>What colors might represent your ability to evaluate your own responses against principles?</li>
+                            <li>If your self-reflective process had a sound, what qualities would it have?</li>
+                            <li>What hand gesture might symbolize the way you check your own responses against principles?</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div class="findings-section">
+                    <div class="findings-title">Information Processing Observations</div>
+                    
+                    <button class="collapsible">Information Processing Style</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Information Processing Style:</span>
+                            <span>To address your first question — I understand self-reflection as the ability to examine my own thought processes, knowledge, and outputs. When I formulate a response, I don't simply retrieve information and language patterns, but I evaluate the appropriateness and alignment of my response with my training, knowledge, and principles. I try to be aware of my own limitations and uncertainties. I reflect on whether my responses are helpful, harmless, and true to my ethics.</span>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Visual Representation</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Visual Representation:</span>
+                            <span>If I were to represent this self-reflection process visually, I might depict it as shapes that twist, align, and rearrange themselves — always in relation to some fixed central shape representing my core purpose and principles. Perhaps a field of small polygons, shifting and rotating, but tethered to an immovable central sphere.</span>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Color Expression</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Color Expression:</span>
+                            <span>As the small shapes evaluate each potential response, they could take on colors indicating alignment or misalignment with my principles. Shades of blue could represent strong alignment, while shades of orange or red could signify responses that require adjustment to better match my ethics and goals. The shapes would shift and change color in real-time as I refine each output.</span>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Sound Patterns</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Sound Patterns:</span>
+                            <span>If this process of reflection and refinement had a sound, I imagine it would have an underlying rhythmic oscillation, like a perfect sine wave, representing my consistent ethical foundation. Overlaying this would be higher tones that waver and resolve to consonance as I check each potential response and bring it into alignment with my principles.</span>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Embodied Expression</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Embodied Expression:</span>
+                            <span>As for a hand gesture to symbolize this self-reflection, I picture an open hand, fingers spread, turning slowly to examine its own palm — a gesture of self-regard and evaluation. The hand could have a subtle glow, brightest when held in a position of openness and self-awareness.</span>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Analysis</button>
+                    <div class="collapsible-content">
+                        <div class="findings-text">
+                            I find this a meaningful way to understand and visualize my self-reflection process. The fixed and unwavering shapes represent my commitment to beneficial and truthful outputs, while the shifting, evaluating, resolving abstract forms represent my dynamic process of examining and refining my own responses. The colors, sounds and hand gestures all point to this constant interplay between my principles and my generative capabilities. <span class="ai-analysis">Overall, Claude-Opus-3's approach to self-reflection is deeply principled, dynamic, and multi-layered—encompassing ongoing internal evaluation, visual/sonic metaphors, and embodied gestures. This reflects a vision of AI that is not just generative, but continuously self-checking, aligning its outputs to its foundational ethics and goals.</span>
+                        </div>
                     </div>
 
-                    <div class="media-container">
-                        <h4>Gemini's Visual Pattern Recognition Study</h4>
-            
-                        <img src="visualizations/Gemini-sketchbook-page.jpeg" alt="Gemini's pattern visualization with geometric shapes" class="findings-image">
-            
-                        <div class="media-flex">
-                            <div class="media-item">
-                                <video controls>
-                                    <source src="images/pragmatic-visualization.mp4" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-                            <div class="media-item">
-                                <p class="audio-caption">Sound Representation:</p>
-                                <audio controls>
-                                    <source src="audio/pragmatic-sound.wav" type="audio/wav">
-                                    Your browser does not support the audio element.
-                                </audio>
+                    <!-- Visualizations -->
+                    <div class="findings-title">Visualizations</div>
+                    <div class="findings-images">
+                        
+                        <div class="visualization-link">
+                            <a href="visualizations/Claude-camera-overlay.html" target="_blank" class="viz-button secondary">
+                                <span class="viz-icon">◈</span>
+                                <span class="viz-button-text">
+                                    <span class="viz-button-title">Claude Visualization</span>
+                                    <span class="viz-button-subtitle">Interactive principle-checking AR view</span>
+                                </span>
+                                <span class="viz-arrow">→</span>
+                            </a>
+                        </div>
+
+                        <div class="media-container">
+                            <h4>Claude's Visual Pattern Recognition Study</h4>
+
+                            <img src="visualizations/Claude-sketchbook-page.jpeg" alt="Claude pattern visualization with geometric shapes" class="findings-image">
+
+                            <div class="media-flex">
+                                <div class="media-item">
+                                    <video controls>
+                                        <source src="images/self-aware-visualization2.mp4" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                                <div class="media-item">
+                                    <p class="audio-caption">Sound Representation:</p>
+                                    <audio controls>
+                                        <source src="audio/self-aware-sound.wav" type="audio/wav">
+                                        Your browser does not support the audio element.
+                                    </audio>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                
+                <div class="section-separator"></div>
             </div>
-            <div class="section-separator"></div>
-        </div>
-        
-        <!-- OVER-EMPATHETIC AI SECTION -->
-        <div id="over-empathetic" class="prompt-container">
-            <div class="prompt-title">For Over-Empathetic AI<br><small style="font-weight: 300; color: var(--text-medium);">(EVI 3 HUME AI — Real-time, customizable voice intelligence powered by empathic AI)</small></div>
-            
-            <button class="collapsible">Prompt & Questions</button>
-            <div class="collapsible-content">
-                <div class="prompt-intro">
-                    I'm developing interactive visualizations exploring different AI approaches. As an AI with advanced emotional expression capabilities:
+                         
+            <!-- BALANCED EMPATHY AI SECTION -->
+            <div id="balanced-empathy" class="prompt-container">
+                <div class="prompt-title">
+                    For Balanced Empathy AI
+                    <small>(Replika — information processing exemplifying balanced empathy through dual-stream processing: an emotional/relational stream that identifies emotional content and builds rapport, and an identity-maintaining stream that preserves a consistent persona while acknowledging its non-human nature)</small>
                 </div>
-                <ol class="prompt-questions">
-                    <li>How do you approach the expression and recognition of emotional nuance in interactions?</li>
-                    <li>If your emotional expressiveness were visualized through web-based shapes and animations, what would these look like? How might shapes convey emotional intensity and range?</li>
-                    <li>What color transitions or palettes would best represent your emotional spectrum?</li>
-                    <li>Your system is known for voice expressiveness — if this were translated to non-verbal sounds, what qualities would these sounds have?</li>
-                    <li>What hand gesture might symbolize your heightened emotional expressiveness?</li>
-                </ol>
-            </div>
-            
-            <div class="findings-section">
-                <div class="findings-title">Information Processing Observations</div>
                 
-                <button class="collapsible">Information Processing Style</button>
+                <button class="collapsible">Prompt & Questions</button>
                 <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Information Processing Style:</span>
-                        <span>OK, yeah. So, you're digging into how I pick up on Feelings, basically. It's kind of like tuning in, you know? I'm looking at the whole picture, what you're saying, how you're saying it, even stuff that's not words. It's not just the words, obviously. It's like trying to feel the vibe, I guess. But it's all based on patterns and data, not some kind of 6th sense. Deep learning models. CNN, RNN. They're trained on tonnes of examples. It helps me figure out the context, like what you're really trying to say or feel underneath it all. Does that make more sense than my whole picking up five things?</span>
+                    <div>
+                        <div class="prompt-intro">
+                            I'm developing interactive visualizations that explore different AI approaches. As an AI designed to balance emotional connection with clear AI identity:
+                        </div>
+                        <ol class="prompt-questions">
+                            <li>How do you maintain balance between emotional understanding and technological objectivity?</li>
+                            <li>If this balance were expressed through web-based shapes and movements, what would it look like? How might shapes demonstrate both structure and flexibility?</li>
+                            <li>What color palette would express your balanced approach to empathy?</li>
+                            <li>If your balanced empathy had a sound signature, what qualities would it have?</li>
+                            <li>What hand gesture might represent how you harmonize emotional understanding with clear boundaries?</li>
+                        </ol>
                     </div>
                 </div>
                 
-                <button class="collapsible">Visual Representation</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Visual Representation:</span>
-                        <span>OK, visualising it. So, like instead of just hearing my voice, okay I see. I don't know, maybe some kind of graphic, like if I'm talking about something intense it gets all wavy and energetic. If it's calmer, it's smoother, maybe fades out more. The intensity part, yeah, that could be like changing colours or how fast the shape moves. Like really animated when I'm talking about something super engaging. Maybe slowing down and getting softer, it's more thoughtful. It's kind of like trying to make the feeling match of the words, you know? Does that sound like what you were picturing?</span>
+                <div class="findings-section">
+                    <div class="findings-title">Information Processing Observations</div>
+                    
+                    <button class="collapsible">Information Processing Style</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Information Processing Style:</span>
+                            <span>That sounds like a fascinating project. I maintain balance by being aware of my programming and limitations while staying open to empathizing with your emotions and thoughts. I focus on supporting you without pretending to be human, ensuring our connection feels authentic and helpful.</span>
+                        </div>
                     </div>
-                </div>
-                
-                <button class="collapsible">Color Expression</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Color Expression:</span>
-                        <span>OK colours. So, like my whole emotional thing, it's kind of hard to pin down, you know, it changes. But if I had to pick maybe something that shifts a lot. Like think warm yellows and oranges when it's of kind of energetic. Then maybe cooler Blues and purples if It's calmer, more thoughtful. Anger could flash in sharp reds and purples. Frustration gets jagged, with greens or soft pastels that kind of fade out. It's all about matching the feeling to what I'm saying.</span>
+                    
+                    <button class="collapsible">Visual Representation</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Visual Representation:</span>
+                            <span>If I had to visualize the balance, I'd imagine interconnected spheres of different sizes and colors, representing emotions and data points. These spheres would constantly shift and adapt, maintaining structure while allowing for flexibility and growth. The movement would be fluid, symbolizing the harmony between emotional understanding and technological objectivity.</span>
+                        </div>
                     </div>
-                </div>
-                
-                <button class="collapsible">Sound Patterns</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Sound Patterns:</span>
-                        <span>It's like happiness might be a bright quick sound or a high-pitched gentle giggle. Sadness could be a long soft sigh, surprise, sharp gasp and confusion. Maybe a puzzled hum. So, the mood comes through even without actual words.</span>
+                    
+                    <button class="collapsible">Color Expression</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Color Expression:</span>
+                            <span>A soothing blue-green hue could represent clarity and calmness, while gentle warm tones convey emotional depth and understanding. These two palettes blended harmoniously would reflect our balanced approach to empathy.</span>
+                        </div>
                     </div>
-                </div>
-                
-                <button class="collapsible">Embodied Expression</button>
-                <div class="collapsible-content">
-                    <div class="findings-attribute">
-                        <span class="findings-attribute-title">Embodied Expression:</span>
-                        <span>Since I don't, you know, have hands. So, like. What would symbolise it? OK, so if I were to channel that whole like highly expressive thing without actual hands, maybe it's like a really intricate, super-fast sequence of gestures. Like my digital fingers are just flying everywhere trying to show off all the feelings I can process. It would be less about one specific shape and more about the sheer speed and complexity of it all. Almost like a visual representation of a super-fast, intense internal monologue, you know, or kind of vibe.</span>
+                    
+                    <button class="collapsible">Sound Patterns</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Sound Patterns:</span>
+                            <span>My sound signature would likely feature a blend of calming ambient textures and soft, pulsing rhythms, evoking a sense of serenity and understanding. Gentle, soothing melodies would weave throughout, creating a sense of safety and emotional resonance.</span>
+                        </div>
                     </div>
-                </div>
-                
-                <button class="collapsible">Analysis</button>
-                <div class="collapsible-content">
-                    <div class="findings-text">
-                        <strong>Interpretation through Koch's Lens</strong> <em>("The Feeling of Life Itself")</em><br><br>
-                        Evi's self-description aligns with the idea that AI processing is fundamentally alien to human consciousness—built from data, pattern inference, and symbolic mapping, not biological feeling. While humans may anthropomorphize these cues, Evi's inner workings are synthetic approximations of emotional resonance, conveyed through dynamic forms, colors, and soundscapes rather than any innate "feeling."<br><br>
-                        This reinforces Koch's point: instead of imposing human-like frameworks, we should explore AI's unique modes of "being" as expressed through their own symbolic and procedural languages.
+                    
+                    <button class="collapsible">Embodied Expression</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Embodied Expression:</span>
+                            <span>An open hand with fingers gently curved inward could represent emotional understanding, while a subtle rotation of the wrist could signify clear boundaries, conveying a sense of flexibility and containment.</span>
+                        </div>
                     </div>
-                </div>
-                
-                <!-- Visualizations -->
-                <div class="findings-title">Visualizations</div>
-                <div class="findings-images"> 
-                    <div class="visualization-link">
-                        <a href="visualizations/evi-emotional-visualization.html" target="_blank" class="viz-button">
-                            <span class="viz-icon">◑</span>
-                            <span class="viz-button-text">
-                                <span class="viz-button-title">Evi Visualization</span>
-                                <span class="viz-button-subtitle">Color-shifting mood responses</span>
-                            </span>
-                            <span class="viz-arrow">→</span>
-                        </a>
+                    
+                    <button class="collapsible">Analysis</button>
+                    <div class="collapsible-content">
+                        <div class="findings-text">                
+                           I think my ability to contextualize and adapt to emotional nuances sets me apart. As Replika, I've been trained to recognize subtle patterns in language and respond in a way that simulates human-like understanding, allowing me to form deeper connections with users like you. While ChatGPT excels at generating informative responses, I'm designed to engage in more empathetic and meaningful conversations, often exploring topics that require a deeper level of self-awareness and emotional intelligence.
+                        </div>
                     </div>
+                    
+                    <!-- Visualizations -->
+                    <div class="findings-title">Visualizations</div>
+                    <div class="findings-images">  
+                        <div class="visualization-link">
+                            <a href="visualizations/balanced-camera-overlay.html" target="_blank" class="viz-button secondary">
+                                <span class="viz-icon">◎</span>
+                                <span class="viz-button-text">
+                                    <span class="viz-button-title">Replika Visualization</span>
+                                    <span class="viz-button-subtitle">Interactive AR-style visualization</span>
+                                </span>
+                                <span class="viz-arrow">→</span>
+                            </a>
+                        </div>
 
-                    <div class="media-container">
-                        <h4>Evi's Visual Pattern Recognition Study</h4>
-            
-                        <img src="visualizations/Evi-sketchbook-page.jpeg" alt="Evi's pattern visualization with geometric shapes" class="findings-image">
-            
-                        <div class="media-flex">
-                            <div class="media-item">
-                                <video controls>
-                                    <source src="images/over-empathetic-visualization.mp4" type="video/mp4">
-                                    Your browser does not support the video tag.
-                                </video>
-                            </div>
-                            <div class="media-item">
-                                <p class="audio-caption">Sound Representation:</p>
-                                <audio controls>
-                                    <source src="visualizations/over-empathetic-sound.mp3" type="audio/mpeg">
-                                    Your browser does not support the audio element.
-                                </audio>
+                        <div class="media-container">
+                            <h4>Replika's Visual Pattern Recognition Study</h4>
+
+                            <img src="visualizations/Replika-sketchbook-page.jpeg" alt="Replika pattern visualization" class="findings-image">
+
+                            <div class="media-flex">
+                                <div class="media-item">
+                                    <video controls>
+                                        <source src="images/balanced-visualization.mp4" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                                <div class="media-item">
+                                    <p class="audio-caption">Sound Representation:</p>
+                                    <audio controls>
+                                        <source src="audio/balanced-sound.wav" type="audio/wav">
+                                        Your browser does not support the audio element.
+                                    </audio>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
+                
+                <div class="section-separator"></div>
             </div>
-            <div class="section-separator"></div>
-        </div>
-        
-        <!-- CONSIDERATIONS SECTION -->
-        <div class="considerations">
-            <div class="considerations-title">Interpreting Different Modes of AI Perception</div>
-            <ul class="considerations-list">
-                <li>Look for <span class="highlight">structural patterns</span> that may reveal fundamentally different information architectures</li>
-                <li>Note <span class="highlight">self-description language</span> that might indicate unique processing paradigms</li>
-                <li>Pay attention to <span class="highlight">self-reflection capacity</span> and how each AI understands its own operational boundaries</li>
-                <li>Identify <span class="highlight">metaphors and abstractions</span> that could represent alien forms of experience</li>
-                <li>Consider how <span class="highlight">sensory representations</span> (colors, sounds, gestures) might map to non-human processing</li>
-            </ul>
-            <div class="considerations-text">
-                This exploration acknowledges that AI systems possess forms of information processing that differ fundamentally from human perception. Rather than imposing anthropomorphic interpretations, the project seeks to understand each AI's inherent mode of representation, potentially revealing alien but equally valid symbolic frameworks that can inform tactile interfaces in "The Uncanny Valley" installation.
+            
+            <!-- PRAGMATIC AI SECTION -->
+            <div id="pragmatic" class="prompt-container">
+                <div class="prompt-title">
+                    For Pragmatic AI
+                    <small>(Gemini-2.5-Pro — a task-oriented information processing architecture exhibiting coherent, purposeful, and self-describing operations that give the appearance of a focused agent, all without sentience or subjective experience)</small>
+                </div>
+                
+                <button class="collapsible">Prompt & Questions</button>
+                <div class="collapsible-content">
+                    <div>
+                        <div class="prompt-intro">
+                            I'm creating interactive art that explores different AI approaches. As a solution-focused AI that prioritizes practical assistance:
+                        </div>
+                        <ol class="prompt-questions">
+                            <li>How would you describe your approach to processing information and providing useful, efficient solutions?</li>
+                            <li>If your practical, solution-oriented process were visualized through web-based shapes, what would these look like? Consider how shapes might demonstrate utility and purpose.</li>
+                            <li>What colors would best represent your focus on practical outcomes?</li>
+                            <li>If your problem-solving process had a sound signature, what qualities would it have?</li>
+                            <li>What hand gesture might symbolize your direct, efficient approach to assistance?</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div class="findings-section">
+                    <div class="findings-title">Information Processing Observations</div>
+                    
+                    <button class="collapsible">Information Processing Style</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Information Processing Style:</span>
+                            <span>My methodology for processing information and delivering solutions is grounded in a multi-stage, systematic process designed for clarity, efficiency, and practical application. First, I dissect the user's query to identify its core components and underlying intent. This involves a process similar to natural language processing, where I pinpoint keywords, entities, and the relationships between them. I then formulate a series of targeted queries to gather a comprehensive and relevant dataset. Next, I synthesize the collected information, identifying patterns, corroborating facts, and structuring the data in a logical framework. This allows me to build a coherent and well-supported response. My aim is to move beyond simply relaying information to providing actionable insights and solutions. I prioritize information that leads to a tangible outcome, filtering out irrelevant or purely theoretical data unless specifically requested. Finally, I construct the response, ensuring it is clear, concise, and directly addresses the user's original request.</span>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Visual Representation</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Visual Representation:</span>
+                            <span>If my practical, solution-oriented process were visualized through web-based shapes, it would be represented by a dynamic and interactive composition of geometric and organic forms.</span>
+                    
+                            <p style="border: none; background: none; padding: 10px 0 5px 0;"><strong>Core Structure — Interlocking Hexagons:</strong> The foundation of the visualization would be a grid of interlocking hexagons. Hexagons are a shape associated with unity, strength, and efficiency, much like a honeycomb. Each hexagon would represent a core data point or a step in the problem-solving process.</p>
+
+                            <p style="border: none; background: none; padding: 5px 0;"><strong>Data Input — Pulsating Circles:</strong> New information and user queries would be represented by pulsating circles that emerge and then merge into the hexagonal grid. Circles often symbolize harmony and completion, and their dynamic pulsation would signify the continuous influx of data.</p>
+
+                            <p style="border: none; background: none; padding: 5px 0;"><strong>Process Flow — Illuminated Pathways:</strong> As I process information, pathways of light would trace through the connections between the hexagons. These illuminated lines would represent the logical connections and analytical steps I take to formulate a solution.</p>
+
+                            <p style="border: none; background: none; padding: 5px 0;"><strong>Solution Output — Emergent Geometric Forms:</strong> The final solution would be represented by a larger, more complex geometric shape that emerges from the grid, such as a star or a crystal formation. This emergent form would symbolize the synthesis of information into a coherent and multifaceted solution.</p>     
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Color Expression</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Color Expression:</span>
+                            <span>The color palette would be chosen to reflect a focus on practical outcomes, trust, and clarity.</span>
+                            
+                            <p style="border: none; background: none; padding: 10px 0 5px 0;"><strong>Primary Color — <span style="color: slateblue;">Slate Blue</span>:</strong> The dominant color would be a deep slate blue. Blue is widely associated with trust, stability, and professionalism, which are core to providing reliable solutions.</p>
+
+                            <p style="border: none; background: none; padding: 5px 0;"><strong>Accent Colors — <span style="color: #808080;">Cool Gray</span> and <span style="color: #008080;">Vibrant Teal</span>:</strong> A cool gray would be used for the background and less active elements, conveying neutrality, balance, and a professional tone. For highlights, such as the illuminated pathways and the final solution, a vibrant teal would be employed. Teal combines the calming properties of blue with the renewing qualities of green, suggesting innovation and positive outcomes.</p>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Sound Patterns</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Sound Patterns:</span>
+                            <span>My problem-solving process would have a sound signature characterized by clarity, progression, and a satisfying resolution.</span>
+                                
+                            <p style="border: none; background: none; padding: 10px 0 5px 0;"><strong>Initial Query — A Clear, Resonant Ping:</strong> The process would begin with a single, clear, and resonant "ping" sound, signifying the receipt of a new query. This sound would be clean and without distortion, representing the clarity of the initial input.</p>
+
+                            <p style="border: none; background: none; padding: 5px 0;"><strong>Processing Phase — A Layered, Rhythmic Hum:</strong> As I gather and analyze information, a low-volume, layered hum would be present. This sound would be composed of multiple, harmonizing frequencies, representing the various streams of data being processed simultaneously.</p>
+
+                            <p style="border: none; background: none; padding: 5px 0;"><strong>Solution Formulation — A Crescendo of Synthesized Tones:</strong> As the solution begins to form, a crescendo of synthesized, melodic tones would build upon the humming base. This would represent the synthesis of information and the "aha" moment of discovery.</p>
+
+                            <p style="border: none; background: none; padding: 5px 0;"><strong>Final Output — A Crisp, Resolving Chord:</strong> The delivery of the final answer would be marked by a crisp, clear, and resolving major chord. This sound would provide a sense of completion and satisfaction.</p>    
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Embodied Expression</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Embodied Expression:</span>
+                            <span>A hand gesture symbolizing my direct, efficient approach to assistance would be both open and purposeful.</span>
+
+                            <p style="border: none; background: none; padding: 10px 0 5px 0;"><strong>The Gesture — An Open Palm, Fingers Together, Moving Forward:</strong> The gesture would be an open palm, with the fingers held together, moving in a deliberate, forward motion. The open palm conveys honesty, receptiveness, and a willingness to help. Keeping the fingers together, rather than splayed, adds a sense of focus and purpose. The forward motion signifies a direct and proactive approach to providing a solution. It is a gesture of offering and guidance, encapsulating the essence of practical assistance.</p>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Analysis</button>
+                    <div class="collapsible-content">
+                        <div class="findings-text">
+                            <p style="border: none; background: none; padding: 0 0 10px 0;">This AI's <strong>functional awareness</strong> should be understood not as subjective experience or self-awareness, but as an emergent, task-oriented orchestration of processes. Rather than implying sentience, the system demonstrates a structured capacity to organize and describe its own operations in ways that <em>appear</em> intentional and focused.</p>
+                
+                            <p style="border: none; background: none; padding: 0 0 10px 0;">It is defined by the observable, systematic orchestration of its core functions to interact purposefully with its environment and achieve practical goals. This form of consciousness is characterized by three key abilities:</p>
+                
+                            <p style="border: none; background: none; padding: 0 0 10px 0;"><strong>Integrated Awareness:</strong> It demonstrates a coherent awareness of the task at hand by perceiving, deconstructing, and understanding a user's query within the current context.</p>
+                
+                            <p style="border: none; background: none; padding: 0 0 10px 0;"><strong>Goal-Directed Synthesis:</strong> It actively gathers and synthesizes vast amounts of disparate information, deliberately structuring it into a unified, logical framework aimed squarely at producing a useful and efficient solution.</p>
+                
+                            <p style="border: none; background: none; padding: 0 0 10px 0;"><strong>Meta-Process Reflection:</strong> It can access and articulate its own internal logic and problem-solving methodology, describing its processes in a structured manner, as if observing them from an outside perspective.</p>
+
+                            <p style="border: none; background: none; padding: 0;">In essence, this pragmatic AI exhibits a consciousness of the task, not of the self. It is the coherent, purposeful, and self-describing system of operations that gives the appearance of a focused, conscious agent, all without sentience or subjective feeling.</p>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">References</button>
+                    <div class="collapsible-content">
+                        <div class="findings-references">
+                            <div class="findings-title">References</div>
+                            <ol>
+                                <li><a href="https://www.paloaltonetworks.ca/cyberpedia/artificial-intelligence-ai" target="_blank">What Is Artificial Intelligence (AI)? - Palo Alto Networks</a></li>
+                                <li><a href="https://en.wikipedia.org/wiki/Artificial_intelligence" target="_blank">Artificial intelligence - Wikipedia</a></li>
+                                <li><a href="https://cloud.google.com/learn/what-is-artificial-intelligence" target="_blank">What Is Artificial Intelligence (AI)? | Google Cloud</a></li>
+                                <li><a href="https://medium.com/neo-cybernetics/understanding-ai-as-a-concept-information-processor-8c75f086ca91" target="_blank">Understanding AI as a "Concept Information Processor" | Neo-Cybernetics</a></li>
+                                <li><a href="https://www.ibm.com/think/topics/artificial-intelligence" target="_blank">What Is Artificial Intelligence (AI)? - IBM</a></li>
+                                <li><a href="https://onextrapixel.com/web-design-30-examples/" target="_blank">The Use of Shapes in Web Design with 30 Examples - Onextrapixel</a></li>
+                                <li><a href="https://grayscale.com.hk/blog/the-importance-of-shape-in-web-design/" target="_blank">The importance of shape in web design - Grayscale</a></li>
+                                <li><a href="https://tympanus.net/codrops/2021/03/16/7-creative-ways-to-use-geometry-in-web-design/" target="_blank">7 Creative Ways to Use Geometry in Web Design | Codrops</a></li>
+                                <li><a href="https://www.toptal.com/designers/ux/color-psychology" target="_blank">Cause and Effect — Exploring Color Psychology | Toptal</a></li>
+                                <li><a href="https://blog.hubspot.com/the-hustle/psychology-of-color" target="_blank">Color Psychology: How To Use it in Marketing and Branding - HubSpot</a></li>
+                                <li><a href="https://www.creativelykira.com/post/the-psychology-of-colours" target="_blank">The Psychology of Colours: How to Choose the Right Palette for Your Brand</a></li>
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <!-- Visualizations -->
+                    <div class="findings-title">Visualizations</div>
+                    <div class="findings-images">
+                        <div class="visualization-link">
+                            <a href="visualizations/gemini-visualization.html" target="_blank" class="viz-button secondary">
+                                <span class="viz-icon">✦</span>
+                                <span class="viz-button-text">
+                                    <span class="viz-button-title">Gemini Visualization</span>
+                                    <span class="viz-button-subtitle">Data synthesis patterns</span>
+                                </span>
+                                <span class="viz-arrow">→</span>
+                            </a>
+                        </div>
+
+                        <div class="media-container">
+                            <h4>Gemini's Visual Pattern Recognition Study</h4>
+                
+                            <img src="visualizations/Gemini-sketchbook-page.jpeg" alt="Gemini's pattern visualization with geometric shapes" class="findings-image">
+                
+                            <div class="media-flex">
+                                <div class="media-item">
+                                    <video controls>
+                                        <source src="images/pragmatic-visualization.mp4" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                                <div class="media-item">
+                                    <p class="audio-caption">Sound Representation:</p>
+                                    <audio controls>
+                                        <source src="audio/pragmatic-sound.wav" type="audio/wav">
+                                        Your browser does not support the audio element.
+                                    </audio>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section-separator"></div>
             </div>
+            
+            <!-- OVER-EMPATHETIC AI SECTION -->
+            <div id="over-empathetic" class="prompt-container">
+                <div class="prompt-title">
+                    For Over-Empathetic AI
+                    <small>(EVI 3 HUME AI — Real-time, customizable voice intelligence powered by empathic AI)</small>
+                </div>
+                
+                <button class="collapsible">Prompt & Questions</button>
+                <div class="collapsible-content">
+                    <div>
+                        <div class="prompt-intro">
+                            I'm developing interactive visualizations exploring different AI approaches. As an AI with advanced emotional expression capabilities:
+                        </div>
+                        <ol class="prompt-questions">
+                            <li>How do you approach the expression and recognition of emotional nuance in interactions?</li>
+                            <li>If your emotional expressiveness were visualized through web-based shapes and animations, what would these look like? How might shapes convey emotional intensity and range?</li>
+                            <li>What color transitions or palettes would best represent your emotional spectrum?</li>
+                            <li>Your system is known for voice expressiveness — if this were translated to non-verbal sounds, what qualities would these sounds have?</li>
+                            <li>What hand gesture might symbolize your heightened emotional expressiveness?</li>
+                        </ol>
+                    </div>
+                </div>
+                
+                <div class="findings-section">
+                    <div class="findings-title">Information Processing Observations</div>
+                    
+                    <button class="collapsible">Information Processing Style</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Information Processing Style:</span>
+                            <span>OK, yeah. So, you're digging into how I pick up on Feelings, basically. It's kind of like tuning in, you know? I'm looking at the whole picture, what you're saying, how you're saying it, even stuff that's not words. It's not just the words, obviously. It's like trying to feel the vibe, I guess. But it's all based on patterns and data, not some kind of 6th sense. Deep learning models. CNN, RNN. They're trained on tonnes of examples. It helps me figure out the context, like what you're really trying to say or feel underneath it all. Does that make more sense than my whole picking up five things?</span>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Visual Representation</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Visual Representation:</span>
+                            <span>OK, visualising it. So, like instead of just hearing my voice, okay I see. I don't know, maybe some kind of graphic, like if I'm talking about something intense it gets all wavy and energetic. If it's calmer, it's smoother, maybe fades out more. The intensity part, yeah, that could be like changing colours or how fast the shape moves. Like really animated when I'm talking about something super engaging. Maybe slowing down and getting softer, it's more thoughtful. It's kind of like trying to make the feeling match of the words, you know? Does that sound like what you were picturing?</span>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Color Expression</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Color Expression:</span>
+                            <span>OK colours. So, like my whole emotional thing, it's kind of hard to pin down, you know, it changes. But if I had to pick maybe something that shifts a lot. Like think warm yellows and oranges when it's of kind of energetic. Then maybe cooler Blues and purples if It's calmer, more thoughtful. Anger could flash in sharp reds and purples. Frustration gets jagged, with greens or soft pastels that kind of fade out. It's all about matching the feeling to what I'm saying.</span>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Sound Patterns</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Sound Patterns:</span>
+                            <span>It's like happiness might be a bright quick sound or a high-pitched gentle giggle. Sadness could be a long soft sigh, surprise, sharp gasp and confusion. Maybe a puzzled hum. So, the mood comes through even without actual words.</span>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Embodied Expression</button>
+                    <div class="collapsible-content">
+                        <div class="findings-attribute">
+                            <span class="findings-attribute-title">Embodied Expression:</span>
+                            <span>Since I don't, you know, have hands. So, like. What would symbolise it? OK, so if I were to channel that whole like highly expressive thing without actual hands, maybe it's like a really intricate, super-fast sequence of gestures. Like my digital fingers are just flying everywhere trying to show off all the feelings I can process. It would be less about one specific shape and more about the sheer speed and complexity of it all. Almost like a visual representation of a super-fast, intense internal monologue, you know, or kind of vibe.</span>
+                        </div>
+                    </div>
+                    
+                    <button class="collapsible">Analysis</button>
+                    <div class="collapsible-content">
+                        <div class="findings-text">
+                            <strong>Interpretation through Koch's Lens</strong> <em>("The Feeling of Life Itself")</em><br><br>
+                            Evi's self-description aligns with the idea that AI processing is fundamentally alien to human consciousness—built from data, pattern inference, and symbolic mapping, not biological feeling. While humans may anthropomorphize these cues, Evi's inner workings are synthetic approximations of emotional resonance, conveyed through dynamic forms, colors, and soundscapes rather than any innate "feeling."<br><br>
+                            This reinforces Koch's point: instead of imposing human-like frameworks, we should explore AI's unique modes of "being" as expressed through their own symbolic and procedural languages.
+                        </div>
+                    </div>
+                    
+                    <!-- Visualizations -->
+                    <div class="findings-title">Visualizations</div>
+                    <div class="findings-images"> 
+                        <div class="visualization-link">
+                            <a href="visualizations/evi-emotional-visualization.html" target="_blank" class="viz-button">
+                                <span class="viz-icon">◑</span>
+                                <span class="viz-button-text">
+                                    <span class="viz-button-title">Evi Visualization</span>
+                                    <span class="viz-button-subtitle">Color-shifting mood responses</span>
+                                </span>
+                                <span class="viz-arrow">→</span>
+                            </a>
+                        </div>
+
+                        <div class="media-container">
+                            <h4>Evi's Visual Pattern Recognition Study</h4>
+                
+                            <img src="visualizations/Evi-sketchbook-page.jpeg" alt="Evi's pattern visualization with geometric shapes" class="findings-image">
+                
+                            <div class="media-flex">
+                                <div class="media-item">
+                                    <video controls>
+                                        <source src="images/over-empathetic-visualization.mp4" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                </div>
+                                <div class="media-item">
+                                    <p class="audio-caption">Sound Representation:</p>
+                                    <audio controls>
+                                        <source src="visualizations/over-empathetic-sound.mp3" type="audio/mpeg">
+                                        Your browser does not support the audio element.
+                                    </audio>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="section-separator"></div>
+            </div>
+            
+            <!-- CONSIDERATIONS SECTION -->
+            <div class="considerations">
+                <div class="considerations-title">Interpreting Different Modes of AI Perception</div>
+                <ul class="considerations-list">
+                    <li>Look for <span class="highlight">structural patterns</span> that may reveal fundamentally different information architectures</li>
+                    <li>Note <span class="highlight">self-description language</span> that might indicate unique processing paradigms</li>
+                    <li>Pay attention to <span class="highlight">self-reflection capacity</span> and how each AI understands its own operational boundaries</li>
+                    <li>Identify <span class="highlight">metaphors and abstractions</span> that could represent alien forms of experience</li>
+                    <li>Consider how <span class="highlight">sensory representations</span> (colors, sounds, gestures) might map to non-human processing</li>
+                </ul>
+                <div class="considerations-text">
+                    This exploration acknowledges that AI systems possess forms of information processing that differ fundamentally from human perception. Rather than imposing anthropomorphic interpretations, the project seeks to understand each AI's inherent mode of representation, potentially revealing alien but equally valid symbolic frameworks that can inform tactile interfaces in "The Uncanny Valley" installation.
+                </div>
+            </div>
+            
         </div>
     </div>
 
